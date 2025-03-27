@@ -1,14 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Pi Network SDK and Authentication Logic -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      Pi.init({ version: "2.0", sandbox: true });
+      const scopes = ['payments', 'username'];
+
+      function onIncompletePaymentFound(payment) { 
+        console.log('Incomplete payment found:', payment);
+        const paymentId = payment.identifier;
+        const txid = payment.transaction.txid;
+        return $.post('http://localhost:3000/payment/complete', { paymentId, txid, debug: 'cancel' });
+      }
+
+      function checkAuthStatus() {
+        const username = localStorage.getItem('username');
+        if (username) {
+          updateUIAfterAuth(username);
+          document.getElementById('auth-status').textContent = `Authenticated as ${username}`;
+          document.getElementById('auth-btn').style.display = 'none';
+          document.getElementById('logout-btn').style.display = 'inline-flex';
+        }
+      }
+
+      function updateUIAfterAuth(username) {
+        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+        if (profileIcon) profileIcon.classList.replace('fa-user', 'fa-user-check');
+        document.getElementById('auth-status').textContent = `Authenticated as ${username}`;
+        document.getElementById('auth-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'inline-flex';
+      }
+
+      function authenticateUser() {
+        Pi.authenticate(scopes, onIncompletePaymentFound).then(auth => {
+          console.log(`Authenticated as ${auth.user.username}`);
+          localStorage.setItem('username', auth.user.username);
+          $.post('http://localhost:3000/auth/pi', {
+            accessToken: auth.accessToken,
+            user: { uid: auth.user.uid, username: auth.user.username }
+          }).done(response => {
+            console.log('Backend response:', response);
+            updateUIAfterAuth(auth.user.username);
+          }).fail(error => {
+            console.error('Backend error:', error);
+            document.getElementById('auth-status').textContent = 'Authentication failed. Server error.';
+          });
+        }).catch(error => {
+          console.error('Authentication failed:', error);
+          document.getElementById('auth-status').textContent = 'Authentication failed. Please try again.';
+        });
+      }
+
+      function logoutUser() {
+        localStorage.removeItem('username');
+        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+        if (profileIcon) profileIcon.classList.replace('fa-user-check', 'fa-user');
+        document.getElementById('auth-status').textContent = 'Not authenticated';
+        document.getElementById('auth-btn').style.display = 'inline-flex';
+        document.getElementById('logout-btn').style.display = 'none';
+      }
+    </script>
+    <!-- jQuery for $.post compatibility -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
-    <title>TruthWeb Whitepaper</title>
-    <!-- TailwindCSS CDN -->
+    <title>Whitepaper - TruthWeb</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN (v6.5.1 for consistency) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
     <style>
       :root {
@@ -21,7 +80,10 @@
         --button-hover-bg-color: #FFFFFF;
         --button-hover-text-color: #000000;
         --background-color: #FFFFFF;
+        --accent-color: #FFD700;
+        --progress-bar-color: var(--accent-color);
       }
+      html { scroll-behavior: smooth; }
       body {
         background: var(--background-color);
         color: var(--primary-color);
@@ -30,9 +92,43 @@
         padding: 0;
         overflow-x: hidden;
         line-height: 1.6;
-        padding-bottom: 60px; /* Space for footer menu on mobile */
+        padding-bottom: 60px;
       }
-      /* Header (X-Style with Hide/Show) */
+      .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: var(--progress-bar-color);
+        z-index: 1001;
+        transition: width 0.3s ease;
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+      }
+      .go-to-top {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: var(--accent-color);
+        color: var(--primary-color);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        border: none;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+      .go-to-top.visible { opacity: 1; visibility: visible; }
+      .go-to-top:hover { background: #FFA500; transform: scale(1.1); }
+      .go-to-top:active { transform: scale(0.95); }
       .sticky-header {
         position: fixed;
         top: 0;
@@ -40,34 +136,29 @@
         z-index: 1000;
         background: var(--primary-color);
         color: var(--text-color);
-        transition: transform 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        transition: all 0.3s ease;
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 0 1rem;
         height: 64px;
-        animation: slideInHeader 0.5s ease-out forwards;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
-      .sticky-header.hidden {
-        transform: translateY(-100%);
-      }
+      .sticky-header.hidden { transform: translateY(-100%); }
       .sticky-header.scrolled {
         background: var(--secondary-color);
         color: var(--primary-color);
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-        transform: scale(0.98);
-      }
-      @keyframes slideInHeader {
-        from { transform: translateY(-100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
       }
       .sticky-header .logo-text {
         font-size: 1.5rem;
         font-weight: 700;
-        transition: font-size 0.3s ease;
+        color: var(--text-color);
+        transition: color 0.3s ease;
       }
-      .sticky-header.scrolled .logo-text { font-size: 1.25rem; }
+      .sticky-header.scrolled .logo-text { color: var(--primary-color); }
       .burger-btn {
+        display: flex;
         cursor: pointer;
         flex-direction: column;
         justify-content: center;
@@ -83,8 +174,8 @@
         background: var(--text-color);
         margin: 2px 0;
         transition: all 0.3s ease;
-        transform-origin: center;
       }
+      .sticky-header.scrolled .burger-btn span { background: var(--primary-color); }
       .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
       .burger-btn.open span:nth-child(2) { opacity: 0; transform: scale(0); }
       .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
@@ -100,13 +191,8 @@
         transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
         z-index: 999;
         padding: 1rem;
-        animation: fadeInMenu 0.4s ease-out forwards;
       }
       .mobile-menu.open { left: 0; }
-      @keyframes fadeInMenu {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
       .mobile-menu ul { list-style: none; padding: 0; }
       .mobile-menu .nav-item a {
         display: block;
@@ -115,26 +201,20 @@
         font-size: 1.1rem;
         transition: all 0.3s ease;
       }
-      .mobile-menu .nav-item a:hover {
-        color: var(--highlight-color);
-        transform: translateX(10px) scale(1.05);
-      }
-      .desktop-nav { display: flex; }
+      .mobile-menu .nav-item a:hover { color: var(--highlight-color); transform: translateX(10px); }
       .desktop-nav .nav-item a {
         color: var(--text-color);
         padding: 0.5rem 1rem;
         transition: all 0.3s ease;
       }
-      .desktop-nav .nav-item a:hover {
-        color: var(--highlight-color);
-        transform: scale(1.1);
-      }
+      .sticky-header.scrolled .desktop-nav .nav-item a { color: var(--primary-color); }
+      .desktop-nav .nav-item a:hover { color: var(--highlight-color); transform: scale(1.1); }
+      .desktop-nav .nav-item a.active { color: var(--accent-color); }
       .search-container {
         position: relative;
         flex-grow: 1;
         max-width: 400px;
         margin: 0 1rem;
-        transition: all 0.3s ease;
       }
       .search-input {
         width: 100%;
@@ -146,13 +226,8 @@
         font-size: 1rem;
         outline: none;
         transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       }
-      .search-input:focus {
-        border-color: var(--primary-color);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        transform: scale(1.02) translateY(-2px);
-      }
+      .search-input:focus { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
       .search-icon {
         position: absolute;
         right: 10px;
@@ -160,9 +235,8 @@
         transform: translateY(-50%);
         color: var(--primary-color);
         font-size: 1.2rem;
-        transition: transform 0.3s ease;
       }
-      .search-input:focus + .search-icon { transform: translateY(-50%) scale(1.1); }
+      .sticky-header.scrolled .search-icon { color: var(--primary-color); }
       .search-results {
         position: absolute;
         top: 100%;
@@ -176,36 +250,28 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         z-index: 60;
         display: none;
-        animation: dropIn 0.3s ease-out forwards;
       }
       .search-results.active { display: block; }
-      @keyframes dropIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
       .search-result-item {
         padding: 0.75rem;
         color: var(--primary-color);
         border-bottom: 1px solid var(--highlight-color);
         cursor: pointer;
-        transition: background 0.3s ease, transform 0.2s ease;
+        transition: background 0.3s ease;
       }
-      .search-result-item:hover {
-        background: var(--highlight-color);
-        transform: scale(1.02);
-      }
+      .search-result-item:hover { background: var(--highlight-color); }
       .icon {
         color: var(--text-color);
         font-size: 1.25rem;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         margin-left: 0.75rem;
+        transition: transform 0.3s ease;
       }
-      .icon:hover {
-        transform: scale(1.15) rotate(5deg);
-      }
+      .sticky-header.scrolled .icon { color: var(--primary-color); }
+      .icon:hover { transform: scale(1.15) rotate(5deg); }
+      .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
       main { margin-top: 64px; }
       .hero {
-        min-height: 60vh;
+        min-height: 50vh;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -213,15 +279,10 @@
         background: var(--primary-color);
         color: var(--text-color);
         text-align: center;
-        padding: 1rem;
+        padding: 2rem 1rem;
         position: relative;
         overflow: hidden;
-        animation: fadeInHero 1s ease-out forwards;
-        border: 2px solid var(--highlight-color);
-      }
-      @keyframes fadeInHero {
-        from { opacity: 0; transform: scale(0.95); }
-        to { opacity: 1; transform: scale(1); }
+        border-bottom: 4px solid var(--highlight-color);
       }
       .hero::after {
         content: '';
@@ -233,20 +294,14 @@
         background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
         animation: pulseGlow 3s infinite alternate;
       }
-      @keyframes pulseGlow {
-        0% { opacity: 0.5; }
-        100% { opacity: 0.8; }
-      }
+      @keyframes pulseGlow { 0% { opacity: 0.5; } 100% { opacity: 0.8; } }
       .glow-text {
-        font-size: 3rem;
+        font-size: 2.5rem;
         font-weight: 700;
         text-shadow: 0 0 10px var(--highlight-color);
         animation: glow 2s infinite alternate;
       }
-      @keyframes glow {
-        0% { text-shadow: 0 0 10px var(--highlight-color); }
-        100% { text-shadow: 0 0 20px var(--highlight-color); }
-      }
+      @keyframes glow { 0% { text-shadow: 0 0 10px var(--highlight-color); } 100% { text-shadow: 0 0 20px var(--highlight-color); } }
       .btn {
         display: inline-flex;
         align-items: center;
@@ -260,12 +315,7 @@
         font-weight: 600;
         text-decoration: none;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
         transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        position: relative;
-        z-index: 1;
-        min-width: 100px;
-        margin-top: 1rem;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       }
       .btn:hover {
@@ -274,113 +324,72 @@
         transform: scale(1.05) translateY(-2px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
-      .btn:active {
-        transform: scale(0.98);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-      }
+      .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
+      .btn.accent:hover { background: #FFA500; }
       section { padding: 2rem 1rem; }
-      .section { padding: 4rem 1rem; max-width: 900px; margin: 0 auto; }
-      .section h2 { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; }
-      .section h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 1rem; }
-      .section p, .section ul { font-size: 1rem; line-height: 1.6; margin-bottom: 1rem; }
-      .section ul { list-style: disc; padding-left: 2rem; }
-      /* Footer Menu (Fixed, Mobile-Only) */
-      .footer-menu {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 60px;
-        background: var(--primary-color);
-        color: var(--text-color);
-        display: flex;
-        justify-content: space-around;
-        align-items: center;
-        z-index: 1000;
-        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
-        transition: transform 0.3s ease;
-        animation: slideInFooter 0.5s ease-out forwards;
-      }
-      .footer-menu.hidden {
-        transform: translateY(100%);
-      }
-      @keyframes slideInFooter {
-        from { transform: translateY(100%); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
-      .footer-menu a {
-        color: var(--text-color);
-        font-size: 1.5rem;
-        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-      .footer-menu a:hover {
-        transform: scale(1.2);
-      }
-      /* Footer Navigation (Traditional Footer, All Devices) */
+      .section { max-width: 800px; margin: 0 auto; }
+      .section h2 { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
+      .section h3 { font-size: 1.5rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 1rem; }
+      .section p { font-size: 1.1rem; margin-bottom: 1rem; }
+      .section ul, .section ol { margin-left: 2rem; margin-bottom: 1rem; }
+      .section li { font-size: 1.1rem; margin-bottom: 0.5rem; }
       footer {
         background: var(--primary-color);
         color: var(--text-color);
         text-align: center;
         padding: 2rem 1rem;
         position: relative;
-        z-index: 10; /* Ensure it sits above content but below footer-menu */
+        z-index: 10;
       }
-      footer a {
+      footer .social-icons a, footer .footer-links a {
         color: var(--text-color);
-        transition: color 0.3s ease;
+        transition: color 0.3s ease, transform 0.3s ease;
       }
-      footer a:hover {
+      footer .social-icons a:hover, footer .footer-links a:hover {
         color: var(--highlight-color);
+        transform: scale(1.1);
       }
-      /* Responsive Design */
+      footer .social-icons { margin-bottom: 1rem; }
+      footer .social-icons a { font-size: 1.25rem; margin:0 0.5rem; }
+      footer .footer-links a { margin: 0 0.5rem; text-decoration: none; }
+      .footer-menu {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--primary-color);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 60px;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+      }
+      .footer-menu.hidden { transform: translateY(100%); }
+      .footer-menu a {
+        color: var(--text-color);
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+      }
+      .footer-menu a:hover { color: var(--accent-color); transform: scale(1.2); }
+      @media (min-width: 641px) { .footer-menu { display: none; } .go-to-top { bottom: 20px; } body { padding-bottom: 0; } }
       @media (max-width: 640px) {
         .burger-btn { display: flex; }
         .desktop-nav { display: none; }
-        .search-container { max-width: 120px; margin: 0 0.5rem; }
-        .sticky-header { padding: 0 0.5rem; }
-        .logo-text { font-size: 1.25rem; }
-        .icon { font-size: 1.1rem; margin-left: 0.5rem; }
+        .search-container { max-width: 120px; }
         .glow-text { font-size: 1.75rem; }
-        .btn { padding: 0.4rem 1rem; font-size: 0.85rem; min-width: 80px; }
-        .section-title { font-size: 1.5rem; }
-        /* Ensure footer navigation is not obscured by footer menu */
-        footer {
-          padding-bottom: 80px; /* Extra padding to account for footer-menu */
-        }
-        footer .container {
-          font-size: 0.9rem; /* Slightly smaller text on mobile */
-        }
-      }
-      @media (min-width: 641px) and (max-width: 1024px) {
-        .burger-btn { display: none; }
-        .desktop-nav { display: flex; }
-        .search-container { max-width: 300px; }
-        .glow-text { font-size: 2.5rem; }
-        .btn { padding: 0.5rem 1.2rem; }
-        .footer-menu { display: none; }
-        footer .container {
-          font-size: 1rem;
-        }
-      }
-      @media (min-width: 1025px) {
-        .burger-btn { display: none; }
-        .desktop-nav { display: flex; }
-        .search-container { max-width: 400px; }
-        .glow-text { font-size: 3rem; }
-        .footer-menu { display: none; }
-        footer .container {
-          font-size: 1rem;
-        }
+        .btn { padding: 0.4rem 1rem; font-size: 0.85rem; }
+        .section h2 { font-size: 1.75rem; }
       }
     </style>
 </head>
-<body>
-    <!-- Header with X-Style Hide/Show -->
+<body onload="checkAuthStatus()">
+    <div class="progress-bar"></div>
     <header class="sticky-header">
         <div class="flex items-center">
-            <a href="index.html" class="text-inherit flex items-center">
-                <span class="logo-text ml-2">TruthWeb</span>
-            </a>
+            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span></a>
         </div>
         <div class="search-container">
             <input type="text" class="search-input" placeholder="Search TruthWeb..." aria-label="Search TruthWeb">
@@ -401,18 +410,12 @@
                     <li class="nav-item"><a href="https://mrwains-organization.gitbook.io/truthweb" target="_blank" rel="noopener noreferrer">Docs</a></li>
                 </ul>
             </nav>
-            <a href="marketplace.html" class="icon"><i class="fas fa-shopping-cart"></i></a>
-            <a href="profile.html" class="icon"><i class="fas fa-user"></i></a>
-            <a href="wallet.html" class="icon"><i class="fas fa-wallet"></i></a>
-            <div class="burger-btn">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+            <a href="addtocart.html" class="icon floating-effect"><i class="fas fa-shopping-cart"></i></a>
+            <a href="profile.html" class="icon floating-effect"><i class="fas fa-user"></i></a>
+            <a href="wallet.html" class="icon floating-effect"><i class="fas fa-wallet"></i></a>
+            <div class="burger-btn"><span></span><span></span><span></span></div>
         </div>
     </header>
-
-    <!-- Mobile Menu -->
     <nav class="mobile-menu">
         <ul>
             <li class="nav-item"><a href="index.html">Home</a></li>
@@ -426,252 +429,363 @@
             <li class="nav-item"><a href="https://mrwains-organization.gitbook.io/truthweb" target="_blank" rel="noopener noreferrer">Docs</a></li>
         </ul>
     </nav>
-
-    <!-- Main Content -->
     <main>
-        <!-- Hero Section -->
         <section class="hero">
-            <h1 class="glow-text">TruthWeb Whitepaper</h1>
-            <p class="text-xl mt-4 md:text-2xl">Empowering Pioneers with a Decentralized Pi Network Hub</p>
-            <p class="text-lg mt-2 md:text-xl">Version 1.0 - March 5, 2025</p>
+            <h1 class="glow-text">TruthWeb: A Peer-to-Peer Utility Partner for Pi Network</h1>
+            <p class="text-xl mt-4 md:text-2xl">Version 1.0 - March 27, 2025</p>
+            <p class="text-lg mt-2 md:text-xl opacity-75">Empowering Everyday Pi Pioneers with Practical Solutions</p>
+            
         </section>
 
-        <!-- Whitepaper Content -->
+        <section class="section">
+            <h2>Abstract</h2>
+            <p>
+                TruthWeb is proposed as a decentralized, peer-to-peer ecosystem designed to collaborate seamlessly with Pi Network, offering Pioneers a robust platform to utilize Pi Digital Currency in their daily lives. Launched on March 5, 2025, TruthWeb integrates a marketplace, P2P trading, wallet management, and community tools with Pi’s Stellar Consensus Protocol (SCP), addressing the practical challenges Pioneers face in accessing everyday utilities. By partnering with Pi Network, TruthWeb leverages escrow-based transactions and a community-driven framework to provide secure, efficient, and accessible solutions, enhancing Pi’s real-world value as of March 27, 2025. This whitepaper details TruthWeb’s architecture, economic incentives, and strategic roadmap to support Pioneers’ daily needs.
+            </p>
+        </section>
+
         <section class="section">
             <h2>1. Introduction</h2>
             <p>
-                TruthWeb is a decentralized platform built to empower Pi Network Pioneers by providing a comprehensive hub for trading, community engagement, and wallet management using Pi Digital Currency. Launched on March 5, 2025, TruthWeb aims to reimagine how Pioneers interact, transact, and collaborate within the Pi ecosystem.
+                The Pi Network, initiated in 2019, has pioneered a revolutionary approach to cryptocurrency by enabling mobile mining, cultivating a global community of Pioneers who earn Pi Digital Currency through their devices. By March 2025, operating in its test net phase, Pi Network has demonstrated its potential as a scalable, energy-efficient blockchain via the Stellar Consensus Protocol (SCP). However, Pioneers face a significant challenge: translating their mined Pi into practical, everyday utilities—such as buying goods, paying for services, or managing funds—remains complex and disjointed without a unified platform.
             </p>
-            <h3>1.1 Mission</h3>
             <p>
-                Our mission is to create a secure, efficient, and community-driven environment where Pioneers can leverage Pi for real-world utility, fostering trust, transparency, and innovation.
+                TruthWeb emerges as the ideal partner for Pi Network, launched on March 5, 2025, to bridge this gap. Designed as a decentralized hub, TruthWeb integrates seamlessly with Pi’s infrastructure, offering a multi-faceted ecosystem that empowers Pioneers to use Pi in their daily lives. Unlike standalone solutions that may compete with Pi, TruthWeb collaborates with the network, enhancing its utility through a marketplace for everyday goods and services, fast P2P trading, integrated wallets, and community-building tools. This partnership eliminates the need for centralized intermediaries by employing escrow mechanisms and Pi’s blockchain, ensuring trust, security, and efficiency.
+            </p>
+            <p>
+                The current landscape for Pi Pioneers involves informal trading channels—such as chat groups or external apps—that lack structure, security, and real-time functionality. TruthWeb addresses these issues not by replacing Pi Network but by amplifying its strengths, providing a practical layer that makes Pi a currency Pioneers can rely on daily. This whitepaper outlines how TruthWeb, as Pi’s collaborative partner, delivers solutions tailored to Pioneers’ everyday needs.
+            </p>
+            <h3>1.1 Pi Network’s Foundation</h3>
+            <p>
+                Pi Network’s SCP enables a lightweight, mobile-friendly consensus mechanism, distinguishing it from energy-intensive blockchains like Bitcoin. This innovation has built a vast, engaged community, yet Pi’s utility remains underutilized without a platform to channel its potential into daily transactions. TruthWeb leverages SCP’s efficiency to create a practical application layer, aligning with Pi’s vision of accessibility and inclusivity.
+            </p>
+            <h3>1.2 TruthWeb’s Collaborative Purpose</h3>
+            <p>
+                TruthWeb’s purpose is to serve as Pi Network’s premier utility partner, empowering Pioneers with a decentralized platform that integrates seamlessly into their everyday lives. By offering tools for commerce, fund management, and community interaction, TruthWeb enhances Pi’s value, making it a go-to currency for daily necessities while preserving the network’s decentralized ethos.
             </p>
         </section>
 
         <section class="section">
-            <h2>2. Problem Statement</h2>
+            <h2>2. Transactions</h2>
             <p>
-                The Pi Network, while innovative, lacks a unified platform for Pioneers to fully utilize their Pi funds. Current solutions are fragmented, often lacking in security, speed, or community integration, leaving Pioneers without a robust ecosystem to maximize their participation.
+                Pioneers currently use Pi in ad-hoc, often insecure ways, such as direct transfers via external platforms, which lack formal safeguards or real-time validation. TruthWeb introduces a structured, escrow-based transaction system that collaborates with Pi Network to make Pi a reliable medium for everyday purchases and exchanges.
             </p>
-            <ul>
-                <li>Limited trading options for Pi.</li>
-                <li>Inconsistent security measures across platforms.</li>
-                <li>Insufficient tools for community interaction and trust-building.</li>
-            </ul>
+            <h3>2.1 Transaction Mechanism</h3>
+            <p>
+                A typical TruthWeb transaction unfolds as follows:
+            </p>
+            <ol class="list-decimal pl-6">
+                <li><strong>Offer Selection:</strong> A Pioneer selects an item (e.g., groceries, a digital course) from the marketplace or initiates a P2P trade, locking Pi in an escrow contract.</li>
+                <li><strong>Escrow Security:</strong> The Pi is secured on Pi’s test net blockchain, preventing misuse until fulfillment.</li>
+                <li><strong>Delivery:</strong> The seller provides the good or service, tracked via TruthWeb’s dashboard.</li>
+                <li><strong>Confirmation:</strong> The buyer verifies receipt, releasing the Pi to the seller.</li>
+                <li><strong>Finalization:</strong> The transaction is recorded on Pi’s blockchain, ensuring transparency.</li>
+            </ol>
+            <p>
+                This process ensures that Pioneers can confidently use Pi for daily needs—buying food, hiring services, or trading locally—without relying on external trust. Disputes are flagged for community resolution (Q4 2025), reinforcing decentralization.
+            </p>
+            <h3>2.2 Enhancing Pi Network</h3>
+            <p>
+                TruthWeb’s transaction system partners with Pi Network to transform Pi into a practical currency for everyday use, streamlining exchanges and embedding security directly into the ecosystem. This collaboration boosts Pi’s circulation, making it indispensable to Pioneers’ daily routines.
+            </p>
         </section>
 
         <section class="section">
-            <h2>3. Solution: TruthWeb</h2>
+            <h2>3. Blockchain Collaboration</h2>
             <p>
-                TruthWeb addresses these challenges by offering an all-in-one platform tailored for Pi Pioneers, integrating advanced features with the Pi Network’s infrastructure.
+                TruthWeb integrates with Pi Network’s test net blockchain, utilizing SCP to validate transactions efficiently and securely, aligning with Pi’s mobile-first design.
             </p>
-            <h3>3.1 Key Features</h3>
-            <ul>
-                <li><strong>Multi-Category Marketplace:</strong> Trade digital products, physical goods, services, and courses using Pi.</li>
-                <li><strong>Fast P2P Trading:</strong> Execute peer-to-peer Pi trades with minimal delay.</li>
-                <li><strong>Pi Wallet Integration:</strong> Seamlessly send, receive, and manage Pi funds.</li>
-                <li><strong>Custom Profiles:</strong> Personalize profiles to connect with the Pioneer community.</li>
-                <li><strong>Secure Access:</strong> KYC verification and 2FA for enhanced security.</li>
-                <li><strong>Fraud Protection:</strong> Escrow system holds Pi until buyer confirmation.</li>
-                <li><strong>Real-Time Updates:</strong> Track transactions instantly via the dashboard.</li>
-            </ul>
+            <h3>3.1 SCP Integration</h3>
+            <p>
+                Transactions are broadcast to Pi’s federated nodes, achieving consensus via SCP. The escrow contract’s state is logged, providing Pioneers with a verifiable record of their daily purchases or trades. This partnership leverages Pi’s lightweight consensus to support frequent, small-scale transactions ideal for everyday life.
+            </p>
+            <h3>3.2 Mainnet Synergy</h3>
+            <p>
+                As Pi transitions to its mainnet (post-2025), TruthWeb will evolve alongside it, ensuring uninterrupted utility and enhancing Pi’s permanence as a daily-use currency through deeper blockchain integration.
+            </p>
         </section>
 
         <section class="section">
-            <h2>4. Technical Architecture</h2>
+            <h2>4. Everyday Marketplace and P2P Trading</h2>
             <p>
-                TruthWeb is built on a decentralized framework leveraging the Pi Network’s blockchain technology for secure and efficient transactions. Our technology stack is designed to be robust, scalable, and community-driven.
+                TruthWeb’s marketplace and P2P trading features are designed to meet Pioneers’ daily needs, collaborating with Pi Network to create a vibrant economy for practical utilities.
             </p>
-            <h3>4.1 Components</h3>
-            <ul>
-                <li><strong>Frontend:</strong> Responsive UI built with HTML, CSS, and JavaScript, utilizing TailwindCSS for styling.</li>
-                <li><strong>Backend:</strong> Node.js with Express for API management (future implementation).</li>
-                <li><strong>Blockchain Integration:</strong> Pi Network API for wallet and transaction processing.</li>
-                <li><strong>Security:</strong> End-to-end encryption, KYC via Pi Network, and 2FA with authenticator apps.</li>
+            <h3>4.1 Multi-Category Marketplace</h3>
+            <p>
+                The marketplace offers categories tailored to everyday life:
+            </p>
+            <ul class="list-disc pl-6">
+                <li><strong>Digital Products:</strong> E-books, apps, or subscriptions for daily learning and entertainment.</li>
+                <li><strong>Physical Goods:</strong> Groceries, clothing, or household items delivered locally.</li>
+                <li><strong>Services:</strong> Tutoring, repairs, or ride-sharing paid with Pi.</li>
+                <li><strong>Courses:</strong> Skill-building content for personal growth.</li>
             </ul>
-            <h3>4.2 Scalability</h3>
             <p>
-                The platform is designed to scale with the growing Pi Network user base, utilizing cloud infrastructure and load balancing to ensure performance.
+                Listings are initially centralized (Q1 2025) but will shift to IPFS by Q3 2025, ensuring decentralized access to daily essentials.
             </p>
-            <h3>4.3 Learn More</h3>
+            <h3>4.2 P2P Trading for Daily Needs</h3>
             <p>
-                For a detailed breakdown of our technology stack, including current implementations and future plans, visit our dedicated Tech Stack page.
+                Pioneers can trade directly—e.g., swapping homegrown produce or paying for a neighbor’s help—with Pi secured in escrow. This flexibility supports spontaneous, local exchanges, embedding Pi into daily interactions.
+            </p>
+            <h3>4.3 Partnership Value</h3>
+            <p>
+                By providing a marketplace and P2P trading tailored to daily utilities, TruthWeb partners with Pi Network to make Pi a practical tool for Pioneers’ routines, from shopping to community barter, driving its everyday relevance.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>5. Wallet for Everyday Use</h2>
+            <p>
+                TruthWeb’s integrated Pi wallet simplifies fund management, making Pi a seamless part of Pioneers’ daily financial toolkit.
+            </p>
+            <h3>5.1 Features</h3>
+            <ul class="list-disc pl-6">
+                <li><strong>Send/Receive:</strong> Pay for coffee or send Pi to a friend instantly.</li>
+                <li><strong>Balance Updates:</strong> Track Pi in real-time for daily budgeting.</li>
+                <li><strong>History:</strong> Review spending on groceries, services, or trades.</li>
+            </ul>
+            <h3>5.2 Collaborative Role</h3>
+            <p>
+                As a partner, TruthWeb enhances Pi Network’s wallet functionality, reducing complexity and encouraging Pioneers to use Pi as their everyday currency, akin to cash or mobile payments.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>6. Community and Profiles for Daily Engagement</h2>
+            <p>
+                TruthWeb fosters Pi Network’s community spirit, enabling Pioneers to connect and collaborate daily.
+            </p>
+            <h3>6.1 Profiles</h3>
+            <p>
+                Custom profiles display trade history and reputation, building trust for daily transactions like hiring a local tutor or buying from a neighbor. This transparency integrates social trust into Pi’s ecosystem.
+            </p>
+            <h3>6.2 Community Tools</h3>
+            <p>
+                Planned features (Q3 2025)—forums, messaging, and governance—allow Pioneers to coordinate local trades, share resources, or vote on platform improvements, embedding Pi into community life.
+            </p>
+            <h3>6.3 Enhancing Pi Network</h3>
+            <p>
+                TruthWeb’s community features partner with Pi Network to strengthen its social foundation, making Pi a currency tied to daily relationships and mutual support.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>7. Security for Everyday Trust</h2>
+            <p>
+                TruthWeb ensures Pioneers can rely on Pi for daily use with robust security measures.
+            </p>
+            <h3>7.1 Safeguards</h3>
+            <ul class="list-disc pl-6">
+                <li><strong>KYC:</strong> Links to Pi accounts, verifying users for safe daily trades.</li>
+                <li><strong>2FA:</strong> Protects logins with authenticator apps.</li>
+                <li><strong>Encryption:</strong> Secures data for everyday transactions.</li>
+                <li><strong>Escrow:</strong> Holds Pi until goods or services are delivered.</li>
+            </ul>
+            <h3>7.2 Partnership Benefit</h3>
+            <p>
+                By securing daily Pi usage, TruthWeb collaborates with Pi Network to build confidence, ensuring Pioneers trust the system for routine purchases and exchanges.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>8. Technical Architecture</h2>
+            <p>
+                TruthWeb’s architecture supports daily utility, partnering with Pi Network’s infrastructure for scalability and reliability.
+            </p>
+            <h3>8.1 Components</h3>
+            <ul class="list-disc pl-6">
+                <li><strong>Frontend:</strong> HTML, CSS (TailwindCSS), JavaScript for an intuitive daily-use interface.</li>
+                <li><strong>Backend:</strong> Node.js with Express for transaction and escrow processing (Q2 2025).</li>
+                <li><strong>Blockchain:</strong> Pi test net API for real-time Pi management.</li>
+                <li><strong>Storage:</strong> Cloud initially, transitioning to IPFS for decentralized access.</li>
+            </ul>
+            <h3>8.2 Scalability</h3>
+            <p>
+                Cloud-based load balancing supports daily traffic, with decentralized nodes planned for Pi mainnet, ensuring TruthWeb handles millions of Pioneers’ routine interactions.
+            </p>
+            <h3>8.3 Collaborative Design</h3>
+            <p>
+                TruthWeb’s technical synergy with Pi Network enhances the blockchain’s capacity, delivering a platform optimized for everyday utility and future growth.
             </p>
             <div class="text-center mt-4">
-                <a href="tech-stack.html" class="btn">Explore Tech Stack</a>
+                <a href="tech-stack.html" class="btn accent">Explore Tech Stack</a>
             </div>
         </section>
 
         <section class="section">
-            <h2>5. Benefits</h2>
-            <ul>
-                <li><strong>For Pioneers:</strong> A trusted platform to trade, connect, and manage Pi funds.</li>
-                <li><strong>For the Pi Ecosystem:</strong> Increased utility and adoption of Pi Digital Currency.</li>
-                <li><strong>For Developers:</strong> Open-source framework to contribute and innovate.</li>
-            </ul>
-        </section>
-
-        <section class="section">
-            <h2>6. Roadmap</h2>
-            <ul>
-                <li><strong>Q1 2025:</strong> Platform launch with core features (marketplace, wallet integration, profiles).</li>
-                <li><strong>Q2 2025:</strong> Add advanced security (KYC, 2FA) and P2P trading enhancements.</li>
-                <li><strong>Q3 2025:</strong> Expand marketplace categories and introduce developer APIs.</li>
-                <li><strong>Q4 2025:</strong> Full decentralization and community governance implementation.</li>
-            </ul>
-        </section>
-
-        <section class="section">
-            <h2>7. Conclusion</h2>
+            <h2>9. Economic Model</h2>
             <p>
-                TruthWeb is poised to become the ultimate hub for Pi Pioneers, combining cutting-edge technology with a community-centric approach. By integrating Pi Network’s potential with a secure and versatile platform, TruthWeb redefines how Pioneers engage in the digital economy.
+                TruthWeb uses Pi exclusively, reinforcing its role as Pi Network’s utility partner without introducing competing tokens.
             </p>
-            <div class="flex justify-center space-x-4">
-                <a href="about.html" class="btn">Learn More About Us</a>
-                <a href="developers.html" class="btn">Join Our Developers</a>
+            <h3>9.1 Fees</h3>
+            <p>
+                A 1% fee on daily transactions (e.g., buying lunch or a service) funds:
+            </p>
+            <ul class="list-disc pl-6">
+                <li>70% platform operations.</li>
+                <li>20% community incentives (Q4 2025).</li>
+                <li>10% reserve for decentralization.</li>
+            </ul>
+            <h3>9.2 Incentives</h3>
+            <ul class="list-disc pl-6">
+                <li><strong>Sellers:</strong> Earn Pi from daily sales (e.g., produce or tutoring).</li>
+                <li><strong>Buyers:</strong> Access affordable, secure daily goods.</li>
+                <li><strong>Contributors:</strong> Gain fee shares for platform enhancements.</li>
+            </ul>
+            <h3>9.3 Sustainability</h3>
+            <p>
+                Open-source development and fees ensure TruthWeb’s longevity, supporting Pi’s daily use indefinitely.
+            </p>
+            <h3>9.4 Partnership Impact</h3>
+            <p>
+                This model drives Pi’s daily circulation, partnering with Pi Network to create a sustainable economy for Pioneers’ routine needs.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>10. Implementation Roadmap</h2>
+            <ul class="list-disc pl-6">
+                <li><strong>Q1 2025 (Complete):</strong> Launch with marketplace, wallet, and profiles for daily use.</li>
+                <li><strong>Q2 2025:</strong> Add KYC, 2FA, and backend for secure daily trades.</li>
+                <li><strong>Q3 2025:</strong> Expand categories, implement IPFS, and release APIs.</li>
+                <li><strong>Q4 2025:</strong> Full decentralization with community governance.</li>
+                <li><strong>2026:</strong> Mainnet integration, global daily utility scaling.</li>
+            </ul>
+            <h3>10.1 Collaborative Timeline</h3>
+            <p>
+                TruthWeb’s roadmap aligns with Pi Network’s evolution, ensuring Pioneers have a reliable daily utility partner at every stage.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>11. Benefits</h2>
+            <ul class="list-disc pl-6">
+                <li><strong>Pioneers:</strong> Seamless daily use of Pi for essentials.</li>
+                <li><strong>Pi Network:</strong> Enhanced utility and adoption.</li>
+                <li><strong>Developers:</strong> Open platform for daily-focused innovation.</li>
+            </ul>
+            <h3>11.1 Partnership Synergy</h3>
+            <p>
+                TruthWeb’s collaboration with Pi Network delivers a practical, everyday solution, amplifying Pi’s role in Pioneers’ lives.
+            </p>
+        </section>
+
+        <section class="section">
+            <h2>12. Conclusion</h2>
+            <p>
+                TruthWeb is presented as the optimal partner for Pi Network, providing a decentralized ecosystem that empowers Pioneers to use Pi Digital Currency in their everyday lives as of March 27, 2025. By integrating a marketplace for daily goods, P2P trading for local exchanges, wallet management for routine payments, and community tools for engagement—all secured by escrow and Pi’s SCP—TruthWeb solves the practical challenges Pioneers face. This collaboration enhances Pi’s utility, making it a trusted currency for daily necessities while preserving its decentralized vision. As Pi Network evolves, TruthWeb will remain its steadfast partner, scaling to meet global daily demands and fostering a thriving Pi-based economy.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4 mt-6">
+                <a href="about.html" class="btn">Learn More</a>
+                <a href="developers.html" class="btn">Join Developers</a>
                 <a href="https://mrwains-organization.gitbook.io/truthweb" class="btn" target="_blank" rel="noopener noreferrer">View Docs</a>
+                <a href="assets/TruthWeb_Whitepaper_v1.0.pdf" class="btn accent" download="TruthWeb_Whitepaper_v1.0.pdf">Download PDF</a>
+            </div>
+        </section>
+
+        <section class="section text-center">
+            <a href="index.html" class="btn accent">Back to Home</a>
+        </section>
+
+        <section id="download" class="py-16 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-8">Get the Enhanced App</h2>
+                <p class="text-lg mb-6 md:text-xl">Download the latest version of the TruthWeb app and experience Pi Network like never before.</p>
+                <div class="download-buttons flex justify-center gap-4">
+                    <a href="https://play.google.com/store" target="_blank" class="download-btn">
+                        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" class="h-12 transition-transform duration-300 hover:scale-110">
+                    </a>
+                    <a href="https://www.apple.com/app-store/" target="_blank" class="download-btn">
+                        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" class="h-12 transition-transform duration-300 hover:scale-110">
+                    </a>
+                </div>
+                <p class="text-sm mt-4">Over 10M+ downloads worldwide!</p>
             </div>
         </section>
     </main>
-
-    <!-- Footer Menu (Fixed, Mobile-Only) -->
-    <nav class="footer-menu" role="navigation" aria-label="Mobile Footer Navigation">
-        <a href="index.html"><i class="fas fa-home"></i></a>
-        <a href="marketplace.html"><i class="fas fa-shopping-cart"></i></a>
-        <a href="profile.html"><i class="fas fa-user"></i></a>
-        <a href="wallet.html"><i class="fas fa-wallet"></i></a>
-        <a href="community.html"><i class="fas fa-users"></i></a>
-    </nav>
-
-    <!-- Footer Navigation (Traditional Footer, All Devices) -->
-    <footer role="contentinfo">
-        <div class="container mx-auto text-center">
-            <div class="mb-4">
-                <a class="text-[var(--text-color)] mx-2 icon" href="https://www.facebook.com/reimaginetruthofficial/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a class="text-[var(--text-color)] mx-2 icon" href="https://x.com/reimagine_truth" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                <a class="text-[var(--text-color)] mx-2 icon" href="https://t.me/TruthWebOfficial" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
-                <a class="text-[var(--text-color)] mx-2 icon" href="https://www.youtube.com/@ReimagineTruth" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                <a class="text-[var(--text-color)] mx-2 icon" href="https://github.com/username/TruthWeb" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
-            </div>
-            <p class="text-[var(--text-color)] mb-4">© 2025 TruthWeb. All rights reserved.</p>
-            <nav role="navigation" aria-label="Footer Navigation" class="text-[var(--text-color)] text-sm">
-                <a href="about.html" class="mx-2 hover:text-[var(--highlight-color)]">About Us</a> |
-                <a href="terms.html" class="mx-2 hover:text-[var(--highlight-color)]">Terms & Conditions</a> |
-                <a href="privacy.html" class="mx-2 hover:text-[var(--highlight-color)]">Privacy Policy</a> |
-                <a href="contact.html" class="mx-2 hover:text-[var(--highlight-color)]">Contact</a> |
-                <a href="https://mrwains-organization.gitbook.io/truthweb" class="mx-2 hover:text-[var(--highlight-color)]" target="_blank" rel="noopener noreferrer">Docs</a>
-            </nav>
+    <footer>
+        <div class="social-icons">
+            <a href="https://www.facebook.com/reimaginetruthofficial/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://x.com/reimagine_truth" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://t.me/TruthWebOfficial" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+            <a href="https://www.youtube.com/@ReimagineTruth" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://github.com/username/TruthWeb" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
         </div>
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="contact.html">Contact</a>
+            <a href="https://mrwains-organization.gitbook.io/truthweb" target="_blank" rel="noopener noreferrer">Docs</a>
+        </div>
+        <p class="mt-4">© 2025 TruthWeb (Testnet Mode). All rights reserved. Built with <i class="fas fa-heart text-red-500"></i> for the Pi Network Community.</p>
     </footer>
-
-    <!-- Scripts -->
+    <nav class="footer-menu">
+        <a href="index.html" aria-label="Home"><i class="fas fa-home"></i></a>
+        <a href="marketplace.html" aria-label="Marketplace"><i class="fas fa-shopping-cart"></i></a>
+        <a href="profile.html" aria-label="Profile"><i class="fas fa-user"></i></a>
+        <a href="wallet.html" aria-label="Wallet"><i class="fas fa-wallet"></i></a>
+        <a href="community.html" aria-label="Community"><i class="fas fa-users"></i></a>
+    </nav>
+    <button class="go-to-top" aria-label="Go to Top"><i class="fas fa-arrow-up"></i></button>
     <script>
-      // Device Detection and Dynamic Adjustments
-      function adjustLayout() {
-        const width = window.innerWidth;
-        const isMobile = width <= 640;
-        const isTablet = width > 640 && width <= 1024;
-        const isDesktop = width > 1024;
-
-        const burgerBtn = document.querySelector('.burger-btn');
-        const desktopNav = document.querySelector('.desktop-nav');
-        const searchContainer = document.querySelector('.search-container');
-
-        if (isMobile) {
-          burgerBtn.style.display = 'flex';
-          desktopNav.style.display = 'none';
-          searchContainer.style.maxWidth = '120px';
-        } else if (isTablet) {
-          burgerBtn.style.display = 'none';
-          desktopNav.style.display = 'flex';
-          searchContainer.style.maxWidth = '300px';
-        } else if (isDesktop) {
-          burgerBtn.style.display = 'none';
-          desktopNav.style.display = 'flex';
-          searchContainer.style.maxWidth = '400px';
-        }
-      }
-
-      window.addEventListener('load', adjustLayout);
-      window.addEventListener('resize', adjustLayout);
-
-      // Header and Footer Scroll Hide/Show Effect (X-Style)
-      let lastScroll = 0;
-      window.addEventListener('scroll', () => {
-        const header = document.querySelector('.sticky-header');
-        const footerMenu = document.querySelector('.footer-menu');
-        const currentScroll = window.scrollY;
-
-        if (currentScroll > lastScroll && currentScroll > 50) {
-          header.classList.add('hidden');
-          footerMenu.classList.add('hidden');
-        } else if (currentScroll < lastScroll) {
-          header.classList.remove('hidden');
-          footerMenu.classList.remove('hidden');
-          header.classList.toggle('scrolled', currentScroll > 50);
-        }
-        lastScroll = currentScroll;
-      });
-
-      // Burger Menu Toggle
       const burgerBtn = document.querySelector('.burger-btn');
       const mobileMenu = document.querySelector('.mobile-menu');
+      const header = document.querySelector('.sticky-header');
+      const goToTopBtn = document.querySelector('.go-to-top');
+      const progressBar = document.querySelector('.progress-bar');
+      const footerMenu = document.querySelector('.footer-menu');
+      const searchInput = document.querySelector('.search-input');
+      const searchResults = document.querySelector('.search-results');
+
       burgerBtn.addEventListener('click', () => {
         burgerBtn.classList.toggle('open');
         mobileMenu.classList.toggle('open');
       });
 
-      // Close Menu on Link Click
-      document.querySelectorAll('.mobile-menu a').forEach(link => {
-        link.addEventListener('click', () => {
-          burgerBtn.classList.remove('open');
-          mobileMenu.classList.remove('open');
-        });
+      let lastScroll = 0;
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.scrollY;
+        header.classList.toggle('scrolled', currentScroll > 50);
+        header.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+        goToTopBtn.classList.toggle('visible', currentScroll > 300);
+        footerMenu.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+        lastScroll = currentScroll;
+        const totalHeight = document.body.scrollHeight - window.innerHeight;
+        const progress = (currentScroll / totalHeight) * 100;
+        progressBar.style.width = `${progress}%`;
       });
 
-      // Search Functionality
-      const searchInput = document.querySelector('.search-input');
-      const searchResults = document.querySelector('.search-results');
-      const searchableContent = [];
-      document.querySelectorAll('h1, h2, h3, p, a').forEach(element => {
-        const text = element.textContent.trim();
-        if (text) {
-          searchableContent.push({
-            text: text.toLowerCase(),
-            element,
-            href: element.tagName === 'A' ? element.getAttribute('href') : null
-          });
-        }
+      goToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       });
 
-      searchInput.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase().trim();
+      const pages = [
+        { title: 'Home', url: 'index.html' },
+        { title: 'Marketplace', url: 'marketplace.html' },
+        { title: 'Profile', url: 'profile.html' },
+        { title: 'Wallet', url: 'wallet.html' },
+        { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
+        { title: 'Community', url: 'community.html' },
+        { title: 'Developers', url: 'developers.html' },
+        { title: 'About', url: 'about.html' },
+        { title: 'Docs', url: 'https://mrwains-organization.gitbook.io/truthweb' }
+      ];
+
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
         searchResults.innerHTML = '';
-        searchResults.classList.remove('active');
-
-        if (query.length > 0) {
-          const results = searchableContent.filter(item => item.text.includes(query));
-          if (results.length > 0) {
-            results.forEach(result => {
-              const div = document.createElement('div');
-              div.classList.add('search-result-item');
-              div.textContent = result.text.slice(0, 50) + (result.text.length > 50 ? '...' : '');
-              div.addEventListener('click', () => {
-                if (result.href) window.location.href = result.href;
-                else result.element.scrollIntoView({ behavior: 'smooth' });
-                searchResults.classList.remove('active');
-                searchInput.value = '';
-              });
-              searchResults.appendChild(div);
-            });
-            searchResults.classList.add('active');
-          } else {
-            const noResult = document.createElement('div');
-            noResult.classList.add('search-result-item');
-            noResult.textContent = 'No results found';
-            searchResults.appendChild(noResult);
-            searchResults.classList.add('active');
-          }
+        if (query) {
+          const results = pages.filter(page => page.title.toLowerCase().includes(query));
+          results.forEach(result => {
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            div.innerHTML = `<a href="${result.url}">${result.title}</a>`;
+            searchResults.appendChild(div);
+          });
+          searchResults.classList.toggle('active', results.length > 0);
+        } else {
+          searchResults.classList.remove('active');
         }
       });
 
@@ -679,6 +793,13 @@
         if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
           searchResults.classList.remove('active');
         }
+      });
+
+      document.querySelectorAll('.mobile-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+          burgerBtn.classList.remove('open');
+          mobileMenu.classList.remove('open');
+        });
       });
     </script>
 </body>
