@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
+    <title>TruthWeb - Meet the Team</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome CDN (v6.5.1 for latest icons) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <!-- Google Fonts: Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <style>
+      :root {
+        --primary-color: #000000;
+        --secondary-color: #FFFFFF;
+        --highlight-color: #CCCCCC;
+        --text-color: #FFFFFF;
+        --button-bg-color: #000000;
+        --button-text-color: #FFFFFF;
+        --button-hover-bg-color: #FFFFFF;
+        --button-hover-text-color: #000000;
+        --background-color: #FFFFFF;
+        --accent-color: #FFD700;
+        --progress-bar-color: var(--accent-color);
+      }
+      html { scroll-behavior: smooth; }
+      body {
+        background: var(--background-color);
+        color: var(--primary-color);
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        line-height: 1.6;
+        padding-bottom: 60px;
+      }
+
+      /* Progress Bar Styles */
+      .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: var(--progress-bar-color);
+        z-index: 1001;
+        transition: width 0.3s ease;
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+      }
+
+      /* Go to Top Button Styles */
+      .go-to-top {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: var(--accent-color);
+        color: var(--primary-color);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        border: none;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+      .go-to-top.visible { opacity: 1; visibility: visible; }
+      .go-to-top:hover { background: #FFA500; transform: scale(1.1); }
+      .go-to-top:active { transform: scale(0.95); }
+
+      /* Header Styles */
+      .sticky-header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        background: var(--primary-color);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+        height: 64px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .sticky-header.hidden { transform: translateY(-100%); }
+      .sticky-header.scrolled {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+      .sticky-header .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        transition: color 0.3s ease;
+      }
+      .sticky-header.scrolled .logo-text { color: var(--primary-color); }
+      .burger-btn {
+        display: flex;
+        cursor: pointer;
+        flex-direction: column;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        margin-left: 0.5rem;
+        transition: transform 0.3s ease;
+      }
+      .burger-btn:hover { transform: scale(1.1); }
+      .burger-btn span {
+        width: 100%;
+        height: 3px;
+        background: var(--text-color);
+        margin: 2px 0;
+        transition: all 0.3s ease;
+      }
+      .sticky-header.scrolled .burger-btn span { background: var(--primary-color); }
+      .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+      .burger-btn.open span:nth-child(2) { opacity: 0; transform: scale(0); }
+      .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+      .mobile-menu {
+        position: fixed;
+        top: 64px;
+        left: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: calc(100vh - 64px);
+        background: var(--primary-color);
+        color: var(--text-color);
+        transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        z-index: 999;
+        padding: 1rem;
+        animation: fadeInMenu 0.4s ease-out forwards;
+      }
+      .mobile-menu.open { left: 0; }
+      @keyframes fadeInMenu { from { opacity: 0; } to { opacity: 1; } }
+      .mobile-menu ul { list-style: none; padding: 0; }
+      .mobile-menu .nav-item a {
+        display: block;
+        padding: 0.75rem;
+        color: var(--text-color);
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+      }
+      .mobile-menu .nav-item a:hover { color: var(--highlight-color); transform: translateX(10px) scale(1.05); }
+      .desktop-nav { display: flex; }
+      .desktop-nav .nav-item { transition: transform 0.3s ease; animation: fadeInUp 0.5s ease-in-out forwards; }
+      .desktop-nav .nav-item a {
+        color: var(--text-color);
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+      }
+      .sticky-header.scrolled .desktop-nav .nav-item a { color: var(--primary-color); }
+      .desktop-nav .nav-item a:hover { color: var(--highlight-color); transform: scale(1.1); }
+      .desktop-nav .nav-item:nth-child(1) { animation-delay: 0.1s; }
+      .desktop-nav .nav-item:nth-child(2) { animation-delay: 0.2s; }
+      .desktop-nav .nav-item:nth-child(3) { animation-delay: 0.3s; }
+      .desktop-nav .nav-item:nth-child(4) { animation-delay: 0.4s; }
+      .desktop-nav .nav-item:nth-child(5) { animation-delay: 0.5s; }
+      .desktop-nav .nav-item:nth-child(6) { animation-delay: 0.6s; }
+      .desktop-nav .nav-item:nth-child(7) { animation-delay: 0.7s; }
+      .desktop-nav .nav-item:nth-child(8) { animation-delay: 0.8s; }
+      .desktop-nav .nav-item:nth-child(9) { animation-delay: 0.9s; }
+      .desktop-nav .nav-item:hover { transform: scale(1.1) translateY(-5px); }
+      .search-container {
+        position: relative;
+        flex-grow: 1;
+        max-width: 400px;
+        margin: 0 1rem;
+        transition: all 0.3s ease;
+      }
+      .search-input {
+        width: 100%;
+        padding: 0.5rem 2.5rem 0.5rem 1rem;
+        border: 1px solid var(--highlight-color);
+        border-radius: 9999px;
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .search-input:focus { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); transform: scale(1.02) translateY(-2px); }
+      .search-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+      }
+      .sticky-header.scrolled .search-icon { color: var(--primary-color); }
+      .search-input:focus + .search-icon { transform: translateY(-50%) scale(1.1); }
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        background: var(--secondary-color);
+        border: 1px solid var(--highlight-color);
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 60;
+        display: none;
+        animation: dropIn 0.3s ease-out forwards;
+      }
+      .search-results.active { display: block; }
+      @keyframes dropIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+      .search-result-item {
+        padding: 0.75rem;
+        color: var(--primary-color);
+        border-bottom: 1px solid var(--highlight-color);
+        cursor: pointer;
+        transition: background 0.3s ease, transform 0.2s ease;
+      }
+      .search-result-item:hover { background: var(--highlight-color); transform: scale(1.02); }
+      .icon {
+        color: var(--text-color);
+        font-size: 1.25rem;
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
+        margin-left: 0.75rem;
+      }
+      .sticky-header.scrolled .icon { color: var(--primary-color); }
+      .icon:hover { transform: scale(1.15) rotate(5deg); }
+      .floating-effect { transition: transform 0.3s ease; }
+      .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
+      main { margin-top: 64px; }
+
+      /* Hero Section */
+      .hero {
+        min-height: 50vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: var(--primary-color);
+        color: var(--text-color);
+        text-align: center;
+        padding: 2rem 1rem;
+        position: relative;
+        overflow: hidden;
+        animation: fadeInHero 1s ease-out forwards;
+      }
+      @keyframes fadeInHero { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      .hero::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+        animation: pulseGlow 3s infinite alternate;
+      }
+      @keyframes pulseGlow { 0% { opacity: 0.5; } 100% { opacity: 0.8; } }
+      .glow-text {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 0 0 10px var(--highlight-color);
+        animation: glow 2s infinite alternate;
+      }
+      @keyframes glow { 0% { text-shadow: 0 0 10px var(--highlight-color); } 100% { text-shadow: 0 0 20px var(--highlight-color); } }
+
+      /* Button Styles */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--button-bg-color);
+        color: var(--button-text-color);
+        padding: 0.5rem 1.5rem;
+        border: 1px solid var(--highlight-color);
+        border-radius: 9999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        z-index: 1;
+        min-width: 100px;
+        margin-top: 1rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        animation: pulse 2s infinite;
+      }
+      .btn:hover {
+        background: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
+        transform: scale(1.05) translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+      .btn:active { transform: scale(0.98); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); }
+      .btn.accent {
+        background: var(--accent-color);
+        color: var(--primary-color);
+        border: none;
+      }
+      .btn.accent:hover { background: #FFA500; color: var(--primary-color); }
+      @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+      /* Team Section */
+      section { padding: 2rem 1rem; }
+      .team-container {
+        max-w-4xl;
+        margin: 0 auto;
+      }
+      .team-container h2 {
+        font-size: 3rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+      }
+      .team-card {
+        background: var(--secondary-color);
+        border: 1px solid var(--highlight-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: slideInCard 0.5s ease-out forwards;
+      }
+      .team-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2); }
+      @keyframes slideInCard { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+      .team-card img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+        border: 2px solid var(--accent-color);
+        object-fit: cover;
+      }
+      .team-card h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+      }
+      .team-card .role {
+        font-size: 1rem;
+        color: #555;
+        margin-bottom: 1rem;
+      }
+      .team-card .social-links a {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+        margin: 0 0.5rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+      }
+      .team-card .social-links a:hover { color: var(--accent-color); transform: scale(1.2); }
+
+      /* Footer Styles */
+      footer {
+        background: var(--primary-color);
+        color: var(--text-color);
+        text-align: center;
+        padding: 2rem 1rem;
+        position: relative;
+        z-index: 10;
+        animation: fadeIn 1.5s ease-in-out;
+      }
+      @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+      @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
+      footer .social-icons a, footer .footer-links a {
+        color: var(--text-color);
+        transition: color 0.3s ease, transform 0.3s ease;
+      }
+      footer .social-icons a:hover, footer .footer-links a:hover {
+        color: var(--highlight-color);
+        transform: scale(1.1);
+      }
+      footer .social-icons { margin-bottom: 1rem; }
+      footer .social-icons a { font-size: 1.25rem; margin: 0 0.5rem; }
+      footer .footer-links a { margin: 0 0.5rem; text-decoration: none; }
+      .footer-menu {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--primary-color);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 60px;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+      }
+      .footer-menu.hidden { transform: translateY(100%); }
+      .footer-menu a {
+        color: var(--text-color);
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+      }
+      .footer-menu a:hover { color: var(--accent-color); transform: scale(1.2); }
+
+      @media (min-width: 641px) {
+        .footer-menu { display: none; }
+        .go-to-top { bottom: 20px; }
+        body { padding-bottom: 0; }
+      }
+      @media (max-width: 640px) {
+        .burger-btn { display: flex; }
+        .desktop-nav { display: none; }
+        .search-container { max-width: 120px; margin: 0 0.5rem; }
+        .sticky-header { padding: 0 0.5rem; }
+        .logo-text { font-size: 1.25rem; }
+        .icon { font-size: 1.1rem; margin-left: 0.5rem; }
+        .glow-text { font-size: 1.75rem; }
+        .btn { padding: 0.4rem 1rem; font-size: 0.85rem; min-width: 80px; }
+        .team-container h2 { font-size: 2rem; }
+        .team-card h3 { font-size: 1.1rem; }
+        .team-card .role { font-size: 0.9rem; }
+        .team-card img { width: 80px; height: 80px; }
+      }
+      @media (min-width: 641px) and (max-width: 1024px) {
+        .burger-btn { display: none; }
+        .desktop-nav { display: flex; }
+        .search-container { max-width: 300px; }
+        .glow-text { font-size: 2.5rem; }
+      }
+      @media (min-width: 1025px) {
+        .burger-btn { display: none; }
+        .desktop-nav { display: flex; }
+        .search-container { max-width: 400px; }
+        .glow-text { font-size: 3rem; }
+      }
+    </style>
+</head>
+<body>
+    <div class="progress-bar"></div>
+
+    <!-- Header -->
+    <header class="sticky-header">
+        <div class="flex items-center">
+            <a href="index.html" class="text-inherit flex items-center">
+                <span class="logo-text ml-2">TruthWeb</span>
+            </a>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search TruthWeb..." aria-label="Search TruthWeb">
+            <i class="fas fa-search search-icon"></i>
+            <div class="search-results"></div>
+        </div>
+        <div class="flex items-center">
+            <nav class="desktop-nav hidden md:flex items-center">
+                <ul class="flex space-x-4">
+                    <li class="nav-item"><a href="index.html">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+                    <li class="nav-item"><a href="ledger-testnet.html">Ledger Testnet</a></li>
+                    <li class="nav-item"><a href="community.html">Community</a></li>
+                    <li class="nav-item"><a href="developers.html">Developers</a></li>
+                    <li class="nav-item"><a href="about.html">About</a></li>
+                    <li class="nav-item"><a href="team.html">Team</a></li>
+                </ul>
+            </nav>
+            <a href="addtocart.html" class="icon floating-effect"><i class="fas fa-shopping-cart"></i></a>
+            <a href="profile.html" class="icon floating-effect"><i class="fas fa-user"></i></a>
+            <a href="wallet.html" class="icon floating-effect"><i class="fas fa-wallet"></i></a>
+            <div class="burger-btn">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <nav class="mobile-menu">
+        <ul>
+            <li class="nav-item"><a href="index.html">Home</a></li>
+            <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+            <li class="nav-item"><a href="profile.html">Profile</a></li>
+            <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+            <li class="nav-item"><a href="ledger-testnet.html">Ledger Testnet</a></li>
+            <li class="nav-item"><a href="community.html">Community</a></li>
+            <li class="nav-item"><a href="developers.html">Developers</a></li>
+            <li class="nav-item"><a href="about.html">About</a></li>
+            <li class="nav-item"><a href="team.html">Team</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h1 class="glow-text">Meet the TruthWebDev Team</h1>
+            <p class="text-xl mt-4 md:text-2xl">The Pioneers Behind TruthWeb</p>
+            <p class="text-lg mt-2 opacity-75">[Building for the Pi Network Community]</p>
+        </section>
+
+        <section id="team" class="py-16 px-4">
+            <div class="team-container">
+                <h2 class="text-center">Our Team</h2>
+                <div class="team-grid">
+                    <div class="team-card">
+                        <img src="https://via.placeholder.com/100" alt="Team Member 1">
+                        <h3>John Doe</h3>
+                        <p class="role">Lead Developer</p>
+                        <div class="social-links">
+                            <a href="https://x.com/johndoe" target="_blank"><i class="fab fa-twitter"></i></a>
+                            <a href="https://github.com/johndoe" target="_blank"><i class="fab fa-github"></i></a>
+                            <a href="https://linkedin.com/in/johndoe" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <img src="https://via.placeholder.com/100" alt="Team Member 2">
+                        <h3>Jane Smith</h3>
+                        <p class="role">UI/UX Designer</p>
+                        <div class="social-links">
+                            <a href="https://x.com/janesmith" target="_blank"><i class="fab fa-twitter"></i></a>
+                            <a href="https://dribbble.com/janesmith" target="_blank"><i class="fab fa-dribbble"></i></a>
+                            <a href="https://linkedin.com/in/janesmith" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <img src="https://via.placeholder.com/100" alt="Team Member 3">
+                        <h3>Mike Johnson</h3>
+                        <p class="role">Blockchain Engineer</p>
+                        <div class="social-links">
+                            <a href="https://x.com/mikejohnson" target="_blank"><i class="fab fa-twitter"></i></a>
+                            <a href="https://github.com/mikejohnson" target="_blank"><i class="fab fa-github"></i></a>
+                            <a href="https://linkedin.com/in/mikejohnson" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                    <div class="team-card">
+                        <img src="https://via.placeholder.com/100" alt="Team Member 4">
+                        <h3>Emily Brown</h3>
+                        <p class="role">Community Manager</p>
+                        <div class="social-links">
+                            <a href="https://x.com/emilybrown" target="_blank"><i class="fab fa-twitter"></i></a>
+                            <a href="https://t.me/emilybrown" target="_blank"><i class="fab fa-telegram"></i></a>
+                            <a href="https://linkedin.com/in/emilybrown" target="_blank"><i class="fab fa-linkedin"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-center mt-8">
+                    <p class="text-lg mb-4">Interested in Joining Us?</p>
+                    <a href="contact.html" class="btn accent">Contact Us</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-[var(--primary-color)] py-8">
+        <div class="container mx-auto text-center">
+            <div class="social-icons mb-4">
+                <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://www.facebook.com/reimaginetruthofficial/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://x.com/reimagine_truth" target="_blank"><i class="fab fa-twitter"></i></a>
+                <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://t.me/TruthWebOfficial" target="_blank"><i class="fab fa-telegram"></i></a>
+                <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://www.youtube.com/@TruthWebYoutube" target="_blank"><i class="fab fa-youtube"></i></a>
+                <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://github.com/username/TruthWeb" target="_blank"><i class="fab fa-github"></i></a>
+            </div>
+            <p class="text-[var(--text-color)] mb-4">© 2025 TruthWeb. All rights reserved.</p>
+            <div class="footer-links text-[var(--text-color)] text-sm">
+                <a href="about.html" class="mx-2 hover:text-[var(--highlight-color)]">About Us</a> |
+                <a href="terms.html" class="mx-2 hover:text-[var(--highlight-color)]">Terms & Conditions</a> |
+                <a href="privacy.html" class="mx-2 hover:text-[var(--highlight-color)]">Privacy Policy</a> |
+                <a href="contact.html" class="mx-2 hover:text-[var(--highlight-color)]">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <nav class="footer-menu" role="navigation" aria-label="Mobile Footer Navigation">
+        <a href="index.html"><i class="fas fa-home"></i></a>
+        <a href="marketplace.html"><i class="fas fa-shopping-cart"></i></a>
+        <a href="profile.html"><i class="fas fa-user"></i></a>
+        <a href="wallet.html"><i class="fas fa-wallet"></i></a>
+        <a href="community.html"><i class="fas fa-users"></i></a>
+    </nav>
+
+    <button class="go-to-top" aria-label="Go to Top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+      // Layout and Scroll Functions
+      function adjustLayout() {
+        const width = window.innerWidth;
+        const isMobile = width <= 640;
+        const mobileMenu = document.querySelector('.mobile-menu');
+        const footerMenu = document.querySelector('.footer-menu');
+        if (!isMobile && mobileMenu.classList.contains('open')) {
+          mobileMenu.classList.remove('open');
+          document.querySelector('.burger-btn').classList.remove('open');
+        }
+        footerMenu.classList.toggle('hidden', !isMobile);
+      }
+
+      window.addEventListener('load', adjustLayout);
+      window.addEventListener('resize', adjustLayout);
+
+      let lastScroll = 0;
+      window.addEventListener('scroll', () => {
+        const scrollTop = window.scrollY;
+        const header = document.querySelector('.sticky-header');
+        const goToTop = document.querySelector('.go-to-top');
+        const footerMenu = document.querySelector('.footer-menu');
+        const scrollProgress = (scrollTop / (document.body.scrollHeight - window.innerHeight)) * 100;
+
+        document.querySelector('.progress-bar').style.width = `${scrollProgress}%`;
+        header.classList.toggle('scrolled', scrollTop > 50);
+        header.classList.toggle('hidden', scrollTop > lastScroll && scrollTop > 100);
+        goToTop.classList.toggle('visible', scrollTop > 300);
+        if (window.innerWidth <= 640) {
+          footerMenu.classList.toggle('hidden', scrollTop > lastScroll && scrollTop > 100);
+        }
+        lastScroll = scrollTop;
+      });
+
+      document.querySelector('.burger-btn').addEventListener('click', () => {
+        const burger = document.querySelector('.burger-btn');
+        const menu = document.querySelector('.mobile-menu');
+        burger.classList.toggle('open');
+        menu.classList.toggle('open');
+      });
+
+      document.querySelector('.go-to-top').addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      const searchInput = document.querySelector('.search-input');
+      const searchResults = document.querySelector('.search-results');
+      const pages = [
+        { title: 'Home', url: 'index.html' },
+        { title: 'Marketplace', url: 'marketplace.html' },
+        { title: 'Profile', url: 'profile.html' },
+        { title: 'Wallet', url: 'wallet.html' },
+        { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
+        { title: 'Community', url: 'community.html' },
+        { title: 'Developers', url: 'developers.html' },
+        { title: 'About', url: 'about.html' },
+        { title: 'Team', url: 'team.html' },
+        { title: 'TaskFlow', url: 'taskflow.html' }
+      ];
+
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase().trim();
+        searchResults.innerHTML = '';
+        searchResults.classList.remove('active');
+        if (query) {
+          const filteredPages = pages.filter(page => page.title.toLowerCase().includes(query));
+          filteredPages.forEach(page => {
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            div.innerHTML = `<a href="${page.url}">${page.title}</a>`;
+            searchResults.appendChild(div);
+          });
+          if (filteredPages.length > 0) {
+            searchResults.classList.add('active');
+          }
+        }
+      });
+
+      searchInput.addEventListener('blur', () => {
+        setTimeout(() => searchResults.classList.remove('active'), 200);
+      });
+    </script>
+</body>
+</html>
