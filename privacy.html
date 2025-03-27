@@ -1,11 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Pi Network SDK and Authentication Logic -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+      Pi.init({ version: "2.0", sandbox: true });
+      const scopes = ['payments', 'username'];
+
+      function onIncompletePaymentFound(payment) { 
+        console.log('Incomplete payment found:', payment);
+        const paymentId = payment.identifier;
+        const txid = payment.transaction.txid;
+        return $.post('http://localhost:3000/payment/complete', { paymentId, txid, debug: 'cancel' });
+      }
+
+      function checkAuthStatus() {
+        const username = localStorage.getItem('username');
+        if (username) {
+          updateUIAfterAuth(username);
+          document.getElementById('auth-status').textContent = `Authenticated as ${username}`;
+          document.getElementById('auth-btn').style.display = 'none';
+          document.getElementById('logout-btn').style.display = 'inline-flex';
+        }
+      }
+
+      function updateUIAfterAuth(username) {
+        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+        if (profileIcon) profileIcon.classList.replace('fa-user', 'fa-user-check');
+        document.getElementById('auth-status').textContent = `Authenticated as ${username}`;
+        document.getElementById('auth-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'inline-flex';
+      }
+
+      function authenticateUser() {
+        Pi.authenticate(scopes, onIncompletePaymentFound).then(auth => {
+          console.log(`Authenticated as ${auth.user.username}`);
+          localStorage.setItem('username', auth.user.username);
+
+          // Send authentication data to backend
+          $.post('http://localhost:3000/auth/pi', {
+            accessToken: auth.accessToken,
+            user: {
+              uid: auth.user.uid,
+              username: auth.user.username
+            }
+          }).done(response => {
+            console.log('Backend response:', response);
+            updateUIAfterAuth(auth.user.username);
+          }).fail(error => {
+            console.error('Backend error:', error);
+            document.getElementById('auth-status').textContent = 'Authentication failed. Server error.';
+          });
+        }).catch(error => {
+          console.error('Authentication failed:', error);
+          document.getElementById('auth-status').textContent = 'Authentication failed. Please try again.';
+        });
+      }
+
+      function logoutUser() {
+        localStorage.removeItem('username');
+        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+        if (profileIcon) profileIcon.classList.replace('fa-user-check', 'fa-user');
+        document.getElementById('auth-status').textContent = 'Not authenticated';
+        document.getElementById('auth-btn').style.display = 'inline-flex';
+        document.getElementById('logout-btn').style.display = 'none';
+      }
+    </script>
+    <!-- jQuery for $.post compatibility -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Privacy Policy | TruthWeb</title>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
+    <title>Pi Authentication - TruthWeb</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
     <style>
       :root {
@@ -18,68 +85,394 @@
         --button-hover-bg-color: #FFFFFF;
         --button-hover-text-color: #000000;
         --background-color: #FFFFFF;
+        --accent-color: #FFD700;
+        --progress-bar-color: var(--accent-color);
       }
-      body { background: var(--background-color); color: var(--primary-color); font-family: 'Poppins', sans-serif; overflow-x: hidden; }
-      .hero { height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 2px solid var(--highlight-color); padding: 1rem; background: var(--primary-color); animation: fadeIn 1.5s ease-in-out; }
-      .hero::after { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent); opacity: 0.5; animation: float 6s infinite ease-in-out, pulseGlow 3s infinite alternate; }
-      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-      @keyframes pulseGlow { 0% { opacity: 0.5; } 100% { opacity: 0.8; } }
-      @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
-      .glow-text { font-size: 2rem; font-weight: bold; color: var(--text-color); text-shadow: 0 0 10px var(--highlight-color), 0 0 20px var(--highlight-color); animation: glow 2s infinite alternate, bounce 3s infinite ease-in-out; }
-      @keyframes glow { 0% { text-shadow: 0 0 10px var(--highlight-color), 0 0 20px var(--highlight-color); } 100% { text-shadow: 0 0 20px var(--highlight-color), 0 0 30px var(--highlight-color); } }
-      @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-      .btn { background: var(--button-bg-color); color: var(--button-text-color); padding: 0.75rem 1.5rem; border: 2px solid var(--highlight-color); border-radius: 20px; cursor: pointer; transition: all 0.3s ease; animation: pulse 2s infinite; display: inline-block; text-align: center; text-decoration: none; }
-      .btn:hover { background: var(--button-hover-bg-color); color: var(--button-hover-text-color); transform: scale(1.1) rotate(3deg); }
-      @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-      footer { background: var(--primary-color); color: var(--text-color); text-align: center; padding: 2rem; animation: fadeIn 1.5s ease-in-out; }
       html { scroll-behavior: smooth; }
-      .sticky-header { position: sticky; top: 0; z-index: 50; background: var(--primary-color); color: var(--text-color); transition: background 0.3s ease, color 0.3s ease; animation: slideDown 1s ease-in-out; display: flex; justify-content: space-between; align-items: center; height: 64px; padding: 0 1rem; }
-      .sticky-header.scrolled { background: var(--secondary-color); color: var(--primary-color); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); }
-      .sticky-header .logo-text { font-size: 1.5rem; font-weight: 700; transition: font-size 0.3s ease; }
-      .sticky-header.scrolled .logo-text { font-size: 1.25rem; }
-      .sticky-header .icon { color: inherit; }
-      @keyframes slideDown { 0% { transform: translateY(-100%); } 100% { transform: translateY(0); } }
-      .nav-item { transition: transform 0.3s ease; animation: fadeInUp 0.5s ease-in-out forwards; }
-      .nav-item:hover { transform: scale(1.1) translateY(-5px); }
-      @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-      .nav-item:nth-child(1) { animation-delay: 0.1s; }
-      .nav-item:nth-child(2) { animation-delay: 0.2s; }
-      .nav-item:nth-child(3) { animation-delay: 0.3s; }
-      .nav-item:nth-child(4) { animation-delay: 0.4s; }
-      .nav-item:nth-child(5) { animation-delay: 0.5s; }
-      .nav-item:nth-child(6) { animation-delay: 0.6s; }
-      .floating-effect { transition: transform 0.3s ease; }
+      body {
+        background: var(--background-color);
+        color: var(--primary-color);
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        line-height: 1.6;
+        padding-bottom: 60px;
+      }
+      .progress-bar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 0;
+        height: 4px;
+        background: var(--progress-bar-color);
+        z-index: 1001;
+        transition: width 0.3s ease;
+        box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+      }
+      .go-to-top {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        background: var(--accent-color);
+        color: var(--primary-color);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        border: none;
+        cursor: pointer;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        z-index: 1000;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+      .go-to-top.visible { opacity: 1; visibility: visible; }
+      .go-to-top:hover { background: #FFA500; transform: scale(1.1); }
+      .go-to-top:active { transform: scale(0.95); }
+      .sticky-header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        background: var(--primary-color);
+        color: var(--text-color);
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 1rem;
+        height: 64px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .sticky-header.hidden { transform: translateY(-100%); }
+      .sticky-header.scrolled {
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+      }
+      .sticky-header .logo-text {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        transition: color 0.3s ease;
+      }
+      .sticky-header.scrolled .logo-text { color: var(--primary-color); }
+      .burger-btn {
+        display: flex;
+        cursor: pointer;
+        flex-direction: column;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        margin-left: 0.5rem;
+        transition: transform 0.3s ease;
+      }
+      .burger-btn:hover { transform: scale(1.1); }
+      .burger-btn span {
+        width: 100%;
+        height: 3px;
+        background: var(--text-color);
+        margin: 2px 0;
+        transition: all 0.3s ease;
+      }
+      .sticky-header.scrolled .burger-btn span { background: var(--primary-color); }
+      .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+      .burger-btn.open span:nth-child(2) { opacity: 0; transform: scale(0); }
+      .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
+      .mobile-menu {
+        position: fixed;
+        top: 64px;
+        left: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: calc(100vh - 64px);
+        background: var(--primary-color);
+        color: var(--text-color);
+        transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        z-index: 999;
+        padding: 1rem;
+      }
+      .mobile-menu.open { left: 0; }
+      .mobile-menu ul { list-style: none; padding: 0; }
+      .mobile-menu .nav-item a {
+        display: block;
+        padding: 0.75rem;
+        color: var(--text-color);
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+      }
+      .mobile-menu .nav-item a:hover { color: var(--highlight-color); transform: translateX(10px); }
+      .desktop-nav .nav-item a {
+        color: var(--text-color);
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+      }
+      .sticky-header.scrolled .desktop-nav .nav-item a { color: var(--primary-color); }
+      .desktop-nav .nav-item a:hover { color: var(--highlight-color); transform: scale(1.1); }
+      .desktop-nav .nav-item a.active { color: var(--accent-color); }
+      .search-container {
+        position: relative;
+        flex-grow: 1;
+        max-width: 400px;
+        margin: 0 1rem;
+      }
+      .search-input {
+        width: 100%;
+        padding: 0.5rem 2.5rem 0.5rem 1rem;
+        border: 1px solid var(--highlight-color);
+        border-radius: 9999px;
+        background: var(--secondary-color);
+        color: var(--primary-color);
+        font-size: 1rem;
+        outline: none;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .search-input:focus { border-color: var(--primary-color); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); }
+      .search-icon {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary-color);
+        font-size: 1.2rem;
+      }
+      .sticky-header.scrolled .search-icon { color: var(--primary-color); }
+      .search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        max-height: 300px;
+        overflow-y: auto;
+        background: var(--secondary-color);
+        border: 1px solid var(--highlight-color);
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 60;
+        display: none;
+      }
+      .search-results.active { display: block; }
+      .search-result-item {
+        padding: 0.75rem;
+        color: var(--primary-color);
+        border-bottom: 1px solid var(--highlight-color);
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      .search-result-item:hover { background: var(--highlight-color); }
+      .icon {
+        color: var(--text-color);
+        font-size: 1.25rem;
+        margin-left: 0.75rem;
+        transition: transform 0.3s ease;
+      }
+      .sticky-header.scrolled .icon { color: var(--primary-color); }
+      .icon:hover { transform: scale(1.15) rotate(5deg); }
       .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
+      main { margin-top: 64px; }
+      .hero {
+        min-height: 50vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: var(--primary-color);
+        color: var(--text-color);
+        text-align: center;
+        padding: 2rem 1rem;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 4px solid var(--highlight-color);
+      }
+      .hero::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+        animation: pulseGlow 3s infinite alternate;
+      }
+      @keyframes pulseGlow { 0% { opacity: 0.5; } 100% { opacity: 0.8; } }
+      .glow-text {
+        font-size: 2.5rem;
+        font-weight: 700;
+        text-shadow: 0 0 10px var(--highlight-color);
+        animation: glow 2s infinite alternate;
+      }
+      @keyframes glow { 0% { text-shadow: 0 0 10px var(--highlight-color); } 100% { text-shadow: 0 0 20px var(--highlight-color); } }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--button-bg-color);
+        color: var(--button-text-color);
+        padding: 0.5rem 1.5rem;
+        border: 1px solid var(--highlight-color);
+        border-radius: 9999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-decoration: none;
+        text-transform: uppercase;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+      .btn:hover {
+        background: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
+        transform: scale(1.05) translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+      .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
+      .btn.accent:hover { background: #FFA500; }
+      section { padding: 2rem 1rem; }
+      .auth-container {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      .auth-container p { font-size: 1.25rem; margin-bottom: 1.5rem; }
+      #auth-status { font-size: 1.1rem; margin-top: 1rem; color: var(--primary-color); }
+      #logout-btn { display: none; }
+      .guide-container {
+        background: var(--primary-color);
+        padding: 2rem 1rem;
+      }
+      .guide-container h2 {
+        color: var(--text-color);
+        font-size: 2rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 2rem;
+        text-shadow: 0 0 10px var(--highlight-color);
+      }
+      .guide-item {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--highlight-color);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .guide-item:hover { background: rgba(255, 255, 255, 0.2); }
+      .guide-item h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-color);
+      }
+      .guide-item p {
+        display: none;
+        font-size: 1rem;
+        color: var(--text-color);
+        margin: 0;
+      }
+      .guide-item.active p { display: block; }
+      footer {
+        background: var(--primary-color);
+        color: var(--text-color);
+        text-align: center;
+        padding: 2rem 1rem;
+        position: relative;
+        z-index: 10;
+      }
+      footer .social-icons a, footer .footer-links a {
+        color: var(--text-color);
+        transition: color 0.3s ease, transform 0.3s ease;
+      }
+      footer .social-icons a:hover, footer .footer-links a:hover {
+        color: var(--highlight-color);
+        transform: scale(1.1);
+      }
+      footer .social-icons { margin-bottom: 1rem; }
+      footer .social-icons a { font-size: 1.25rem; margin: 0 0.5rem; }
+      footer .footer-links a { margin: 0 0.5rem; text-decoration: none; }
+      .footer-menu {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--primary-color);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 60px;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+      }
+      .footer-menu.hidden { transform: translateY(100%); }
+      .footer-menu a {
+        color: var(--text-color);
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+      }
+      .footer-menu a:hover { color: var(--accent-color); transform: scale(1.2); }
+      @media (min-width: 641px) { .footer-menu { display: none; } .go-to-top { bottom: 20px; } body { padding-bottom: 0; } }
+      @media (max-width: 640px) {
+        .burger-btn { display: flex; }
+        .desktop-nav { display: none; }
+        .search-container { max-width: 120px; }
+        .glow-text { font-size: 1.75rem; }
+        .btn { padding: 0.4rem 1rem; font-size: 0.85rem; }
+        .guide-container h2 { font-size: 1.75rem; }
+      }
     </style>
 </head>
-<body>
-    <!-- Header Section -->
+<body onload="checkAuthStatus()">
+    <div class="progress-bar"></div>
     <header class="sticky-header">
-      <div class="flex items-center">
-        <a class="text-inherit mr-4 flex items-center" href="index.html">
-          <span class="logo-text ml-2">TruthWeb</span>
-        </a>
-      </div>
-      <div class="flex items-center">
-        <a class="mr-4 icon floating-effect" href="marketplace.html"><i class="fas fa-shopping-cart text-xl sm:text-2xl"></i></a>
-        <a class="mr-4 icon floating-effect" href="profile.html"><i class="fas fa-user text-xl sm:text-2xl"></i></a>
-        <a class="icon floating-effect" href="wallet.html"><i class="fas fa-wallet text-xl sm:text-2xl"></i></a>
-      </div>
+        <div class="flex items-center">
+            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span></a>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search TruthWeb..." aria-label="Search TruthWeb">
+            <i class="fas fa-search search-icon"></i>
+            <div class="search-results"></div>
+        </div>
+        <div class="flex items-center">
+            <nav class="desktop-nav hidden md:flex items-center">
+                <ul class="flex space-x-4">
+                    <li class="nav-item"><a href="index.html">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+                    <li class="nav-item"><a href="ledger-testnet.html">Ledger Testnet</a></li>
+                    <li class="nav-item"><a href="community.html">Community</a></li>
+                    <li class="nav-item"><a href="developers.html">Developers</a></li>
+                    <li class="nav-item"><a href="about.html">About</a></li>
+                    <li class="nav-item"><a href="https://mrwains-organization.gitbook.io/truthweb" target="_blank" rel="noopener noreferrer">Docs</a></li>
+                </ul>
+            </nav>
+            <a href="addtocart.html" class="icon floating-effect"><i class="fas fa-shopping-cart"></i></a>
+            <a href="profile.html" class="icon floating-effect"><i class="fas fa-user"></i></a>
+            <a href="wallet.html" class="icon floating-effect"><i class="fas fa-wallet"></i></a>
+            <div class="burger-btn"><span></span><span></span><span></span></div>
+        </div>
     </header>
-
-    <!-- Navigation Section -->
-    <nav class="bg-[var(--primary-color)] py-4">
-      <ul class="flex flex-wrap justify-center space-x-4">
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="marketplace.html">Marketplace</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="profile.html">Profile</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="wallet.html">Wallet</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="community.html">Community</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="developers.html">Developers</a></li>
-      </ul>
+    <nav class="mobile-menu">
+        <ul>
+            <li class="nav-item"><a href="index.html">Home</a></li>
+            <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+            <li class="nav-item"><a href="profile.html">Profile</a></li>
+            <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+            <li class="nav-item"><a href="ledger-testnet.html">Ledger Testnet</a></li>
+            <li class="nav-item"><a href="community.html">Community</a></li>
+            <li class="nav-item"><a href="developers.html">Developers</a></li>
+            <li class="nav-item"><a href="about.html">About</a></li>
+            <li class="nav-item"><a href="https://mrwains-organization.gitbook.io/truthweb" target="_blank" rel="noopener noreferrer">Docs</a></li>
+        </ul>
     </nav>
-
-    <!-- Hero Section -->
+    <main>
+<!-- Hero Section -->
     <div class="hero flex flex-col items-center justify-center">
       <h1 class="glow-text fade-in text-5xl md:text-7xl font-bold">Privacy Policy</h1>
       <p class="text-xl mt-4 text-center fade-in" style="animation-delay: 0.5s; color: var(--text-color);">
@@ -91,41 +484,224 @@
     <section id="privacy-content" class="py-16 px-4">
       <h2 class="text-3xl font-bold text-center mb-8">Privacy Policy</h2>
       <div class="max-w-4xl mx-auto text-left">
-        <h3 class="text-xl font-semibold mb-4">1. Data Collection</h3>
-        <p class="mb-6">TruthWeb collects minimal personal data, such as your Pi Network username and transaction history, to facilitate platform functionality. We do not collect sensitive personal information unless explicitly provided by you.</p>
-        <h3 class="text-xl font-semibold mb-4">2. Data Usage</h3>
-        <p class="mb-6">Your data is used solely to enhance your experience on TruthWeb, including processing transactions, verifying identities, and improving our services. We do not sell or share your data with third parties.</p>
-        <h3 class="text-xl font-semibold mb-4">3. Data Security</h3>
-        <p class="mb-6">We employ end-to-end encryption and robust security measures to protect your data. However, no system is entirely immune to breaches, and you use TruthWeb at your own risk.</p>
+        <h3 class="text-xl font-semibold mb-4">1. Introduction</h3>
+        <p class="mb-6">
+          At TruthWeb, we are committed to protecting your privacy as a user of our decentralized platform operating in test net mode within the Pi Network ecosystem. This Privacy Policy explains how we collect, use, disclose, and safeguard your personal information. By using TruthWeb (the "Platform"), you consent to the practices described herein. This policy may be updated periodically, with changes effective upon posting. We encourage you to review it regularly.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">2. Information We Collect</h3>
+        <p class="mb-6">
+          We collect minimal data necessary to operate the Platform effectively:
+          <ul class="list-disc pl-6 mt-2 mb-4">
+            <li><strong>Account Information:</strong> Your Pi Network username and associated wallet address to authenticate and facilitate transactions.</li>
+            <li><strong>Transaction Data:</strong> Records of marketplace activities or test net interactions, including timestamps and item details.</li>
+            <li><strong>Usage Data:</strong> Non-identifiable information such as browsing patterns, IP addresses, and device type for analytics and improvement.</li>
+            <li><strong>Voluntary Information:</strong> Any additional data you provide (e.g., email or profile details) when interacting with features like support or community forums.</li>
+          </ul>
+          We do not collect sensitive personal information (e.g., full name, address, or financial details) unless explicitly provided by you for specific purposes.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">3. How We Use Your Information</h3>
+        <p class="mb-6">
+          Your data is used solely to enhance your experience on TruthWeb and support its functionality:
+          <ul class="list-disc pl-6 mt-2 mb-4">
+            <li>To verify your identity and process transactions within the test net marketplace.</li>
+            <li>To improve Platform features, troubleshoot issues, and analyze usage trends.</li>
+            <li>To communicate with you regarding account updates, support inquiries, or community announcements (if you provide contact details).</li>
+            <li>To ensure compliance with our <a href="terms.html" class="text-[var(--primary-color)] hover:text-[var(--highlight-color)]">Terms & Conditions</a>.</li>
+          </ul>
+          We do not use your data for advertising, profiling, or any purpose beyond the Platform’s operational needs.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">4. Data Sharing and Disclosure</h3>
+        <p class="mb-6">
+          TruthWeb does not sell, rent, or share your personal information with third parties, except in the following limited circumstances:
+          <ul class="list-disc pl-6 mt-2 mb-4">
+            <li><strong>Service Providers:</strong> We may engage trusted partners (e.g., hosting or analytics providers) who process data on our behalf, bound by strict confidentiality agreements.</li>
+            <li><strong>Legal Obligations:</strong> We may disclose data if required by law, court order, or to protect the rights, safety, or property of TruthWeb or its users.</li>
+            <li><strong>Pi Network Integration:</strong> Basic transaction data may be shared with the Pi Network test net for verification, consistent with its protocols.</li>
+          </ul>
+          Any shared data is anonymized where possible and limited to what is necessary.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">5. Data Security</h3>
+        <p class="mb-6">
+          We prioritize your data’s security by implementing:
+          <ul class="list-disc pl-6 mt-2 mb-4">
+            <li>End-to-end encryption for data transmission.</li>
+            <li>Secure storage practices compliant with industry standards.</li>
+            <li>Regular audits and updates to address vulnerabilities.</li>
+          </ul>
+          Despite these measures, no system is immune to breaches. TruthWeb is not liable for losses or damages from unauthorized access beyond our reasonable control. You are responsible for securing your account credentials and Pi wallet.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">6. Data Retention</h3>
+        <p class="mb-6">
+          We retain your data only as long as necessary to fulfill the purposes outlined in this policy or comply with legal requirements. Transaction and usage data may be kept for up to 12 months in the test net phase, after which it is anonymized or deleted unless you request otherwise. You may request data deletion by contacting us, subject to operational constraints.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">7. Your Rights</h3>
+        <p class="mb-6">
+          As a user, you have the following rights regarding your data:
+          <ul class="list-disc pl-6 mt-2 mb-4">
+            <li><strong>Access:</strong> Request a summary of the data we hold about you.</li>
+            <li><strong>Correction:</strong> Update inaccurate information you’ve provided.</li>
+            <li><strong>Deletion:</strong> Request removal of your data, subject to legal or operational limits.</li>
+            <li><strong>Objection:</strong> Opt out of non-essential data processing (e.g., analytics), where applicable.</li>
+          </ul>
+          To exercise these rights, contact us at <a href="mailto:support@truthweb.org" class="text-[var(--primary-color)] hover:text-[var(--highlight-color)]">support@truthweb.org</a>. We will respond within 30 days.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">8. Cookies and Tracking</h3>
+        <p class="mb-6">
+          TruthWeb uses minimal cookies or similar technologies only for essential functions (e.g., session management). We do not employ third-party trackers or advertising cookies. You can disable cookies via your browser, though this may affect Platform functionality.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">9. Children’s Privacy</h3>
+        <p class="mb-6">
+          TruthWeb is not intended for users under 18 years of age. We do not knowingly collect data from children. If we discover such data, we will delete it immediately. Contact us if you believe a minor’s data has been collected.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">10. Test Net Considerations</h3>
+        <p class="mb-6">
+          As TruthWeb operates in a test net environment, some data (e.g., transaction logs) may be visible to Pi Network nodes for validation. This is inherent to blockchain technology and not within TruthWeb’s control. We strive to minimize exposure and protect identifiable information.
+        </p>
+
+        <h3 class="text-xl font-semibold mb-4">11. Contact Us</h3>
+        <p class="mb-6">
+          For questions, concerns, or to exercise your rights under this Privacy Policy, reach us at:
+          <br>Email: <a href="mailto:support@truthweb.org" class="text-[var(--primary-color)] hover:text-[var(--highlight-color)]">support@truthweb.org</a>
+          <br>Telegram: <a href="https://t.me/TruthWebOfficial" class="text-[var(--primary-color)] hover:text-[var(--highlight-color)]" target="_blank">t.me/TruthWebOfficial</a>
+          <br>We aim to respond within 48 hours during business days.
+        </p>
+
         <p class="text-center mt-8"><a href="index.html" class="btn">Back to Home</a></p>
       </div>
     </section>
+    
 
-    <!-- Footer Section -->
-    <footer class="bg-[var(--primary-color)] py-8">
-      <div class="container mx-auto text-center">
-        <div class="mb-4">
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://www.facebook.com/reimaginetruthofficial/" target="_blank"><i class="fab fa-facebook-f"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://x.com/reimagine_truth" target="_blank"><i class="fab fa-twitter"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://t.me/TruthWebOfficial" target="_blank"><i class="fab fa-telegram"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://www.youtube.com/@ReimagineTruth" target="_blank"><i class="fab fa-youtube"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://github.com/username/TruthWeb" target="_blank"><i class="fab fa-github"></i></a>
+        <section id="download" class="py-16 px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h2 class="text-3xl font-bold mb-8">Get the Enhanced App</h2>
+                <p class="text-lg mb-6 md:text-xl">Download the latest version of the TruthWeb app and experience Pi Network like never before.</p>
+                <div class="download-buttons flex justify-center gap-4">
+                    <a href="https://play.google.com/store" target="_blank" class="download-btn">
+                        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" class="h-12 transition-transform duration-300 hover:scale-110">
+                    </a>
+                    <a href="https://www.apple.com/app-store/" target="_blank" class="download-btn">
+                        <img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" class="h-12 transition-transform duration-300 hover:scale-110">
+                    </a>
+                </div>
+                <p class="text-sm mt-4">Over 10M+ downloads worldwide!</p>
+            </div>
+        </section>
+    </main>
+    </main>
+    <footer>
+        <div class="social-icons">
+            <a href="https://www.facebook.com/reimaginetruthofficial/" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a href="https://x.com/reimagine_truth" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+            <a href="https://t.me/TruthWebOfficial" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+            <a href="https://www.youtube.com/@ReimagineTruth" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+            <a href="https://github.com/username/TruthWeb" target="_blank" aria-label="GitHub"><i class="fab fa-github"></i></a>
         </div>
-        <p class="text-[var(--text-color)] mb-4">© 2025 TruthWeb. All rights reserved.</p>
-        <div class="text-[var(--text-color)] text-sm">
-          <a href="about.html" class="mx-2 hover:text-[var(--highlight-color)]">About Us</a> |
-          <a href="terms.html" class="mx-2 hover:text-[var(--highlight-color)]">Terms & Conditions</a> |
-          <a href="privacy.html" class="mx-2 hover:text-[var(--highlight-color)]">Privacy Policy</a> |
-          <a href="contact.html" class="mx-2 hover:text-[var(--highlight-color)]">Contact</a>
+        <div class="footer-links">
+            <a href="about.html">About</a>
+            <a href="terms.html">Terms</a>
+            <a href="privacy.html">Privacy</a>
+            <a href="contact.html">Contact</a>
+            <a href="https://mrwains-organization.gitbook.io/truthweb" target="_blank" rel="noopener noreferrer">Docs</a>
         </div>
-      </div>
+        <p class="mt-4">© 2025 TruthWeb (Testnet Mode). All rights reserved. Built with <i class="fas fa-heart text-red-500"></i> for the Pi Network Community.</p>
     </footer>
-
-    <!-- Scripts -->
+    <nav class="footer-menu">
+        <a href="index.html" aria-label="Home"><i class="fas fa-home"></i></a>
+        <a href="marketplace.html" aria-label="Marketplace"><i class="fas fa-shopping-cart"></i></a>
+        <a href="profile.html" aria-label="Profile"><i class="fas fa-user"></i></a>
+        <a href="wallet.html" aria-label="Wallet"><i class="fas fa-wallet"></i></a>
+        <a href="community.html" aria-label="Community"><i class="fas fa-users"></i></a>
+    </nav>
+    <button class="go-to-top" aria-label="Go to Top"><i class="fas fa-arrow-up"></i></button>
     <script>
-      window.addEventListener('scroll', function() {
-        const header = document.querySelector('.sticky-header');
-        if (window.scrollY > 50) { header.classList.add('scrolled'); } else { header.classList.remove('scrolled'); }
+      const burgerBtn = document.querySelector('.burger-btn');
+      const mobileMenu = document.querySelector('.mobile-menu');
+      const header = document.querySelector('.sticky-header');
+      const goToTopBtn = document.querySelector('.go-to-top');
+      const progressBar = document.querySelector('.progress-bar');
+      const footerMenu = document.querySelector('.footer-menu');
+      const searchInput = document.querySelector('.search-input');
+      const searchResults = document.querySelector('.search-results');
+
+      burgerBtn.addEventListener('click', () => {
+        burgerBtn.classList.toggle('open');
+        mobileMenu.classList.toggle('open');
+      });
+
+      let lastScroll = 0;
+      window.addEventListener('scroll', () => {
+        const currentScroll = window.scrollY;
+        header.classList.toggle('scrolled', currentScroll > 50);
+        header.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+        goToTopBtn.classList.toggle('visible', currentScroll > 300);
+        footerMenu.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+        lastScroll = currentScroll;
+        const totalHeight = document.body.scrollHeight - window.innerHeight;
+        const progress = (currentScroll / totalHeight) * 100;
+        progressBar.style.width = `${progress}%`;
+      });
+
+      goToTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+
+      const pages = [
+        { title: 'Home', url: 'index.html' },
+        { title: 'Marketplace', url: 'marketplace.html' },
+        { title: 'Profile', url: 'profile.html' },
+        { title: 'Wallet', url: 'wallet.html' },
+        { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
+        { title: 'Community', url: 'community.html' },
+        { title: 'Developers', url: 'developers.html' },
+        { title: 'About', url: 'about.html' },
+        { title: 'Docs', url: 'https://mrwains-organization.gitbook.io/truthweb' }
+      ];
+
+      searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        searchResults.innerHTML = '';
+        if (query) {
+          const results = pages.filter(page => page.title.toLowerCase().includes(query));
+          results.forEach(result => {
+            const div = document.createElement('div');
+            div.className = 'search-result-item';
+            div.innerHTML = `<a href="${result.url}">${result.title}</a>`;
+            searchResults.appendChild(div);
+          });
+          searchResults.classList.toggle('active', results.length > 0);
+        } else {
+          searchResults.classList.remove('active');
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+          searchResults.classList.remove('active');
+        }
+      });
+
+      document.querySelectorAll('.mobile-menu a').forEach(link => {
+        link.addEventListener('click', () => {
+          burgerBtn.classList.remove('open');
+          mobileMenu.classList.remove('open');
+        });
+      });
+
+      // Guide Toggle Functionality
+      const guideItems = document.querySelectorAll('.guide-item');
+      guideItems.forEach(item => {
+        item.addEventListener('click', () => {
+          item.classList.toggle('active');
+        });
       });
     </script>
 </body>
