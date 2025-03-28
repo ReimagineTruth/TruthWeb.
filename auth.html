@@ -3,71 +3,114 @@
 <head>
     <!-- Pi Network SDK and Authentication Logic -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
+      // Initialize Pi SDK
       Pi.init({ version: "2.0", sandbox: true });
-      const scopes = ['payments', 'username'];
+      const scopes = ['username', 'payments', 'wallet_address'];
 
-      function onIncompletePaymentFound(payment) { 
+      // Handle incomplete payments
+      function onIncompletePaymentFound(payment) {
         console.log('Incomplete payment found:', payment);
         const paymentId = payment.identifier;
-        const txid = payment.transaction.txid;
-        return $.post('http://localhost:3000/payment/complete', { paymentId, txid, debug: 'cancel' });
+        const txid = payment.transaction?.txid;
+        return $.ajax({
+          url: 'http://localhost:3000/payment/complete',
+          method: 'POST',
+          data: { paymentId, txid, debug: 'cancel' },
+          error: (xhr, status, error) => console.error('Payment completion error:', error)
+        });
       }
 
+      // Check authentication status
       function checkAuthStatus() {
-        const username = localStorage.getItem('username');
-        if (username) {
-          updateUIAfterAuth(username);
-          document.getElementById('auth-status').textContent = `Authenticated as ${username}`;
-          document.getElementById('auth-btn').style.display = 'none';
-          document.getElementById('logout-btn').style.display = 'inline-flex';
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        if (userData && userData.username) {
+          updateUIAfterAuth(userData);
+          document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...)`;
         }
       }
 
-      function updateUIAfterAuth(username) {
+      // Update UI after authentication
+      function updateUIAfterAuth(userData) {
         const profileIcon = document.querySelector('.icon[href="profile.html"] i');
-        if (profileIcon) profileIcon.classList.replace('fa-user', 'fa-user-check');
-        document.getElementById('auth-status').textContent = `Authenticated as ${username}`;
+        if (profileIcon) {
+          profileIcon.classList.replace('fa-user', 'fa-user-check');
+          profileIcon.parentElement.classList.add('authenticated');
+        }
+        document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...)`;
         document.getElementById('auth-btn').style.display = 'none';
         document.getElementById('logout-btn').style.display = 'inline-flex';
       }
 
-      function authenticateUser() {
-        Pi.authenticate(scopes, onIncompletePaymentFound).then(auth => {
-          console.log(`Authenticated as ${auth.user.username}`);
-          localStorage.setItem('username', auth.user.username);
+      // Authenticate user with Pi Network
+      async function authenticateUser() {
+        try {
+          document.getElementById('auth-btn').classList.add('authenticating');
+          document.getElementById('auth-status').textContent = 'Authenticating...';
 
-          // Send authentication data to backend
-          $.post('http://localhost:3000/auth/pi', {
+          const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+          const userData = {
+            uid: auth.user.uid,
+            username: auth.user.username,
             accessToken: auth.accessToken,
-            user: {
-              uid: auth.user.uid,
-              username: auth.user.username
-            }
-          }).done(response => {
-            console.log('Backend response:', response);
-            updateUIAfterAuth(auth.user.username);
-          }).fail(error => {
-            console.error('Backend error:', error);
-            document.getElementById('auth-status').textContent = 'Authentication failed. Server error.';
+            walletAddress: auth.user.wallet_address
+          };
+
+          console.log('Authentication successful:', userData);
+          localStorage.setItem('piUser', JSON.stringify(userData));
+
+          // Send to backend
+          const response = await $.ajax({
+            url: 'http://localhost:3000/auth/pi',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(userData)
           });
-        }).catch(error => {
+
+          console.log('Backend response:', response);
+          updateUIAfterAuth(userData);
+
+        } catch (error) {
           console.error('Authentication failed:', error);
-          document.getElementById('auth-status').textContent = 'Authentication failed. Please try again.';
-        });
+          document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'}`;
+        } finally {
+          document.getElementById('auth-btn').classList.remove('authenticating');
+        }
       }
 
+      // Logout user
       function logoutUser() {
-        localStorage.removeItem('username');
+        localStorage.removeItem('piUser');
         const profileIcon = document.querySelector('.icon[href="profile.html"] i');
-        if (profileIcon) profileIcon.classList.replace('fa-user-check', 'fa-user');
+        if (profileIcon) {
+          profileIcon.classList.replace('fa-user-check', 'fa-user');
+          profileIcon.parentElement.classList.remove('authenticated');
+        }
         document.getElementById('auth-status').textContent = 'Not authenticated';
         document.getElementById('auth-btn').style.display = 'inline-flex';
         document.getElementById('logout-btn').style.display = 'none';
       }
+
+      // Verify authentication token (optional, for added security)
+      async function verifyToken() {
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        if (!userData) return false;
+        
+        try {
+          const response = await $.ajax({
+            url: 'http://localhost:3000/auth/verify',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ accessToken: userData.accessToken })
+          });
+          return response.valid;
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          return false;
+        }
+      }
     </script>
-    <!-- jQuery for $.post compatibility -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
     <title>Pi Authentication - TruthWeb</title>
@@ -273,6 +316,7 @@
       }
       .sticky-header.scrolled .icon { color: var(--primary-color); }
       .icon:hover { transform: scale(1.15) rotate(5deg); }
+      .icon.authenticated { color: var(--accent-color); }
       .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
       main { margin-top: 64px; }
       .hero {
@@ -331,6 +375,11 @@
       }
       .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
       .btn.accent:hover { background: #FFA500; }
+      .btn.authenticating {
+        opacity: 0.7;
+        cursor: not-allowed;
+        pointer-events: none;
+      }
       section { padding: 2rem 1rem; }
       .auth-container {
         max-width: 600px;
@@ -515,8 +564,6 @@
                 </div>
             </div>
         </section>
-    
-
         <section id="download" class="py-16 px-4">
             <div class="max-w-4xl mx-auto text-center">
                 <h2 class="text-3xl font-bold mb-8">Get the Enhanced App</h2>
@@ -532,7 +579,6 @@
                 <p class="text-sm mt-4">Over 10M+ downloads worldwide!</p>
             </div>
         </section>
-    </main>
     </main>
     <footer>
         <div class="social-icons">
@@ -560,84 +606,90 @@
     </nav>
     <button class="go-to-top" aria-label="Go to Top"><i class="fas fa-arrow-up"></i></button>
     <script>
-      const burgerBtn = document.querySelector('.burger-btn');
-      const mobileMenu = document.querySelector('.mobile-menu');
-      const header = document.querySelector('.sticky-header');
-      const goToTopBtn = document.querySelector('.go-to-top');
-      const progressBar = document.querySelector('.progress-bar');
-      const footerMenu = document.querySelector('.footer-menu');
-      const searchInput = document.querySelector('.search-input');
-      const searchResults = document.querySelector('.search-results');
+      document.addEventListener('DOMContentLoaded', async () => {
+        const burgerBtn = document.querySelector('.burger-btn');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        const header = document.querySelector('.sticky-header');
+        const goToTopBtn = document.querySelector('.go-to-top');
+        const progressBar = document.querySelector('.progress-bar');
+        const footerMenu = document.querySelector('.footer-menu');
+        const searchInput = document.querySelector('.search-input');
+        const searchResults = document.querySelector('.search-results');
 
-      burgerBtn.addEventListener('click', () => {
-        burgerBtn.classList.toggle('open');
-        mobileMenu.classList.toggle('open');
-      });
+        // Check token validity on load
+        const isValid = await verifyToken();
+        if (!isValid) logoutUser();
 
-      let lastScroll = 0;
-      window.addEventListener('scroll', () => {
-        const currentScroll = window.scrollY;
-        header.classList.toggle('scrolled', currentScroll > 50);
-        header.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
-        goToTopBtn.classList.toggle('visible', currentScroll > 300);
-        footerMenu.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
-        lastScroll = currentScroll;
-        const totalHeight = document.body.scrollHeight - window.innerHeight;
-        const progress = (currentScroll / totalHeight) * 100;
-        progressBar.style.width = `${progress}%`;
-      });
-
-      goToTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-
-      const pages = [
-        { title: 'Home', url: 'index.html' },
-        { title: 'Marketplace', url: 'marketplace.html' },
-        { title: 'Profile', url: 'profile.html' },
-        { title: 'Wallet', url: 'wallet.html' },
-        { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
-        { title: 'Community', url: 'community.html' },
-        { title: 'Developers', url: 'developers.html' },
-        { title: 'About', url: 'about.html' },
-        { title: 'Docs', url: 'https://mrwains-organization.gitbook.io/truthweb' }
-      ];
-
-      searchInput.addEventListener('input', () => {
-        const query = searchInput.value.toLowerCase();
-        searchResults.innerHTML = '';
-        if (query) {
-          const results = pages.filter(page => page.title.toLowerCase().includes(query));
-          results.forEach(result => {
-            const div = document.createElement('div');
-            div.className = 'search-result-item';
-            div.innerHTML = `<a href="${result.url}">${result.title}</a>`;
-            searchResults.appendChild(div);
-          });
-          searchResults.classList.toggle('active', results.length > 0);
-        } else {
-          searchResults.classList.remove('active');
-        }
-      });
-
-      document.addEventListener('click', (e) => {
-        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-          searchResults.classList.remove('active');
-        }
-      });
-
-      document.querySelectorAll('.mobile-menu a').forEach(link => {
-        link.addEventListener('click', () => {
-          burgerBtn.classList.remove('open');
-          mobileMenu.classList.remove('open');
+        burgerBtn.addEventListener('click', () => {
+          burgerBtn.classList.toggle('open');
+          mobileMenu.classList.toggle('open');
         });
-      });
 
-      // Guide Toggle Functionality
-      const guideItems = document.querySelectorAll('.guide-item');
-      guideItems.forEach(item => {
-        item.addEventListener('click', () => {
-          item.classList.toggle('active');
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+          const currentScroll = window.scrollY;
+          header.classList.toggle('scrolled', currentScroll > 50);
+          header.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+          goToTopBtn.classList.toggle('visible', currentScroll > 300);
+          footerMenu.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+          lastScroll = currentScroll;
+          const totalHeight = document.body.scrollHeight - window.innerHeight;
+          const progress = (currentScroll / totalHeight) * 100;
+          progressBar.style.width = `${progress}%`;
+        });
+
+        goToTopBtn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        const pages = [
+          { title: 'Home', url: 'index.html' },
+          { title: 'Marketplace', url: 'marketplace.html' },
+          { title: 'Profile', url: 'profile.html' },
+          { title: 'Wallet', url: 'wallet.html' },
+          { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
+          { title: 'Community', url: 'community.html' },
+          { title: 'Developers', url: 'developers.html' },
+          { title: 'About', url: 'about.html' },
+          { title: 'Docs', url: 'https://mrwains-organization.gitbook.io/truthweb' }
+        ];
+
+        searchInput.addEventListener('input', () => {
+          const query = searchInput.value.toLowerCase();
+          searchResults.innerHTML = '';
+          if (query) {
+            const results = pages.filter(page => page.title.toLowerCase().includes(query));
+            results.forEach(result => {
+              const div = document.createElement('div');
+              div.className = 'search-result-item';
+              div.innerHTML = `<a href="${result.url}">${result.title}</a>`;
+              searchResults.appendChild(div);
+            });
+            searchResults.classList.toggle('active', results.length > 0);
+          } else {
+            searchResults.classList.remove('active');
+          }
+        });
+
+        document.addEventListener('click', (e) => {
+          if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.classList.remove('active');
+          }
+        });
+
+        document.querySelectorAll('.mobile-menu a').forEach(link => {
+          link.addEventListener('click', () => {
+            burgerBtn.classList.remove('open');
+            mobileMenu.classList.remove('open');
+          });
+        });
+
+        // Guide Toggle Functionality
+        const guideItems = document.querySelectorAll('.guide-item');
+        guideItems.forEach(item => {
+          item.addEventListener('click', () => {
+            item.classList.toggle('active');
+          });
         });
       });
     </script>
