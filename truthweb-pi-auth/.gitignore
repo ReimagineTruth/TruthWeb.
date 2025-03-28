@@ -1,0 +1,53 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json  # Optional: Include if you use npm and want to enforce yarn.lock instead
+yarn.lock         # Optional: Include if you use yarn and want to enforce package-lock.json
+
+# Environment Variables
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Build Output
+dist/
+build/
+public/build/
+
+# Temporary Files
+*.tmp
+*.temp
+*.swp
+*.swo
+.DS_Store       # macOS-specific
+Thumbs.db       # Windows-specific
+
+# Editor/IDE Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Dependency Caches
+.cache/
+npm-cache/
+
+# Coverage Reports
+coverage/
+
+# Pi SDK-specific (if any sensitive configs are generated)
+pi-sdk-config.json  # Hypothetical sensitive config file
+
+# Miscellaneous
+*.bak
+*.gho
+*.orig
+*.rej
