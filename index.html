@@ -3,42 +3,137 @@
 <head>
     <!-- Pi Network SDK and Authentication Logic -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
-      Pi.init({ version: "2.0", sandbox: true });
-      const scopes = ['payments', 'username'];
+      Pi.init({ 
+        version: "2.0", 
+        sandbox: true, // Set to false for production
+        appId: "YOUR_APP_ID_HERE" // Replace with your actual Pi Network App ID
+      });
+      const scopes = ['username', 'payments', 'wallet_address'];
 
-      function onIncompletePaymentFound(payment) { 
-        console.log('incomplete payment found');
+      function onIncompletePaymentFound(payment) {
+        console.log('Incomplete payment found:', payment);
         const paymentId = payment.identifier;
-        const txid = payment.transaction.txid;
-        $.post('/payment/complete', {
-          paymentId: paymentId,
-          txid: txid,
-          debug: 'cancel'
+        const txid = payment.transaction?.txid;
+        return $.ajax({
+          url: 'http://localhost:3000/payment/complete',
+          method: 'POST',
+          data: { paymentId, txid, debug: 'cancel' },
+          error: (xhr, status, error) => console.error('Payment completion error:', error)
         });
       }
 
-      function authenticateUser() {
-        Pi.authenticate(scopes, onIncompletePaymentFound).then(function(auth) {
-          console.log(`Hi there, ${auth.user.username}! You're ready to make payments!`);
-          const accessToken = auth.accessToken;
-          alert(`Welcome, ${auth.user.username}! Access Token: ${accessToken}`);
-        }).catch(function(error) {
-          console.error('Authentication failed:', error);
-          alert('Authentication failed. Please try again.');
+      function checkAuthStatus() {
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        if (userData && userData.username) {
+          updateUIAfterAuth(userData);
+          verifyToken(); // Verify on page load
+        } else {
+          document.getElementById('username').textContent = 'Guest';
+          document.getElementById('auth-btn').style.display = 'inline-flex';
+          document.getElementById('logout-btn').style.display = 'none';
+          document.getElementById('auth-status').textContent = 'Not authenticated';
+        }
+      }
+
+      function updateUIAfterAuth(userData) {
+        document.getElementById('username').textContent = userData.username;
+        document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...)`;
+        document.getElementById('auth-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'inline-flex';
+        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+        if (profileIcon) {
+          profileIcon.classList.replace('fa-user', 'fa-user-check');
+          profileIcon.parentElement.classList.add('authenticated');
+        }
+        document.querySelectorAll('.desktop-nav a, .mobile-menu a, .footer-menu a').forEach(link => {
+          const baseUrl = link.getAttribute('href');
+          if (baseUrl && !baseUrl.startsWith('http')) {
+            link.setAttribute('href', `${baseUrl}?uid=${userData.uid}`);
+          }
         });
+      }
+
+      async function authenticateUser() {
+        try {
+          document.getElementById('auth-btn').classList.add('authenticating');
+          document.getElementById('auth-status').textContent = 'Authenticating...';
+
+          const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+          const userData = {
+            uid: auth.user.uid,
+            username: auth.user.username,
+            accessToken: auth.accessToken,
+            walletAddress: auth.user.wallet_address
+          };
+
+          console.log('Authentication successful:', userData);
+          localStorage.setItem('piUser', JSON.stringify(userData));
+
+          const response = await $.ajax({
+            url: 'http://localhost:3000/auth/pi',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(userData)
+          });
+
+          console.log('Backend response:', response);
+          updateUIAfterAuth(userData);
+        } catch (error) {
+          console.error('Authentication failed:', error);
+          document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'}`;
+        } finally {
+          document.getElementById('auth-btn').classList.remove('authenticating');
+        }
+      }
+
+      function logoutUser() {
+        localStorage.removeItem('piUser');
+        document.getElementById('username').textContent = 'Guest';
+        document.getElementById('auth-status').textContent = 'Not authenticated';
+        document.getElementById('auth-btn').style.display = 'inline-flex';
+        document.getElementById('logout-btn').style.display = 'none';
+        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+        if (profileIcon) {
+          profileIcon.classList.replace('fa-user-check', 'fa-user');
+          profileIcon.parentElement.classList.remove('authenticated');
+        }
+        document.querySelectorAll('.desktop-nav a, .mobile-menu a, .footer-menu a').forEach(link => {
+          const baseUrl = link.getAttribute('href')?.split('?')[0];
+          if (baseUrl) link.setAttribute('href', baseUrl);
+        });
+      }
+
+      async function verifyToken() {
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        if (!userData) return false;
+        try {
+          const response = await $.ajax({
+            url: 'http://localhost:3000/auth/verify',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ accessToken: userData.accessToken })
+          });
+          if (response.valid) {
+            updateUIAfterAuth(userData);
+            return true;
+          } else {
+            logoutUser();
+            return false;
+          }
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          logoutUser();
+          return false;
+        }
       }
     </script>
-    <!-- jQuery for $.post compatibility -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
     <title>TruthWeb - The Ultimate Pi Network Hub</title>
-    <!-- TailwindCSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
-    <!-- Google Fonts: Poppins -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
     <style>
       :root {
@@ -261,6 +356,7 @@
       }
       .sticky-header.scrolled .icon { color: var(--primary-color); }
       .icon:hover { transform: scale(1.15) rotate(5deg); }
+      .icon.authenticated { color: var(--accent-color); }
       .floating-effect { transition: transform 0.3s ease; }
       .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
       main { margin-top: 64px; }
@@ -330,6 +426,7 @@
       .btn:active { transform: scale(0.98); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); }
       .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
       .btn.accent:hover { background: #FFA500; color: var(--primary-color); }
+      .btn.authenticating { opacity: 0.7; cursor: not-allowed; pointer-events: none; }
       @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
       section { padding: 2rem 1rem; }
       .card {
@@ -488,7 +585,7 @@
       }
     </style>
 </head>
-<body>
+<body onload="checkAuthStatus()">
     <div class="progress-bar"></div>
     <header class="sticky-header">
         <div class="flex items-center">
@@ -542,7 +639,9 @@
             </div>
             <p class="text-sm mt-4">Over 10M+ million downloads worldwide!</p>
             <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
-            <a href="auth.html" class="btn accent">Authenticate with Pi</a>
+            <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Authenticate with Pi</button>
+            <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
+            <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
         </section>
         <section id="user-stats" class="py-16 px-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white">
             <div class="max-w-6xl mx-auto text-center">
@@ -810,15 +909,31 @@
                 <div class="card"><i class="fas fa-exchange-alt"></i><h3 class="text-xl font-semibold mb-2">Trade Dashboard</h3><p>Manage trades.</p><a href="pitrade.html#dashboard" class="btn">Open</a></div>
             </div>
         </section>
-        <section id="referral-program" class="py-16 px-4">
+               <section id="referral-program" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Referral Program</h2>
+            <p class="text-center text-lg mb-8 max-w-2xl mx-auto">Invite your friends to TruthWeb and earn rewards in Pi! Share the decentralized revolution and grow your network.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card"><i class="fas fa-user-friends"></i><h3 class="text-xl font-semibold mb-2">Invite Friends</h3><p>Earn Pi by referring friends.</p><a href="referral-program.html" class="btn">Join Now</a></div>
-                <div class="card"><i class="fas fa-gift"></i><h3 class="text-xl font-semibold mb-2">Earn Rewards</h3><p>Get bonuses for each referral.</p><a href="referral-program.html#rewards" class="btn">See Rewards</a></div>
-                <div class="card"><i class="fas fa-share-alt"></i><h3 class="text-xl font-semibold mb-2">Share Easily</h3><p>Use your unique link to invite.</p><a href="referral-program.html#share" class="btn">Get Link</a></div>
+                <div class="card">
+                    <i class="fas fa-user-plus"></i>
+                    <h3 class="text-xl font-semibold mb-2">Invite Friends</h3>
+                    <p>Get a unique referral link to share with your friends and family.</p>
+                    <a href="referral-program.html#invite" class="btn">Get Link</a>
+                </div>
+                <div class="card">
+                    <i class="fas fa-coins"></i>
+                    <h3 class="text-xl font-semibold mb-2">Earn Rewards</h3>
+                    <p>Earn 10 Pi for every friend who joins and completes their first transaction.</p>
+                    <a href="referral-program.html#rewards" class="btn">Claim Rewards</a>
+                </div>
+                <div class="card">
+                    <i class="fas fa-trophy"></i>
+                    <h3 class="text-xl font-semibold mb-2">Leaderboard</h3>
+                    <p>Compete with top referrers and win exclusive bonuses!</p>
+                    <a href="referral-program.html#leaderboard" class="btn">View Rankings</a>
+                </div>
             </div>
         </section>
-        <section id="content" class="py-16 px-4 bg-[var(--primary-color)] text-[var(--text-color)]">
+<section id="content" class="py-16 px-4 bg-[var(--primary-color)] text-[var(--text-color)]">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Content</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-6xl mx-auto">
                 <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-video"></i><h3 class="text-xl font-semibold mb-2">Video Series</h3><p>Latest Pi insights.</p><a href="truthweb-hub.html" class="btn">Watch</a></div>
