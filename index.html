@@ -4,6 +4,7 @@
     <!-- Pi Network SDK and Authentication Logic -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script>
       Pi.init({ 
         version: "2.0", 
@@ -24,11 +25,47 @@
         });
       }
 
+      async function initiatePayment(amount, memo) {
+        try {
+          document.querySelector('.loading-overlay').classList.add('active');
+          const paymentData = { amount, memo, metadata: { plan: memo } };
+          const payment = await Pi.createPayment(paymentData, {
+            onReadyForServerApproval: (paymentId) => {
+              $.ajax({
+                url: 'http://localhost:3000/payment/approve',
+                method: 'POST',
+                data: { paymentId },
+                success: () => console.log('Payment approved'),
+                error: (err) => console.error('Approval error:', err)
+              });
+            },
+            onReadyForServerCompletion: (paymentId, txid) => {
+              $.ajax({
+                url: 'http://localhost:3000/payment/complete',
+                method: 'POST',
+                data: { paymentId, txid },
+                success: () => console.log('Payment completed'),
+                error: (err) => console.error('Completion error:', err)
+              });
+            },
+            onCancel: () => console.log('Payment cancelled'),
+            onError: (error) => console.error('Payment error:', error)
+          });
+          return payment;
+        } catch (error) {
+          console.error('Payment initiation failed:', error);
+          throw error;
+        } finally {
+          document.querySelector('.loading-overlay').classList.remove('active');
+        }
+      }
+
       function checkAuthStatus() {
         const userData = JSON.parse(localStorage.getItem('piUser'));
         if (userData && userData.username) {
           updateUIAfterAuth(userData);
-          verifyToken(); // Verify on page load
+          verifyToken();
+          updateProfileSection(userData);
         } else {
           document.getElementById('username').textContent = 'Guest';
           document.getElementById('auth-btn').style.display = 'inline-flex';
@@ -59,32 +96,33 @@
         try {
           document.getElementById('auth-btn').classList.add('authenticating');
           document.getElementById('auth-status').textContent = 'Authenticating...';
-
+          document.querySelector('.loading-overlay').classList.add('active');
           const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
           const userData = {
             uid: auth.user.uid,
             username: auth.user.username,
             accessToken: auth.accessToken,
-            walletAddress: auth.user.wallet_address
+            walletAddress: auth.user.wallet_address,
+            piBalance: Math.random() * 1000 // Mock balance
           };
-
           console.log('Authentication successful:', userData);
           localStorage.setItem('piUser', JSON.stringify(userData));
-
           const response = await $.ajax({
             url: 'http://localhost:3000/auth/pi',
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(userData)
           });
-
           console.log('Backend response:', response);
           updateUIAfterAuth(userData);
+          updateProfileSection(userData);
+          addNotification(`Welcome back, ${userData.username}!`);
         } catch (error) {
           console.error('Authentication failed:', error);
           document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'}`;
         } finally {
           document.getElementById('auth-btn').classList.remove('authenticating');
+          document.querySelector('.loading-overlay').classList.remove('active');
         }
       }
 
@@ -103,6 +141,7 @@
           const baseUrl = link.getAttribute('href')?.split('?')[0];
           if (baseUrl) link.setAttribute('href', baseUrl);
         });
+        document.getElementById('profile-details').innerHTML = '<p>Please authenticate to view your profile.</p>';
       }
 
       async function verifyToken() {
@@ -148,6 +187,13 @@
         --background-color: #FFFFFF;
         --accent-color: #FFD700;
         --progress-bar-color: var(--accent-color);
+        --dark-primary: #FFFFFF;
+        --dark-secondary: #1A1A1A;
+        --dark-text: #E0E0E0;
+        --banner-bg-light: #F5F5F5; /* Light mode banner background */
+        --banner-bg-dark: #2A2A2A; /* Dark mode banner background */
+        --banner-border-light: #E0E0E0;
+        --banner-border-dark: #444444;
       }
       html { scroll-behavior: smooth; }
       body {
@@ -159,6 +205,17 @@
         overflow-x: hidden;
         line-height: 1.6;
         padding-bottom: 60px;
+        transition: background 0.3s, color 0.3s;
+      }
+      body.dark {
+        --primary-color: var(--dark-primary);
+        --secondary-color: var(--dark-secondary);
+        --text-color: var(--dark-text);
+        --background-color: #121212;
+        --highlight-color: #555555;
+        --button-bg-color: #333333;
+        --button-hover-bg-color: #FFD700;
+        --button-hover-text-color: #000000;
       }
       .progress-bar {
         position: fixed;
@@ -453,9 +510,7 @@
         color: var(--primary-color);
         transition: transform 0.3s ease;
       }
-      .card:hover i {
-        transform: scale(1.1);
-      }
+      .card:hover i { transform: scale(1.1); }
       .card h3 {
         font-size: 1.25rem;
         font-weight: 600;
@@ -466,11 +521,7 @@
         margin-bottom: 1rem;
         flex-grow: 1;
       }
-      .card .btn {
-        margin-top: auto;
-        width: auto;
-        padding: 0.5rem 1.5rem;
-      }
+      .card .btn { margin-top: auto; width: auto; padding: 0.5rem 1.5rem; }
       @keyframes slideInCard { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       .feed-container { max-width: 600px; margin: 0 auto; }
       .feed-item { padding: 1rem; border-bottom: 1px solid var(--highlight-color); transition: background 0.2s ease, transform 0.3s ease; }
@@ -498,13 +549,40 @@
       }
       .feed-actions button i { font-size: 1rem; }
       .feed-actions button:hover { background: var(--highlight-color); color: var(--primary-color); transform: scale(1.1); }
-      .feed-banner { background: var(--secondary-color); border: 1px solid var(--highlight-color); border-radius: 10px; padding: 1rem; margin-bottom: 1rem; text-align: center; animation: slideInCard 0.5s ease-out forwards; }
+      .feed-banner {
+        background: var(--banner-bg-light); /* Default to light mode */
+        border: 1px solid var(--banner-border-light);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        text-align: center;
+        animation: slideInCard 0.5s ease-out forwards;
+        transition: background 0.3s ease, border-color 0.3s ease; /* Smooth transition */
+      }
+      body.dark .feed-banner {
+        background: var(--banner-bg-dark); /* Dark mode banner background */
+        border-color: var(--banner-border-dark);
+      }
       .feed-banner img { width: 100%; height: auto; border-radius: 8px; margin-bottom: 0.5rem; }
-      footer { background: var(--primary-color); color: var(--text-color); text-align: center; padding: 2rem 1rem; position: relative; z-index: 10; animation: fadeIn 1.5s ease-in-out; }
+      footer {
+        background: #000000; /* Fixed background, unaffected by mode */
+        color: #FFFFFF; /* Fixed text color */
+        text-align: center;
+        padding: 2rem 1rem;
+        position: relative;
+        z-index: 10;
+        animation: fadeIn 1.5s ease-in-out;
+      }
       @keyframes fadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
       @keyframes fadeInUp { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }
-      footer .social-icons a, footer .footer-links a { color: var(--text-color); transition: color 0.3s ease, transform 0.3s ease; }
-      footer .social-icons a:hover, footer .footer-links a:hover { color: var(--highlight-color); transform: scale(1.1); }
+      footer .social-icons a, footer .footer-links a {
+        color: #FFFFFF; /* Fixed color */
+        transition: color 0.3s ease, transform 0.3s ease;
+      }
+      footer .social-icons a:hover, footer .footer-links a:hover {
+        color: #CCCCCC; /* Fixed hover color */
+        transform: scale(1.1);
+      }
       footer .social-icons { margin-bottom: 1rem; }
       footer .social-icons a { font-size: 1.25rem; margin: 0 0.5rem; }
       footer .footer-links a { margin: 0 0.5rem; text-decoration: none; }
@@ -542,6 +620,66 @@
       .carousel-prev:hover, .carousel-next:hover { background: #FFA500; transform: translateY(-50%) scale(1.1); }
       .carousel-prev { left: 0; }
       .carousel-next { right: 0; }
+      .notification-bell { position: relative; }
+      .notification-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--accent-color);
+        color: var(--primary-color);
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .notification-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        width: 300px;
+        max-height: 400px;
+        overflow-y: auto;
+        background: var(--secondary-color);
+        border: 1px solid var(--highlight-color);
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        z-index: 60;
+        display: none;
+      }
+      .notification-dropdown.active { display: block; }
+      .notification-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--highlight-color);
+        color: var(--primary-color);
+      }
+      .notification-item:last-child { border-bottom: none; }
+      .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+      .loading-overlay.active { display: flex; }
+      .loader {
+        border: 4px solid var(--highlight-color);
+        border-top: 4px solid var(--accent-color);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+      .input-error { border-color: #FF4444; }
+      .error-message { color: #FF4444; font-size: 0.85rem; margin-top: 0.25rem; }
       @media (min-width: 641px) { .footer-menu { display: none; } .go-to-top { bottom: 20px; } body { padding-bottom: 0; } }
       @media (max-width: 640px) {
         .burger-btn { display: flex; }
@@ -587,6 +725,7 @@
 </head>
 <body onload="checkAuthStatus()">
     <div class="progress-bar"></div>
+    <div class="loading-overlay"><div class="loader"></div></div>
     <header class="sticky-header">
         <div class="flex items-center">
             <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span></a>
@@ -612,6 +751,12 @@
             <a href="addtocart.html" class="icon floating-effect"><i class="fas fa-shopping-cart"></i></a>
             <a href="profile.html" class="icon floating-effect"><i class="fas fa-user"></i></a>
             <a href="wallet.html" class="icon floating-effect"><i class="fas fa-wallet"></i></a>
+            <div class="icon floating-effect notification-bell" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                <span class="notification-count" id="notification-count">0</span>
+                <div class="notification-dropdown" id="notification-dropdown"></div>
+            </div>
+            <div class="icon floating-effect" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></div>
             <div class="burger-btn"><span></span><span></span><span></span></div>
         </div>
     </header>
@@ -661,12 +806,32 @@
                 <a href="about.html" class="btn">Learn More</a>
             </div>
         </section>
-         </section>
+        <section id="profile" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Your Profile</h2>
+            <div class="max-w-4xl mx-auto text-center">
+                <div id="profile-details" class="card">
+                    <p>Please authenticate to view your profile.</p>
+                </div>
+            </div>
+        </section>
+        <section id="wallet" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Your Wallet</h2>
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="card">
+                    <p id="wallet-balance">Pi Balance: <span>0 Pi</span></p>
+                    <button class="btn mt-4" onclick="checkWalletBalance()">Refresh Balance</button>
+                    <div id="transaction-history" class="mt-4">
+                        <h3 class="text-lg font-semibold">Recent Transactions</h3>
+                        <p>No transactions yet.</p>
+                    </div>
+                </div>
+            </div>
+   </section>
         <section id="video-player" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Videos</h2>
             <div class="max-w-4xl mx-auto text-center">
-                             <div class="main-video-card">
-                    <iframe id="main-video" src="https://www.youtube.com/embed/MfOVBHbgDK8?si=TM_tVWd25-1I1JMK" title="Happy Pi Day 2025!" allowfullscreen></iframe>
+                <div class="main-video-card">
+                    <iframe id="main-video" src="https://www.youtube.com/embed/MfOVBHbgDK8?enablejsapi=1&si=TM_tVWd25-1I1JMK" title="Happy Pi Day 2025!" allowfullscreen></iframe>
                     <h3 id="video-title" class="text-xl font-semibold mt-4 text-[var(--primary-color)]">Happy Pi Day 2025!</h3>
                     <p id="video-description" class="text-lg mt-2 text-[var(--primary-color)]">Happy Pi Day 2025, Pi Network’s 6th official anniversary!</p>
                     <div class="video-controls">
@@ -691,7 +856,7 @@
                     </div>
                 </div>
             </div>
-        </section>   
+        </section>
         </section>
         <section id="core-features" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Core Features</h2>
@@ -706,7 +871,7 @@
                 <div class="card"><i class="fas fa-brain"></i><h3 class="text-xl font-semibold mb-2">AI Price Predictor</h3><p>Market trend analysis</p><a href="ai-predictor.html" class="btn">Try Now</a></div>
             </div>
         </section>
-          <section id="business-partners" class="py-16 px-4">
+        <section id="business-partners" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Our Business Partners</h2>
             <p class="text-center text-lg mb-12 max-w-2xl mx-auto">We collaborate with leading organizations to drive innovation in blockchain and AI. <em>This is a sample Business Partners page, not official.</em></p>
             <div class="relative max-w-6xl mx-auto">
@@ -752,9 +917,9 @@
         <section id="new-features" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">New Features</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-globe"></i><h3 class="text-xl font-semibold mb-2">Global Marketplace Expansion</h3><p>Access international markets with localized currency support.</p><a href="global-expansion.html" class="btn">Explore</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-robot"></i><h3 class="text-xl font-semibold mb-2">AI-Powered Insights</h3><p>Get personalized trading and investment recommendations.</p><a href="pi-insights-project/pi-insights-backend/public/ai-powered-pi-insights.html" class="btn">Try Now</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-mobile-alt"></i><h3 class="text-xl font-semibold mb-2">Mobile App Enhancements</h3><p>Enjoy a revamped UI, push notifications, and offline mode.</p><a href="mobile-enhancements.html" class="btn">Learn More</a></div>
+                <div class="card"><i class="fas fa-globe"></i><h3 class="text-xl font-semibold mb-2">Global Marketplace Expansion</h3><p>Access international markets with localized currency support.</p><a href="global-expansion.html" class="btn">Explore</a></div>
+                <div class="card"><i class="fas fa-robot"></i><h3 class="text-xl font-semibold mb-2">AI-Powered Insights</h3><p>Get personalized trading and investment recommendations.</p><a href="ai-powered-pi-insights.html" class="btn">Try Now</a></div>
+                <div class="card"><i class="fas fa-mobile-alt"></i><h3 class="text-xl font-semibold mb-2">Mobile App Enhancements</h3><p>Enjoy a revamped UI, push notifications, and offline mode.</p><a href="mobile-enhancements.html" class="btn">Learn More</a></div>
             </div>
         </section>
         <section id="ai-bot" class="py-16 px-4">
@@ -764,7 +929,7 @@
                 <a href="truwebbot.html" class="btn">Chat Now</a>
             </div>
         </section>
-         <section id="feed" class="py-16 px-4">
+        <section id="feed" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb Feed</h2>
             <p class="text-center text-lg mb-8 max-w-2xl mx-auto">The TruthWeb Feed connects Pioneers worldwide, showcasing user posts, updates, and sponsored ads. Share your experiences, discover Pi-powered products, and stay informed—all in one decentralized hub.</p>
             <p class="text-center text-lg mb-8 max-w-2xl mx-auto">Sample Ads Below.</p>
@@ -847,11 +1012,10 @@
         <section id="community" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Community & Social</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-check-circle"></i><h3 class="text-xl font-semibold mb-2">Pioneer Verification</h3><p>Ensure trusted transactions with verified users.</p><a href="pioneerverification.html" class="btn">Verify</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-star"></i><h3 class="text-xl font-semibold mb-2">Reviews & Ratings</h3><p>Build trust with user reviews and ratings.</p><a href="reviewsratings.html" class="btn">Review</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-comments"></i><h3 class="text-xl font-semibold mb-2">Messaging & Chat</h3><p>Direct, secure communication with other Pioneers.</p><a href="messagingchat.html" class="btn">Chat</a></div>
+                <div class="card"><i class="fas fa-check-circle"></i><h3 class="text-xl font-semibold mb-2">Pioneer Verification</h3><p>Ensure trusted transactions with verified users.</p><a href="pioneerverification.html" class="btn">Verify</a></div>
+                <div class="card"><i class="fas fa-star"></i><h3 class="text-xl font-semibold mb-2">Reviews & Ratings</h3><p>Build trust with user reviews and ratings.</p><a href="reviewsratings.html" class="btn">Review</a></div>
+                <div class="card"><i class="fas fa-comments"></i><h3 class="text-xl font-semibold mb-2">Messaging & Chat</h3><p>Direct, secure communication with other Pioneers.</p><a href="messagingchat.html" class="btn">Chat</a></div>
             </div>
-        </section>
         </section>
         <section id="developers" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Developer & Business</h2>
@@ -859,9 +1023,6 @@
                 <div class="card"><i class="fas fa-code"></i><h3 class="text-xl font-semibold mb-2">Open-Source API</h3><p>Build powerful Pi integrations with our API.</p><a href="api-docs.html" class="btn">Docs</a></div>
                 <div class="card"><i class="fas fa-chart-line"></i><h3 class="text-xl font-semibold mb-2">Vendor Dashboard</h3><p>Access advanced seller analytics and insights.</p><a href="dashboardmonitoring.html" class="btn">View</a></div>
                 <div class="card"><i class="fas fa-box-open"></i><h3 class="text-xl font-semibold mb-2">Automated Orders</h3><p>Enable instant delivery for digital goods.</p><a href="automated.html" class="btn">List</a></div>
-                <div class="card"><i class="fas fa-ad"></i><h3 class="text-xl font-semibold mb-2">Ad & Promotion</h3><p>Boost your listing visibility with targeted ads.</p><a href="promote.html" class="btn">Promote</a></div>
-                <div class="card"><i class="fas fa-money-bill-wave"></i><h3 class="text-xl font-semibold mb-2">Multi-Currency</h3><p>Convert Pi to fiat for transparent pricing.</p><a href="multicurrency.html" class="btn">Convert</a></div>
-                <div class="card"><i class="fas fa-code-branch"></i><h3 class="text-xl font-semibold mb-2">API Playground</h3><p>Test API endpoints in real-time</p><a href="api-playground.html" class="btn">Explore</a></div>
             </div>
         </section>
         <section id="testimonials" class="py-16 px-4">
@@ -872,22 +1033,22 @@
                 <div class="card"><p class="mb-4">"Top-notch API docs!"</p><p>- Dev789</p></div>
             </div>
         </section>
-       <section id="security" class="py-16 px-4">
+        <section id="security" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Security & Trust</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-id-badge"></i><h3 class="text-xl font-semibold mb-2">KYC Verification</h3><p>Secure your account with KYC verification.</p><a href="kycverification.html" class="btn">Verify</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-lock"></i><h3 class="text-xl font-semibold mb-2">End-to-End Encryption</h3><p>Protect your data with advanced encryption.</p><a href="endtoendencryption.html" class="btn">Learn</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-mobile-alt"></i><h3 class="text-xl font-semibold mb-2">Two-Factor Authentication</h3><p>Add an extra layer of security with 2FA.</p><a href="twofactor.html" class="btn">Enable</a></div>
+                <div class="card"><i class="fas fa-id-badge"></i><h3 class="text-xl font-semibold mb-2">KYC Verification</h3><p>Secure your account with KYC verification.</p><a href="kycverification.html" class="btn">Verify</a></div>
+                <div class="card"><i class="fas fa-lock"></i><h3 class="text-xl font-semibold mb-2">End-to-End Encryption</h3><p>Protect your data with advanced encryption.</p><a href="endtoendencryption.html" class="btn">Learn</a></div>
+                <div class="card"><i class="fas fa-mobile-alt"></i><h3 class="text-xl font-semibold mb-2">Two-Factor Authentication</h3><p>Add an extra layer of security with 2FA.</p><a href="twofactor.html" class="btn">Enable</a></div>
             </div>
         </section>
-        <section id="fraud-detection" class="py-16 px-4">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Fraud Detection</h2>
+                <section id="fraud-detection" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Fraud Detection & Safety</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card"><i class="fas fa-robot"></i><h3 class="text-xl font-semibold mb-2">AI-Powered Monitoring</h3><p>Real-time fraud detection with AI.</p><a href="fraud-detection.html" class="btn">Learn More</a></div>
-                <div class="card"><i class="fas fa-shield-alt"></i><h3 class="text-xl font-semibold mb-2">Transaction Safety</h3><p>Protecting your Pi trades.</p><a href="trustedtransactions.html" class="btn">Details</a></div>
-                <div class="card"><i class="fas fa-chart-line"></i><h3 class="text-xl font-semibold mb-2">Anomaly Detection</h3><p>Spot suspicious activity instantly.</p><a href="fraud-detection.html" class="btn">Explore</a></div>
+                <div class="card"><i class="fas fa-shield-alt"></i><h3 class="text-xl font-semibold mb-2">AI Fraud Detection</h3><p>Real-time monitoring to prevent scams and fraud.</p><a href="fraud-detection.html" class="btn">Learn More</a></div>
+                <div class="card"><i class="fas fa-exclamation-triangle"></i><h3 class="text-xl font-semibold mb-2">Report System</h3><p>Report suspicious activity instantly.</p><a href="report-system.html" class="btn">Report</a></div>
+                <div class="card"><i class="fas fa-book"></i><h3 class="text-xl font-semibold mb-2">Safety Guidelines</h3><p>Stay informed with our safety tips.</p><a href="safety-guidelines.html" class="btn">Read</a></div>
             </div>
-        </section>
+       </section>
         <section id="news" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb News</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -899,9 +1060,9 @@
         <section id="pitrack" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Pi Track</h2>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-chart-bar"></i><h3 class="text-xl font-semibold mb-2">Track Your Pi</h3><p>Monitor wallet activity.</p><a href="pitrack.html#wallet" class="btn">View</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-history"></i><h3 class="text-xl font-semibold mb-2">Transaction Insights</h3><p>Real-time updates.</p><a href="pitrack.html#history" class="btn">Check</a></div>
-                <div class="card bg-[var(--secondary-color)] text-[var(--primary-color)]"><i class="fas fa-tachometer-alt"></i><h3 class="text-xl font-semibold mb-2">Ecosystem Metrics</h3><p>Pi usage trends.</p><a href="pitrack.html#metrics" class="btn">Stats</a></div>
+                <div class="card"><i class="fas fa-chart-bar"></i><h3 class="text-xl font-semibold mb-2">Track Your Pi</h3><p>Monitor wallet activity.</p><a href="pitrack.html#wallet" class="btn">View</a></div>
+                <div class="card"><i class="fas fa-history"></i><h3 class="text-xl font-semibold mb-2">Transaction Insights</h3><p>Real-time updates.</p><a href="pitrack.html#history" class="btn">Check</a></div>
+                <div class="card"><i class="fas fa-tachometer-alt"></i><h3 class="text-xl font-semibold mb-2">Ecosystem Metrics</h3><p>Pi usage trends.</p><a href="pitrack.html#metrics" class="btn">Stats</a></div>
             </div>
         </section>
         <section id="pitrade" class="py-16 px-4">
@@ -909,9 +1070,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <div class="card"><i class="fas fa-handshake"></i><h3 class="text-xl font-semibold mb-2">P2P Trading</h3><p>Trade Pi directly.</p><a href="pitrade.html#p2p" class="btn">Trade</a></div>
                 <div class="card"><i class="fas fa-chart-line"></i><h3 class="text-xl font-semibold mb-2">Market Trends</h3><p>View Pi value trends.</p><a href="pitrade.html#trends" class="btn">Trends</a></div>
-                <div class="card"><i class="fas fa-exchange-alt"></i><h3 class="text-xl font-semibold mb-2">Trade Dashboard</h3><p>Manage trades.</p><a href="pitrade.html#dashboard" class="btn">Open</a></div>
+                <div class="card"><i class="fas fa-exchange-alt"></i><h3 class="text-xl font-semibold mb-2">Trade Dashboard</h3><p>Manage your trades.</p><a href="pitrade.html#dashboard" class="btn">View</a></div>
             </div>
-        </section>
+          </section>
                <section id="referral-program" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Referral Program</h2>
             <p class="text-center text-lg mb-8 max-w-2xl mx-auto">Invite your friends to TruthWeb and earn rewards in Pi! Share the decentralized revolution and grow your network.</p>
@@ -935,6 +1096,14 @@
                     <a href="referral-program.html#leaderboard" class="btn">View Rankings</a>
                 </div>
             </div>
+         <section id="referral-program" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Referral Program</h2>
+            <div class="max-w-4xl mx-auto text-center">
+                <p class="text-lg mb-6 md:text-xl">Invite your friends to TruthWeb and earn Pi rewards for every successful referral!</p>
+                <a href="referral-program.html#invite" class="btn accent">Generate Referral Link</a>
+            </div>
+        </section>
+        
         </section>
  <section id="content" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Content</h2>
@@ -949,8 +1118,29 @@
                 <div class="card"><i class="fas fa-video"></i><h3 class="text-xl font-semibold mb-2">Live Streaming</h3><p>Go live and share your content with Pioneers worldwide.</p><a href="stream.html" class="btn">Start Streaming</a></div>
                 <div class="card"><i class="fas fa-gift"></i><h3 class="text-xl font-semibold mb-2">Sticker Support</h3><p>Earn Pi from followers buying and sending stickers.</p><a href="streamstickers.html" class="btn">Learn More</a></div>
                 <div class="card"><i class="fas fa-coins"></i><h3 class="text-xl font-semibold mb-2">Monetize</h3><p>Convert sticker purchases into Pi tokens instantly.</p><a href="streammonetize.html" class="btn">Get Started</a></div>
+           </div>
+      <section id="analytics" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Analytics Dashboard</h2>
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="card">
+                    <p>Total Posts: <span id="total-posts">0</span></p>
+                    <p>Total Likes: <span id="total-likes">0</span></p>
+                    <p>Total Comments: <span id="total-comments">0</span></p>
+                    <button class="btn mt-4" onclick="updateAnalytics()">Refresh</button>
+                </div>
             </div>
-      </section>
+        </section>
+     </section>
+        <section id="coming-soon" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Coming Soon</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+                <div class="card"><i class="fas fa-image"></i><h3 class="text-xl font-semibold mb-2">NFT Marketplace</h3><p>Trade NFTs with Pi.</p><a href="future.html#nfts" class="btn">Update</a></div>
+                <div class="card"><i class="fas fa-robot"></i><h3 class="text-xl font-semibold mb-2">AI Recommendations</h3><p>Personalized suggestions.</p><a href="future.html#ai" class="btn">Update</a></div>
+                <div class="card"><i class="fas fa-gavel"></i><h3 class="text-xl font-semibold mb-2">Dispute Resolution</h3><p>Community-driven.</p><a href="future.html#disputes" class="btn">Update</a></div>
+                <div class="card"><i class="fas fa-coins"></i><h3 class="text-xl font-semibold mb-2">Pi Staking</h3><p>Earn rewards.</p><a href="future.html#staking" class="btn">Update</a></div>
+            </div>
+        </section>
+             </section>
 <section id="payment-plans" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Monthly Payment Plans with Pi</h2>
             <p class="text-center text-lg mb-12 max-w-2xl mx-auto">Unlock premium features with affordable monthly plans paid in Pi. Enjoy exclusive benefits tailored for Pioneers!</p>
@@ -981,17 +1171,6 @@
                 <a href="payment-plans.html" class="btn accent">Learn More About Plans</a>
             </div>
         </section>
-     </section>
-        <section id="coming-soon" class="py-16 px-4">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Coming Soon</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
-                <div class="card"><i class="fas fa-image"></i><h3 class="text-xl font-semibold mb-2">NFT Marketplace</h3><p>Trade NFTs with Pi.</p><a href="future.html#nfts" class="btn">Update</a></div>
-                <div class="card"><i class="fas fa-robot"></i><h3 class="text-xl font-semibold mb-2">AI Recommendations</h3><p>Personalized suggestions.</p><a href="future.html#ai" class="btn">Update</a></div>
-                <div class="card"><i class="fas fa-gavel"></i><h3 class="text-xl font-semibold mb-2">Dispute Resolution</h3><p>Community-driven.</p><a href="future.html#disputes" class="btn">Update</a></div>
-                <div class="card"><i class="fas fa-coins"></i><h3 class="text-xl font-semibold mb-2">Pi Staking</h3><p>Earn rewards.</p><a href="future.html#staking" class="btn">Update</a></div>
-            </div>
-        </section>
-        </section>
     </section>
 <section id="payment-plans" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Join the TruthWeb Movement</h2>
@@ -1008,6 +1187,8 @@
         </section>
             </main>
     <footer>
+        <section id="social-icons" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb</h2>
         <div class="social-icons">
             <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
             <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
@@ -1024,240 +1205,398 @@
         </div>
         <p class="mt-4">© 2025 TruthWeb (Testnet Mode). All rights reserved. Built with <i class="fas fa-heart text-red-500"></i> for the Pi Network Community.</p>
     </footer>
-    <nav class="footer-menu">
+    <nav class="footer-menu sm:hidden">
         <a href="index.html" aria-label="Home"><i class="fas fa-home"></i></a>
         <a href="marketplace.html" aria-label="Marketplace"><i class="fas fa-shopping-cart"></i></a>
         <a href="profile.html" aria-label="Profile"><i class="fas fa-user"></i></a>
         <a href="wallet.html" aria-label="Wallet"><i class="fas fa-wallet"></i></a>
         <a href="community.html" aria-label="Community"><i class="fas fa-users"></i></a>
-    </nav>
-    <button class="go-to-top" aria-label="Go to Top"><i class="fas fa-arrow-up"></i></button>
-   <script>
-  const burgerBtn = document.querySelector('.burger-btn');
-  const mobileMenu = document.querySelector('.mobile-menu');
-  const header = document.querySelector('.sticky-header');
-  const goToTopBtn = document.querySelector('.go-to-top');
-  const progressBar = document.querySelector('.progress-bar');
-  const footerMenu = document.querySelector('.footer-menu');
-  const searchInput = document.querySelector('.search-input');
-  const searchResults = document.querySelector('.search-results');
-  const searchContainer = document.querySelector('.search-container');
+      </nav>
+      <button class="go-to-top" aria-label="Go to top"><i class="fas fa-arrow-up"></i></button>
 
-  // Toggle mobile menu
-  burgerBtn.addEventListener('click', () => {
-    burgerBtn.classList.toggle('open');
-    mobileMenu.classList.toggle('open');
-  });
+      <script>
+        // Header and Navigation
+        const header = document.querySelector('.sticky-header');
+        const burgerBtn = document.querySelector('.burger-btn');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        let lastScroll = 0;
 
-  // Scroll behavior
-  let lastScroll = 0;
-  window.addEventListener('scroll', () => {
-    const currentScroll = window.scrollY;
-    header.classList.toggle('scrolled', currentScroll > 50);
-    header.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
-    goToTopBtn.classList.toggle('visible', currentScroll > 300);
-    footerMenu.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
-    lastScroll = currentScroll;
-    const totalHeight = document.body.scrollHeight - window.innerHeight;
-    const progress = (currentScroll / totalHeight) * 100;
-    progressBar.style.width = `${progress}%`;
-  });
-
-  // Go to top button
-  goToTopBtn.addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  });
-
-  // Stat counter animation
-  document.querySelectorAll('.stat-item h3').forEach(stat => {
-    const target = parseInt(stat.getAttribute('data-count'));
-    let count = 0;
-    const increment = target / 100;
-    const updateCount = () => {
-      count += increment;
-      if (count < target) {
-        stat.textContent = Math.floor(count).toLocaleString();
-        requestAnimationFrame(updateCount);
-      } else {
-        stat.textContent = target.toLocaleString();
-      }
-    };
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        requestAnimationFrame(updateCount);
-        observer.disconnect();
-      }
-    }, { threshold: 0.5 });
-    observer.observe(stat);
-  });
-
-  // Search functionality
-  const pages = [
-    { title: 'Home', url: 'index.html' },
-    { title: 'Marketplace', url: 'marketplace.html' },
-    { title: 'Profile', url: 'profile.html' },
-    { title: 'Wallet', url: 'wallet.html' },
-    { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
-    { title: 'Community', url: 'community.html' },
-    { title: 'Developers', url: 'developers.html' },
-    { title: 'About', url: 'about.html' }
-  ];
-
-  searchInput.addEventListener('input', () => {
-    const query = searchInput.value.toLowerCase();
-    searchResults.innerHTML = '';
-    if (query) {
-      const results = pages.filter(page => page.title.toLowerCase().includes(query));
-      results.forEach(result => {
-        const div = document.createElement('div');
-        div.className = 'search-result-item';
-        div.innerHTML = `<a href="${result.url}" class="block w-full text-left">${result.title}</a>`;
-        div.querySelector('a').addEventListener('click', (e) => {
-          e.preventDefault();
-          window.location.href = result.url;
+        window.addEventListener('scroll', () => {
+          const currentScroll = window.scrollY;
+          header.classList.toggle('scrolled', currentScroll > 50);
+          header.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+          document.querySelector('.footer-menu').classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
+          document.querySelector('.go-to-top').classList.toggle('visible', currentScroll > 300);
+          const scrollPercent = (currentScroll / (document.body.scrollHeight - window.innerHeight)) * 100;
+          document.querySelector('.progress-bar').style.width = `${scrollPercent}%`;
+          lastScroll = currentScroll;
         });
-        searchResults.appendChild(div);
-      });
-      searchResults.classList.toggle('active', results.length > 0);
-    } else {
-      searchResults.classList.remove('active');
-    }
-  });
 
-  document.addEventListener('click', (e) => {
-    if (!searchContainer.contains(e.target)) {
-      searchResults.classList.remove('active');
-    }
-  });
+        burgerBtn.addEventListener('click', () => {
+          burgerBtn.classList.toggle('open');
+          mobileMenu.classList.toggle('open');
+        });
 
-  // Pi Authentication (fixing the button reference)
-  document.querySelector('.btn.accent[href="auth.html"]').addEventListener('click', (e) => {
-    e.preventDefault();
-    authenticateUser();
-  });
+        document.querySelector('.go-to-top').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
-  // Video Player Logic
+        // Dark Mode
+        function toggleDarkMode() {
+          document.body.classList.toggle('dark');
+          localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+          const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
+          moonIcon.classList.toggle('fa-moon');
+          moonIcon.classList.toggle('fa-sun');
+        }
+        if (localStorage.getItem('darkMode') === 'true') {
+          document.body.classList.add('dark');
+          const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
+          moonIcon.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        // Notifications
+        let notifications = [];
+        function addNotification(message) {
+          notifications.push({ message, timestamp: new Date().toLocaleString() });
+          updateNotifications();
+        }
+        function updateNotifications() {
+          const dropdown = document.getElementById('notification-dropdown');
+          const count = document.getElementById('notification-count');
+          count.textContent = notifications.length;
+          dropdown.innerHTML = notifications.map(n => `<div class="notification-item">${n.message} - ${n.timestamp}</div>`).join('');
+        }
+        function toggleNotifications() {
+          document.getElementById('notification-dropdown').classList.toggle('active');
+        }
+
+        // Counter Animation
+        document.querySelectorAll('.stat-item h3').forEach(stat => {
+          const target = parseInt(stat.getAttribute('data-count'));
+          let count = 0;
+          const increment = target / 100;
+          const updateCount = () => {
+            count += increment;
+            if (count < target) {
+              stat.textContent = Math.floor(count).toLocaleString();
+              requestAnimationFrame(updateCount);
+            } else {
+              stat.textContent = target.toLocaleString();
+            }
+          };
+          updateCount();
+        });
+
+        // Profile Section
+        function updateProfileSection(userData) {
+          document.getElementById('profile-details').innerHTML = `
+            <p>Username: ${userData.username}</p>
+            <p>Wallet Address: ${userData.walletAddress}</p>
+            <p>Pi Balance: ${userData.piBalance.toFixed(2)} Pi</p>
+          `;
+          document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>${userData.piBalance.toFixed(2)} Pi</span>`;
+        }
+
+        // Wallet
+        function checkWalletBalance() {
+          const userData = JSON.parse(localStorage.getItem('piUser'));
+          if (!userData) return alert('Please authenticate first!');
+          // Mock transaction history
+          const transactions = [
+            { id: 'tx1', amount: 50, date: 'Mar 29, 2025' },
+            { id: 'tx2', amount: -20, date: 'Mar 28, 2025' }
+          ];
+          document.getElementById('transaction-history').innerHTML = `
+            <h3 class="text-lg font-semibold">Recent Transactions</h3>
+            ${transactions.map(t => `<p>${t.date}: ${t.amount > 0 ? '+' : ''}${t.amount} Pi</p>`).join('')}
+          `;
+          addNotification('Wallet balance refreshed!');
+        }
+
+        // Search Functionality
+        const searchInput = document.querySelector('.search-input');
+        const searchResults = document.querySelector('.search-results');
+        const pages = [
+          { title: 'Home', url: 'index.html' },
+          { title: 'Marketplace', url: 'marketplace.html' },
+          { title: 'Profile', url: 'profile.html' },
+          { title: 'Wallet', url: 'wallet.html' },
+          { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
+          { title: 'Community', url: 'community.html' },
+          { title: 'Developers', url: 'developers.html' },
+          { title: 'About', url: 'about.html' }
+        ];
+
+        function debounce(func, wait) {
+          let timeout;
+          return function (...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), wait);
+          };
+        }
+
+        searchInput.addEventListener('input', debounce(() => {
+          const query = searchInput.value.toLowerCase();
+          searchResults.innerHTML = '';
+          if (query) {
+            const results = pages.filter(page => page.title.toLowerCase().includes(query));
+            results.forEach(result => {
+              const div = document.createElement('div');
+              div.className = 'search-result-item';
+              div.innerHTML = `<a href="${result.url}" class="block w-full text-left">${result.title}</a>`;
+              searchResults.appendChild(div);
+            });
+            searchResults.classList.toggle('active', results.length > 0);
+          } else {
+            searchResults.classList.remove('active');
+          }
+        }, 300));
+
+        // Video Player
+        let player;
+        function onYouTubeIframeAPIReady() {
+          player = new YT.Player('main-video', {
+            events: {
+              onReady: () => updateVideo(),
+              onStateChange: (event) => {
+                isPlaying = event.data === YT.PlayerState.PLAYING;
+                document.getElementById('play-pause-btn').innerHTML = isPlaying ? '❚❚ Pause' : '▶ Play';
+              }
+            }
+          });
+        }
+// Video Player Logic
   const videos = [
     { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
     { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
     { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
   ];
-  let currentVideoIndex = 0;
-  const iframe = document.getElementById('main-video');
-  const videoTitle = document.getElementById('video-title');
-  const videoDescription = document.getElementById('video-description');
-  const playPauseBtn = document.getElementById('play-pause-btn');
-  let isPlaying = false;
+        let currentVideoIndex = 0;
+        let isPlaying = false;
 
-  function updateVideo() {
-    const video = videos[currentVideoIndex];
-    iframe.src = `https://www.youtube.com/embed/${video.id}?enablejsapi=1&si=TM_tVWd25-1I1JMK`;
-    videoTitle.textContent = video.title;
-    videoDescription.textContent = video.description;
-    isPlaying = false;
-    playPauseBtn.innerHTML = '▶ Play';
-  }
+        function updateVideo() {
+          const video = videos[currentVideoIndex];
+          player.loadVideoById(video.id);
+          document.getElementById('video-title').textContent = video.title;
+          document.getElementById('video-description').textContent = video.description;
+          isPlaying = false;
+          document.getElementById('play-pause-btn').innerHTML = '▶ Play';
+          loadComments();
+        }
 
-  function togglePlayPause() {
-    isPlaying = !isPlaying;
-    playPauseBtn.innerHTML = isPlaying ? '❚❚ Pause' : '▶ Play';
-    iframe.contentWindow.postMessage(
-      JSON.stringify({ event: 'command', func: isPlaying ? 'playVideo' : 'pauseVideo' }),
-      '*'
-    );
-  }
+        function prevVideo() {
+          currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+          updateVideo();
+        }
 
-  function nextVideo() {
-    currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-    updateVideo();
-  }
+        function nextVideo() {
+          currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+          updateVideo();
+        }
 
-  function prevVideo() {
-    currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
-    updateVideo();
-  }
+        function togglePlayPause() {
+          if (isPlaying) player.pauseVideo();
+          else player.playVideo();
+        }
 
-  function toggleLike(btn) {
-    btn.classList.toggle('active');
-    const likeCount = document.getElementById('like-count');
-    let count = parseInt(likeCount.textContent);
-    likeCount.textContent = btn.classList.contains('active') ? count + 1 : count - 1;
-  }
+        function loadComments() {
+          const comments = JSON.parse(localStorage.getItem(`comments_${videos[currentVideoIndex].id}`) || '[]');
+          document.getElementById('comments-list').innerHTML = comments.map(c => `<div class="comment">${c.user}: ${c.text}</div>`).join('');
+        }
 
-  function shareVideo(platform) {
-    const url = `https://www.youtube.com/watch?v=${videos[currentVideoIndex].id}`;
-    const shareUrls = {
-      twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=Check out this video on TruthWeb!`,
-      telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=Check out this video on TruthWeb!`
-    };
-    window.open(shareUrls[platform], '_blank');
-  }
+        function postComment() {
+          const input = document.getElementById('comment-input');
+          const error = document.getElementById('comment-error');
+          const comment = input.value.trim();
+          if (!comment) {
+            input.classList.add('input-error');
+            error.textContent = 'Comment cannot be empty!';
+            return;
+          }
+          input.classList.remove('input-error');
+          error.textContent = '';
+          const userData = JSON.parse(localStorage.getItem('piUser')) || { username: 'Guest' };
+          const comments = JSON.parse(localStorage.getItem(`comments_${videos[currentVideoIndex].id}`) || '[]');
+          comments.push({ user: userData.username, text: comment });
+          localStorage.setItem(`comments_${videos[currentVideoIndex].id}`, JSON.stringify(comments));
+          loadComments();
+          input.value = '';
+          updateAnalytics();
+          document.querySelector('.comment-section').scrollTop = document.querySelector('.comment-section').scrollHeight;
+        }
 
-  function postComment() {
-    const input = document.getElementById('comment-input');
-    const comment = input.value.trim();
-    if (comment) {
-      const commentList = document.getElementById('comments-list');
-      const div = document.createElement('div');
-      div.className = 'comment';
-      div.textContent = `User: ${comment}`;
-      commentList.appendChild(div);
-      input.value = '';
-      commentList.scrollTop = commentList.scrollHeight;
-    }
-  }
+        function toggleLike(btn) {
+          btn.classList.toggle('active');
+          const likeCount = document.getElementById('like-count');
+          let count = parseInt(localStorage.getItem(`likes_${videos[currentVideoIndex].id}`) || '0');
+          count = btn.classList.contains('active') ? count + 1 : count - 1;
+          likeCount.textContent = count;
+          localStorage.setItem(`likes_${videos[currentVideoIndex].id}`, count);
+          updateAnalytics();
+        }
 
-  // Carousel Navigation
-  const carousel = document.querySelector('.carousel');
-  const prevBtn = document.querySelector('.carousel-prev');
-  const nextBtn = document.querySelector('.carousel-next');
+        function shareVideo(platform) {
+          const video = videos[currentVideoIndex];
+          const url = `https://www.youtube.com/watch?v=${video.id}`;
+          const text = `Check out "${video.title}" on TruthWeb!`;
+          const shareUrls = {
+            twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+            telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
+          };
+          window.open(shareUrls[platform], '_blank');
+        }
 
-  prevBtn.addEventListener('click', () => {
-    const scrollAmount = carousel.scrollLeft - 300;
-    carousel.scrollTo({ left: Math.max(scrollAmount, 0), behavior: 'smooth' });
-  });
+        // Carousel
+        const carousel = document.querySelector('.carousel');
+        const prevBtn = document.querySelector('.carousel-prev');
+        const nextBtn = document.querySelector('.carousel-next');
+        let isDragging = false, startX, scrollLeft;
 
-  nextBtn.addEventListener('click', () => {
-    const scrollAmount = carousel.scrollLeft + 300;
-    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-    carousel.scrollTo({ left: Math.min(scrollAmount, maxScroll), behavior: 'smooth' });
-  });
+        carousel.addEventListener('mousedown', (e) => {
+          isDragging = true;
+          startX = e.pageX - carousel.offsetLeft;
+          scrollLeft = carousel.scrollLeft;
+        });
+        carousel.addEventListener('mouseleave', () => isDragging = false);
+        carousel.addEventListener('mouseup', () => isDragging = false);
+        carousel.addEventListener('mousemove', (e) => {
+          if (!isDragging) return;
+          e.preventDefault();
+          const x = e.pageX - carousel.offsetLeft;
+          const walk = (x - startX) * 2;
+          carousel.scrollLeft = scrollLeft - walk;
+        });
 
-  // Payment Plan Subscription
-  function subscribe(plan) {
-    let planDetails;
-    switch (plan) {
-      case 'basic':
-        planDetails = { name: 'Basic Plan', cost: 10 };
-        break;
-      case 'pro':
-        planDetails = { name: 'Pro Plan', cost: 25 };
-        break;
-      case 'elite':
-        planDetails = { name: 'Elite Plan', cost: 50 };
-        break;
-      default:
-        return;
-    }
-    // Simulate Pi payment initiation
-    alert(`Initiating Pi payment for ${planDetails.name} - ${planDetails.cost} Pi. Please confirm in your Pi wallet.`);
-    // In a real scenario, integrate with Pi SDK payment flow here
-  }
+        prevBtn.addEventListener('click', () => carousel.scrollBy({ left: -300, behavior: 'smooth' }));
+        nextBtn.addEventListener('click', () => carousel.scrollBy({ left: 300, behavior: 'smooth' }));
 
-  // Ensure all buttons are wired up
-  document.querySelectorAll('.control-btn').forEach(btn => {
-    if (btn.textContent.includes('Prev')) btn.onclick = prevVideo;
-    if (btn.textContent.includes('Next')) btn.onclick = nextVideo;
-    if (btn.id === 'play-pause-btn') btn.onclick = togglePlayPause;
-  });
+        setInterval(() => {
+          const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+          if (carousel.scrollLeft >= maxScroll) carousel.scrollTo({ left: 0, behavior: 'smooth' });
+          else nextBtn.click();
+        }, 5000);
 
-  document.querySelectorAll('.interaction-btn').forEach(btn => {
-    if (btn.querySelector('.fa-thumbs-up')) btn.onclick = () => toggleLike(btn);
-    if (btn.querySelector('.fa-twitter')) btn.onclick = () => shareVideo('twitter');
-    if (btn.querySelector('.fa-telegram')) btn.onclick = () => shareVideo('telegram');
-  });
+        // Feed System
+        let posts = JSON.parse(localStorage.getItem('feedPosts')) || [
+          { user: 'PioneerA', time: 'Mar 5, 2025, 18:45', content: 'Just sold 500 Pi in a P2P trade! Loving the seamless experience on TruthWeb.', likes: 3, comments: [] }
+        ];
+        function renderPosts() {
+          const feedPosts = document.getElementById('feed-posts');
+          feedPosts.innerHTML = `
+            <div class="feed-banner">
+              <p class="font-semibold mb-2">Demo: TruthWeb Updates</p>
+              <img loading="lazy" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=150&q=80" alt="TruthWeb Demo Banner">
+              <p class="text-sm mt-2">Stay tuned for exciting updates on TruthWeb!</p>
+            </div>
+            ${posts.map((post, index) => `
+              <div class="feed-item">
+                <div class="feed-header">
+                  <i class="fas fa-user-circle feed-avatar"></i>
+                  <div><span class="feed-user">${post.user}</span><span class="feed-time">${post.time}</span></div>
+                </div>
+                <p class="feed-content">${post.content}</p>
+                <div class="feed-actions">
+                  <button onclick="togglePostLike(${index})"><i class="far fa-heart"></i> ${post.likes || 0}</button>
+                  <button onclick="alert('Comments not implemented yet')"><i class="far fa-comment"></i> ${post.comments?.length || 0}</button>
+                  <button onclick="sharePost(${index}, 'twitter')"><i class="fas fa-share-square"></i></button>
+                </div>
+              </div>
+            `).join('')}
+          `;
+        }
+        function createPost() {
+          const input = document.getElementById('post-input');
+          const error = document.getElementById('post-error');
+          const content = input.value.trim();
+          if (!content) {
+            input.classList.add('input-error');
+            error.textContent = 'Post cannot be empty!';
+            return;
+          }
+          input.classList.remove('input-error');
+          error.textContent = '';
+          const userData = JSON.parse(localStorage.getItem('piUser')) || { username: 'Guest' };
+          posts.unshift({ user: userData.username, time: new Date().toLocaleString(), content, likes: 0, comments: [] });
+          localStorage.setItem('feedPosts', JSON.stringify(posts));
+          renderPosts();
+          input.value = '';
+          updateAnalytics();
+          addNotification('New post created!');
+        }
+        function togglePostLike(index) {
+          posts[index].likes = (posts[index].likes || 0) + 1;
+          localStorage.setItem('feedPosts', JSON.stringify(posts));
+          renderPosts();
+          updateAnalytics();
+        }
+        function sharePost(index, platform) {
+          const post = posts[index];
+          const text = `${post.user}: ${post.content}`;
+          const url = window.location.href;
+          const shareUrls = {
+            twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+          };
+          window.open(shareUrls[platform], '_blank');
+        }
+        function loadMorePosts() {
+          const newPosts = [
+            { user: 'PioneerC', time: 'Mar 6, 2025, 10:00', content: 'Just bought a new gadget with Pi!', likes: 0, comments: [] },
+            { user: 'VendorD', time: 'Mar 6, 2025, 12:15', content: 'New Pi course available!', likes: 0, comments: [] }
+          ];
+          posts.push(...newPosts);
+          localStorage.setItem('feedPosts', JSON.stringify(posts));
+          renderPosts();
+        }
+        renderPosts();
 
-  document.getElementById('comment-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') postComment();
-  });
-</script>
+        // Analytics
+        function updateAnalytics() {
+          const totalPosts = posts.length;
+          const totalLikes = posts.reduce((sum, post) => sum + (post.likes || 0), 0) + 
+            videos.reduce((sum, video) => sum + (parseInt(localStorage.getItem(`likes_${video.id}`) || '0')), 0);
+          const totalComments = posts.reduce((sum, post) => sum + (post.comments?.length || 0), 0) + 
+            videos.reduce((sum, video) => sum + (JSON.parse(localStorage.getItem(`comments_${video.id}`) || '[]').length), 0);
+          document.getElementById('total-posts').textContent = totalPosts;
+          document.getElementById('total-likes').textContent = totalLikes;
+          document.getElementById('total-comments').textContent = totalComments;
+        }
+
+        // Subscription Plans
+        async function subscribe(plan) {
+          const plans = {
+            basic: { name: 'Basic Plan', cost: 10 },
+            pro: { name: 'Pro Plan', cost: 25 },
+            elite: { name: 'Elite Plan', cost: 50 }
+          };
+          const planDetails = plans[plan];
+          if (!planDetails) return;
+          const userData = JSON.parse(localStorage.getItem('piUser'));
+          if (!userData) {
+            alert('Please authenticate with Pi first!');
+            authenticateUser();
+            return;
+          }
+          try {
+            await initiatePayment(planDetails.cost, `${planDetails.name} Subscription`);
+            alert(`Successfully subscribed to ${planDetails.name}!`);
+            addNotification(`Subscribed to ${planDetails.name}!`);
+          } catch (error) {
+            alert(`Payment failed: ${error.message}`);
+          }
+        }
+
+        // Referral Program
+        function generateReferralLink() {
+          const userData = JSON.parse(localStorage.getItem('piUser'));
+          if (!userData) return alert('Please authenticate first!');
+          const referralCode = btoa(userData.uid).slice(0, 8);
+          const link = `${window.location.origin}/?ref=${referralCode}`;
+          alert(`Your referral link: ${link}`);
+        }
+
+        document.querySelector('#referral-program .btn[href="referral-program.html#invite"]').addEventListener('click', (e) => {
+          e.preventDefault();
+          generateReferralLink();
+        });
+      </script>
+    </body>
+  </html>
