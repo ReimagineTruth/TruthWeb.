@@ -1,85 +1,53 @@
-# macOS system files
-.DS_Store
-
-# Windows system files
-Thumbs.db
-desktop.ini
-
-# Editor and IDE files
-*.sublime-*
-.vscode/
-.idea/
-*.code-workspace
-
-# Temporary files
-*.tmp
-*.bak
-*.swp
-*~
-
-# Logs
-*.log
-logs/
-log/
-
-# Node.js and npm (Frontend)
+# Node.js
 node_modules/
 npm-debug.log
-package-lock.json
-/dist/  # For frontend build output (e.g., Webpack, Vite)
-public/build/  # Common build output directory
+yarn-error.log
+package-lock.json  # Optional: Include if you use npm and want to enforce yarn.lock instead
+yarn.lock         # Optional: Include if you use yarn and want to enforce package-lock.json
 
-# Python and Django (Backend)
-*.pyc
-__pycache__/
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-*.sqlite3  # Default Django SQLite database
-db.sqlite3
-migrations/  # Exclude auto-generated migration files (optional, depends on workflow)
-*.egg-info/
-*.egg
-*.whl
-
-# Database (MongoDB/PostgreSQL)
-*.dump  # MongoDB dump files
-mongod.lock
-data/  # Local MongoDB data directory (if running locally)
-pgdata/  # Local PostgreSQL data directory (if running locally)
-
-# Environment variables
+# Environment Variables
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.development
+.env.test
+.env.production
 
-# Build and distribution directories
+# Logs
+logs/
+*.log
+*.log.*
+
+# Build Output
+dist/
 build/
-out/
-staticfiles/  # Django collected static files
+public/build/
 
-# Testing and coverage
-htmlcov/
-.coverage
-coverage.xml
-*.cover
-.pytest_cache/
+# Temporary Files
+*.tmp
+*.temp
+*.swp
+*.swo
+.DS_Store       # macOS-specific
+Thumbs.db       # Windows-specific
 
-# GitHub Pages artifacts (if still using)
-_site/
+# Editor/IDE Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-# Sensitive files
-*.key
-*.pem
-*.cert
+# Dependency Caches
+.cache/
+npm-cache/
 
-# Local development files
-local/
-test/
+# Coverage Reports
+coverage/
+
+# Pi SDK-specific (if any sensitive configs are generated)
+pi-sdk-config.json  # Hypothetical sensitive config file
+
+# Miscellaneous
+*.bak
+*.gho
+*.orig
+*.rej
