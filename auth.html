@@ -248,6 +248,10 @@
             <h1 class="glow-text">Pi Authentication</h1>
             <p class="text-xl mt-4 md:text-2xl">Connect with Pi Network</p>
             <p class="text-lg mt-2 max-w-2xl mx-auto">Securely authenticate using your Pi Network credentials to access TruthWeb features.</p>
+       <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
+            <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
+            <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
+        </section>
         </section>
         <section class="py-16 px-4">
             <div class="auth-container">
