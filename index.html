@@ -431,27 +431,49 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background: var(--primary-color);
-        color: var(--text-color);
-        text-align: center;
-        padding: 1rem;
         position: relative;
         overflow: hidden;
+        padding: 1rem;
+        background: var(--primary-color); /* Fallback color */
+        color: var(--text-color);
+        text-align: center;
         animation: fadeInHero 1s ease-out forwards;
       }
-      @keyframes fadeInHero { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-      .hero::after {
-        content: '';
+      .hero-background {
         position: absolute;
         top: 0;
         left: 0;
         width: 100%;
         height: 100%;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
-        animation: pulseGlow 3s infinite alternate, float 6s infinite ease-in-out;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(255, 215, 0, 0.2)), url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+        z-index: 0;
+        animation: backgroundShift 20s infinite ease-in-out;
+        opacity: 0.85;
       }
-      @keyframes pulseGlow { 0% { opacity: 0.5; } 100% { opacity: 0.8; } }
-      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+      @keyframes backgroundShift {
+        0%, 100% { transform: scale(1.05) translateX(0); }
+        50% { transform: scale(1.1) translateX(-20px); }
+      }
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        padding: 2rem;
+        background: rgba(0, 0, 0, 0.5); /* Slight overlay for readability */
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        animation: slideUp 1.2s ease-out forwards;
+      }
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(50px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes fadeInHero { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      body.dark .hero-background {
+        background: linear-gradient(135deg, rgba(18, 18, 18, 0.9), rgba(255, 215, 0, 0.3)), url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+      }
+      body.dark .hero-content {
+        background: rgba(18, 18, 18, 0.6);
+      }
       .glow-text {
         font-size: 3rem;
         font-weight: 700;
@@ -730,6 +752,10 @@
         .go-to-top { width: 40px; height: 40px; font-size: 1.2rem; bottom: 80px; }
         .main-video-card iframe { height: 200px; }
         .video-controls { flex-direction: column; gap: 0.5rem; }
+        .hero-content { padding: 1.5rem; }
+        .hero-background {
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(255, 215, 0, 0.15)), url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1080&q=80') no-repeat center center/cover;
+        }
       }
       @media (min-width: 641px) and (max-width: 1024px) {
         .burger-btn { display: none; }
@@ -1197,7 +1223,7 @@
                 <a href="payment-plans.html" class="btn accent">Learn More About Plans</a>
             </div>
         </section>
-    </section>
+       </section>
 <section id="payment-plans" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Join the TruthWeb Movement</h2>
    
@@ -1212,6 +1238,8 @@
             </div>
         </section>
             </main>
+    <footer>
+    <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
     <footer>
         <section id="social-icons" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb</h2>
@@ -1239,390 +1267,167 @@
         <a href="community.html" aria-label="Community"><i class="fas fa-users"></i></a>
       </nav>
       <button class="go-to-top" aria-label="Go to top"><i class="fas fa-arrow-up"></i></button>
-
       <script>
-        // Header and Navigation
-        const header = document.querySelector('.sticky-header');
-        const burgerBtn = document.querySelector('.burger-btn');
-        const mobileMenu = document.querySelector('.mobile-menu');
-        let lastScroll = 0;
-
-        window.addEventListener('scroll', () => {
-          const currentScroll = window.scrollY;
-          header.classList.toggle('scrolled', currentScroll > 50);
-          header.classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
-          document.querySelector('.footer-menu').classList.toggle('hidden', currentScroll > lastScroll && currentScroll > 100);
-          document.querySelector('.go-to-top').classList.toggle('visible', currentScroll > 300);
-          const scrollPercent = (currentScroll / (document.body.scrollHeight - window.innerHeight)) * 100;
-          document.querySelector('.progress-bar').style.width = `${scrollPercent}%`;
-          lastScroll = currentScroll;
-        });
-
-        burgerBtn.addEventListener('click', () => {
-          burgerBtn.classList.toggle('open');
-          mobileMenu.classList.toggle('open');
-        });
-
-        document.querySelector('.go-to-top').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-
-        // Dark Mode
-        function toggleDarkMode() {
-          document.body.classList.toggle('dark');
-          localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-          const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
-          moonIcon.classList.toggle('fa-moon');
-          moonIcon.classList.toggle('fa-sun');
-        }
-        if (localStorage.getItem('darkMode') === 'true') {
-          document.body.classList.add('dark');
-          const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
-          moonIcon.classList.replace('fa-moon', 'fa-sun');
-        }
-
-        // Notifications
-        let notifications = [];
-        function addNotification(message) {
-          notifications.push({ message, timestamp: new Date().toLocaleString() });
-          updateNotifications();
-        }
-        function updateNotifications() {
-          const dropdown = document.getElementById('notification-dropdown');
-          const count = document.getElementById('notification-count');
-          count.textContent = notifications.length;
-          dropdown.innerHTML = notifications.map(n => `<div class="notification-item">${n.message} - ${n.timestamp}</div>`).join('');
-        }
-        function toggleNotifications() {
-          document.getElementById('notification-dropdown').classList.toggle('active');
-        }
-
-        // Counter Animation
-        document.querySelectorAll('.stat-item h3').forEach(stat => {
-          const target = parseInt(stat.getAttribute('data-count'));
-          let count = 0;
-          const increment = target / 100;
-          const updateCount = () => {
-            count += increment;
-            if (count < target) {
-              stat.textContent = Math.floor(count).toLocaleString();
-              requestAnimationFrame(updateCount);
-            } else {
-              stat.textContent = target.toLocaleString();
-            }
-          };
-          updateCount();
-        });
-
-        // Profile Section
-        function updateProfileSection(userData) {
-          document.getElementById('profile-details').innerHTML = `
-            <p>Username: ${userData.username}</p>
-            <p>Wallet Address: ${userData.walletAddress}</p>
-            <p>Pi Balance: ${userData.piBalance.toFixed(2)} Pi</p>
-          `;
-          document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>${userData.piBalance.toFixed(2)} Pi</span>`;
-        }
-
-        // Wallet
-        function checkWalletBalance() {
-          const userData = JSON.parse(localStorage.getItem('piUser'));
-          if (!userData) return alert('Please authenticate first!');
-          // Mock transaction history
-          const transactions = [
-            { id: 'tx1', amount: 50, date: 'Mar 29, 2025' },
-            { id: 'tx2', amount: -20, date: 'Mar 28, 2025' }
-          ];
-          document.getElementById('transaction-history').innerHTML = `
-            <h3 class="text-lg font-semibold">Recent Transactions</h3>
-            ${transactions.map(t => `<p>${t.date}: ${t.amount > 0 ? '+' : ''}${t.amount} Pi</p>`).join('')}
-          `;
-          addNotification('Wallet balance refreshed!');
-        }
-
-        // Search Functionality
-        const searchInput = document.querySelector('.search-input');
-        const searchResults = document.querySelector('.search-results');
-        const pages = [
-          { title: 'Home', url: 'index.html' },
-          { title: 'Marketplace', url: 'marketplace.html' },
-          { title: 'Profile', url: 'profile.html' },
-          { title: 'Wallet', url: 'wallet.html' },
-          { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
-          { title: 'Community', url: 'community.html' },
-          { title: 'Developers', url: 'developers.html' },
-          { title: 'About', url: 'about.html' }
-        ];
-
-        function debounce(func, wait) {
-          let timeout;
-          return function (...args) {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => func.apply(this, args), wait);
-          };
-        }
-
-        searchInput.addEventListener('input', debounce(() => {
-          const query = searchInput.value.toLowerCase();
-          searchResults.innerHTML = '';
-          if (query) {
-            const results = pages.filter(page => page.title.toLowerCase().includes(query));
-            results.forEach(result => {
-              const div = document.createElement('div');
-              div.className = 'search-result-item';
-              div.innerHTML = `<a href="${result.url}" class="block w-full text-left">${result.title}</a>`;
-              searchResults.appendChild(div);
-            });
-            searchResults.classList.toggle('active', results.length > 0);
-          } else {
-            searchResults.classList.remove('active');
-          }
-        }, 300));
-
-        // Video Player
         let player;
-        function onYouTubeIframeAPIReady() {
-          player = new YT.Player('main-video', {
-            events: {
-              onReady: () => updateVideo(),
-              onStateChange: (event) => {
-                isPlaying = event.data === YT.PlayerState.PLAYING;
-                document.getElementById('play-pause-btn').innerHTML = isPlaying ? '❚❚ Pause' : '▶ Play';
-              }
-            }
-          });
+        function onYouTubeIframeAPIReady() { player = new YT.Player('main-video', { events: { 'onReady': onPlayerReady } }); }
+        function onPlayerReady(event) { console.log('YouTube player is ready'); }
+        function togglePlayPause() {
+            const btn = document.getElementById('play-pause-btn');
+            if (player.getPlayerState() === 1) { player.pauseVideo(); btn.innerHTML = '▶ Play'; } 
+            else { player.playVideo(); btn.innerHTML = '❚❚ Pause'; }
         }
-// Video Player Logic
+        // Video Player Logic
   const videos = [
     { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
     { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
     { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
   ];
         let currentVideoIndex = 0;
-        let isPlaying = false;
-
         function updateVideo() {
-          const video = videos[currentVideoIndex];
-          player.loadVideoById(video.id);
-          document.getElementById('video-title').textContent = video.title;
-          document.getElementById('video-description').textContent = video.description;
-          isPlaying = false;
-          document.getElementById('play-pause-btn').innerHTML = '▶ Play';
-          loadComments();
+            const video = videos[currentVideoIndex];
+            player.loadVideoById(video.id);
+            document.getElementById('video-title').textContent = video.title;
+            document.getElementById('video-description').textContent = video.description;
+            document.getElementById('play-pause-btn').innerHTML = '▶ Play';
         }
-
-        function prevVideo() {
-          currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
-          updateVideo();
-        }
-
-        function nextVideo() {
-          currentVideoIndex = (currentVideoIndex + 1) % videos.length;
-          updateVideo();
-        }
-
-        function togglePlayPause() {
-          if (isPlaying) player.pauseVideo();
-          else player.playVideo();
-        }
-
-        function loadComments() {
-          const comments = JSON.parse(localStorage.getItem(`comments_${videos[currentVideoIndex].id}`) || '[]');
-          document.getElementById('comments-list').innerHTML = comments.map(c => `<div class="comment">${c.user}: ${c.text}</div>`).join('');
-        }
-
+        function prevVideo() { currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; updateVideo(); }
+        function nextVideo() { currentVideoIndex = (currentVideoIndex + 1) % videos.length; updateVideo(); }
+        function toggleLike(btn) { btn.classList.toggle('active'); const count = document.getElementById('like-count'); count.textContent = parseInt(count.textContent) + (btn.classList.contains('active') ? 1 : -1); }
+        function shareVideo(platform) { const url = `https://www.youtube.com/watch?v=${videos[currentVideoIndex].id}`; window.open(platform === 'twitter' ? `https://twitter.com/intent/tweet?url=${url}` : `https://t.me/share/url?url=${url}`, '_blank'); }
         function postComment() {
-          const input = document.getElementById('comment-input');
-          const error = document.getElementById('comment-error');
-          const comment = input.value.trim();
-          if (!comment) {
-            input.classList.add('input-error');
-            error.textContent = 'Comment cannot be empty!';
-            return;
-          }
-          input.classList.remove('input-error');
-          error.textContent = '';
-          const userData = JSON.parse(localStorage.getItem('piUser')) || { username: 'Guest' };
-          const comments = JSON.parse(localStorage.getItem(`comments_${videos[currentVideoIndex].id}`) || '[]');
-          comments.push({ user: userData.username, text: comment });
-          localStorage.setItem(`comments_${videos[currentVideoIndex].id}`, JSON.stringify(comments));
-          loadComments();
-          input.value = '';
-          updateAnalytics();
-          document.querySelector('.comment-section').scrollTop = document.querySelector('.comment-section').scrollHeight;
+            const input = document.getElementById('comment-input');
+            if (input.value.trim()) {
+                const commentList = document.getElementById('comments-list');
+                const username = document.getElementById('username').textContent;
+                const commentDiv = document.createElement('div');
+                commentDiv.className = 'comment';
+                commentDiv.textContent = `${username}: ${input.value}`;
+                commentList.appendChild(commentDiv);
+                input.value = '';
+                commentList.scrollTop = commentList.scrollHeight;
+            }
         }
-
-        function toggleLike(btn) {
-          btn.classList.toggle('active');
-          const likeCount = document.getElementById('like-count');
-          let count = parseInt(localStorage.getItem(`likes_${videos[currentVideoIndex].id}`) || '0');
-          count = btn.classList.contains('active') ? count + 1 : count - 1;
-          likeCount.textContent = count;
-          localStorage.setItem(`likes_${videos[currentVideoIndex].id}`, count);
-          updateAnalytics();
-        }
-
-        function shareVideo(platform) {
-          const video = videos[currentVideoIndex];
-          const url = `https://www.youtube.com/watch?v=${video.id}`;
-          const text = `Check out "${video.title}" on TruthWeb!`;
-          const shareUrls = {
-            twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
-            telegram: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
-          };
-          window.open(shareUrls[platform], '_blank');
-        }
-
-        // Carousel
+        document.querySelector('.burger-btn').addEventListener('click', () => {
+            const btn = document.querySelector('.burger-btn');
+            const menu = document.querySelector('.mobile-menu');
+            btn.classList.toggle('open');
+            menu.classList.toggle('open');
+        });
+        let lastScroll = 0;
+        window.addEventListener('scroll', () => {
+            const scrollTop = window.scrollY;
+            const header = document.querySelector('.sticky-header');
+            const progressBar = document.querySelector('.progress-bar');
+            const goToTop = document.querySelector('.go-to-top');
+            const footerMenu = document.querySelector('.footer-menu');
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            progressBar.style.width = `${(scrollTop / docHeight) * 100}%`;
+            header.classList.toggle('scrolled', scrollTop > 50);
+            header.classList.toggle('hidden', scrollTop > lastScroll && scrollTop > 100);
+            goToTop.classList.toggle('visible', scrollTop > 300);
+            footerMenu.classList.toggle('hidden', scrollTop > lastScroll && scrollTop > 100);
+            lastScroll = scrollTop;
+        });
+        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); }
+        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+        const searchInput = document.querySelector('.search-input');
+        const searchResults = document.querySelector('.search-results');
+        const pages = [
+            { title: 'Home', url: 'index.html' },
+            { title: 'Marketplace', url: 'marketplace.html' },
+            { title: 'Profile', url: 'profile.html' },
+            { title: 'Wallet', url: 'wallet.html' },
+            { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
+            { title: 'Community', url: 'community.html' },
+            { title: 'Developers', url: 'developers.html' },
+            { title: 'About', url: 'about.html' }
+        ];
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            searchResults.innerHTML = '';
+            if (query) {
+                const results = pages.filter(page => page.title.toLowerCase().includes(query));
+                results.forEach(result => {
+                    const div = document.createElement('div');
+                    div.className = 'search-result-item';
+                    div.textContent = result.title;
+                    div.onclick = () => window.location.href = result.url;
+                    searchResults.appendChild(div);
+                });
+                searchResults.classList.toggle('active', results.length > 0);
+            } else {
+                searchResults.classList.remove('active');
+            }
+        });
+        document.addEventListener('click', (e) => { if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) searchResults.classList.remove('active'); });
+        const counters = document.querySelectorAll('.stat-item h3');
+        counters.forEach(counter => {
+            const updateCount = () => {
+                const target = +counter.getAttribute('data-count');
+                const count = +counter.innerText;
+                const speed = 200;
+                const inc = target / speed;
+                if (count < target) {
+                    counter.innerText = Math.ceil(count + inc);
+                    setTimeout(updateCount, 20);
+                } else {
+                    counter.innerText = target.toLocaleString();
+                }
+            };
+            const observer = new IntersectionObserver((entries) => { if (entries[0].isIntersecting) updateCount(); }, { threshold: 0.5 });
+            observer.observe(counter);
+        });
         const carousel = document.querySelector('.carousel');
         const prevBtn = document.querySelector('.carousel-prev');
         const nextBtn = document.querySelector('.carousel-next');
-        let isDragging = false, startX, scrollLeft;
-
-        carousel.addEventListener('mousedown', (e) => {
-          isDragging = true;
-          startX = e.pageX - carousel.offsetLeft;
-          scrollLeft = carousel.scrollLeft;
-        });
-        carousel.addEventListener('mouseleave', () => isDragging = false);
-        carousel.addEventListener('mouseup', () => isDragging = false);
-        carousel.addEventListener('mousemove', (e) => {
-          if (!isDragging) return;
-          e.preventDefault();
-          const x = e.pageX - carousel.offsetLeft;
-          const walk = (x - startX) * 2;
-          carousel.scrollLeft = scrollLeft - walk;
-        });
-
         prevBtn.addEventListener('click', () => carousel.scrollBy({ left: -300, behavior: 'smooth' }));
         nextBtn.addEventListener('click', () => carousel.scrollBy({ left: 300, behavior: 'smooth' }));
-
-        setInterval(() => {
-          const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-          if (carousel.scrollLeft >= maxScroll) carousel.scrollTo({ left: 0, behavior: 'smooth' });
-          else nextBtn.click();
-        }, 5000);
-
-        // Feed System
-        let posts = JSON.parse(localStorage.getItem('feedPosts')) || [
-          { user: 'PioneerA', time: 'Mar 5, 2025, 18:45', content: 'Just sold 500 Pi in a P2P trade! Loving the seamless experience on TruthWeb.', likes: 3, comments: [] }
-        ];
-        function renderPosts() {
-          const feedPosts = document.getElementById('feed-posts');
-          feedPosts.innerHTML = `
-            <div class="feed-banner">
-              <p class="font-semibold mb-2">Demo: TruthWeb Updates</p>
-              <img loading="lazy" src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=150&q=80" alt="TruthWeb Demo Banner">
-              <p class="text-sm mt-2">Stay tuned for exciting updates on TruthWeb!</p>
-            </div>
-            ${posts.map((post, index) => `
-              <div class="feed-item">
-                <div class="feed-header">
-                  <i class="fas fa-user-circle feed-avatar"></i>
-                  <div><span class="feed-user">${post.user}</span><span class="feed-time">${post.time}</span></div>
-                </div>
-                <p class="feed-content">${post.content}</p>
-                <div class="feed-actions">
-                  <button onclick="togglePostLike(${index})"><i class="far fa-heart"></i> ${post.likes || 0}</button>
-                  <button onclick="alert('Comments not implemented yet')"><i class="far fa-comment"></i> ${post.comments?.length || 0}</button>
-                  <button onclick="sharePost(${index}, 'twitter')"><i class="fas fa-share-square"></i></button>
-                </div>
-              </div>
-            `).join('')}
-          `;
+        function addNotification(message) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const count = document.getElementById('notification-count');
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.textContent = message;
+            dropdown.appendChild(item);
+            count.textContent = parseInt(count.textContent) + 1;
+            dropdown.scrollTop = dropdown.scrollHeight;
         }
-        function createPost() {
-          const input = document.getElementById('post-input');
-          const error = document.getElementById('post-error');
-          const content = input.value.trim();
-          if (!content) {
-            input.classList.add('input-error');
-            error.textContent = 'Post cannot be empty!';
-            return;
-          }
-          input.classList.remove('input-error');
-          error.textContent = '';
-          const userData = JSON.parse(localStorage.getItem('piUser')) || { username: 'Guest' };
-          posts.unshift({ user: userData.username, time: new Date().toLocaleString(), content, likes: 0, comments: [] });
-          localStorage.setItem('feedPosts', JSON.stringify(posts));
-          renderPosts();
-          input.value = '';
-          updateAnalytics();
-          addNotification('New post created!');
+        function toggleNotifications() { document.getElementById('notification-dropdown').classList.toggle('active'); }
+        function updateProfileSection(userData) {
+            const profileDetails = document.getElementById('profile-details');
+            profileDetails.innerHTML = `
+                <i class="fas fa-user-circle text-4xl mb-4"></i>
+                <h3 class="text-xl font-semibold mb-2">${userData.username}</h3>
+                <p>UID: ${userData.uid}</p>
+                <p>Wallet: ${userData.walletAddress.slice(0, 6)}...${userData.walletAddress.slice(-4)}</p>
+                <p>Pi Balance: ${userData.piBalance.toFixed(2)} Pi</p>
+                <button class="btn mt-4" onclick="checkWalletBalance()">Refresh Balance</button>
+            `;
         }
-        function togglePostLike(index) {
-          posts[index].likes = (posts[index].likes || 0) + 1;
-          localStorage.setItem('feedPosts', JSON.stringify(posts));
-          renderPosts();
-          updateAnalytics();
+        async function checkWalletBalance() {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (!userData) return;
+            try {
+                document.querySelector('.loading-overlay').classList.add('active');
+                const response = await $.ajax({
+                    url: 'http://localhost:3000/wallet/balance',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ walletAddress: userData.walletAddress })
+                });
+                userData.piBalance = response.balance || Math.random() * 1000;
+                localStorage.setItem('piUser', JSON.stringify(userData));
+                updateProfileSection(userData);
+                document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>${userData.piBalance.toFixed(2)} Pi</span>`;
+                addNotification(`Balance updated: ${userData.piBalance.toFixed(2)} Pi`);
+            } catch (error) {
+                console.error('Balance check failed:', error);
+                addNotification('Failed to refresh balance');
+            } finally {
+                document.querySelector('.loading-overlay').classList.remove('active');
+            }
         }
-        function sharePost(index, platform) {
-          const post = posts[index];
-          const text = `${post.user}: ${post.content}`;
-          const url = window.location.href;
-          const shareUrls = {
-            twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
-          };
-          window.open(shareUrls[platform], '_blank');
-        }
-        function loadMorePosts() {
-          const newPosts = [
-            { user: 'PioneerC', time: 'Mar 6, 2025, 10:00', content: 'Just bought a new gadget with Pi!', likes: 0, comments: [] },
-            { user: 'VendorD', time: 'Mar 6, 2025, 12:15', content: 'New Pi course available!', likes: 0, comments: [] }
-          ];
-          posts.push(...newPosts);
-          localStorage.setItem('feedPosts', JSON.stringify(posts));
-          renderPosts();
-        }
-        renderPosts();
-
-        // Analytics
-        function updateAnalytics() {
-          const totalPosts = posts.length;
-          const totalLikes = posts.reduce((sum, post) => sum + (post.likes || 0), 0) + 
-            videos.reduce((sum, video) => sum + (parseInt(localStorage.getItem(`likes_${video.id}`) || '0')), 0);
-          const totalComments = posts.reduce((sum, post) => sum + (post.comments?.length || 0), 0) + 
-            videos.reduce((sum, video) => sum + (JSON.parse(localStorage.getItem(`comments_${video.id}`) || '[]').length), 0);
-          document.getElementById('total-posts').textContent = totalPosts;
-          document.getElementById('total-likes').textContent = totalLikes;
-          document.getElementById('total-comments').textContent = totalComments;
-        }
-
-        // Subscription Plans
-        async function subscribe(plan) {
-          const plans = {
-            basic: { name: 'Basic Plan', cost: 10 },
-            pro: { name: 'Pro Plan', cost: 25 },
-            elite: { name: 'Elite Plan', cost: 50 }
-          };
-          const planDetails = plans[plan];
-          if (!planDetails) return;
-          const userData = JSON.parse(localStorage.getItem('piUser'));
-          if (!userData) {
-            alert('Please authenticate with Pi first!');
-            authenticateUser();
-            return;
-          }
-          try {
-            await initiatePayment(planDetails.cost, `${planDetails.name} Subscription`);
-            alert(`Successfully subscribed to ${planDetails.name}!`);
-            addNotification(`Subscribed to ${planDetails.name}!`);
-          } catch (error) {
-            alert(`Payment failed: ${error.message}`);
-          }
-        }
-
-        // Referral Program
-        function generateReferralLink() {
-          const userData = JSON.parse(localStorage.getItem('piUser'));
-          if (!userData) return alert('Please authenticate first!');
-          const referralCode = btoa(userData.uid).slice(0, 8);
-          const link = `${window.location.origin}/?ref=${referralCode}`;
-          alert(`Your referral link: ${link}`);
-        }
-
-        document.querySelector('#referral-program .btn[href="referral-program.html#invite"]').addEventListener('click', (e) => {
-          e.preventDefault();
-          generateReferralLink();
-        });
-      </script>
-    </body>
-  </html>
+    </script>
+</body>
+</html>
