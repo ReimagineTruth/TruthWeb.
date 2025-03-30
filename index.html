@@ -985,24 +985,104 @@
         </ul>
     </nav>
     <main>
-        <section class="hero">
-            <div class="hero-background"></div>
-            <div class="hero-content">
-                <h1 class="glow-text">TruthWeb</h1>
-                <p class="text-xl mt-4 md:text-2xl">The Ultimate Decentralized Pi Network Hub</p>
-                <p class="text-lg mt-2">Join over 60+ Million Pioneers worldwide in the leading platform for Pi Network</p>
-                <p class="text-sm mt-2 opacity-75">[This is a test net mode, not official]</p>
-                <div class="download-buttons">
-                <a href="/"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play"></a>
-                <a href="/"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store"></a>
-            </div>
-                <p class="text-sm mt-4">Over 10M+ million downloads worldwide!</p>
-                <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
-                <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Authenticate with Pi</button>
-                <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
-                <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
-            </div>
-        </section>
+       <section class="hero">
+    <div class="hero-background"></div>
+    <div class="hero-content">
+        <h1 class="glow-text">TruthWeb</h1>
+        <p class="text-xl mt-4 md:text-2xl">The Ultimate Decentralized Pi Network Hub</p>
+        <p class="text-lg mt-2">Join over 60+ Million Pioneers worldwide in the leading platform for Pi Network</p>
+        <p class="text-sm mt-2 opacity-75">[This is a test net mode, not official]</p>
+        <div class="download-buttons">
+            <a href="/"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play"></a>
+            <a href="/"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store"></a>
+        </div>
+        <p class="text-sm mt-4">Over 10M+ million downloads worldwide!</p>
+        <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
+        <button id="auth-btn" class="btn accent rounded" onclick="authenticateUser()">Authenticate with Pi</button>
+        <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
+        <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
+    </div>
+</section>
+
+<style>
+.hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.hero-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    z-index: -1;
+}
+
+.hero-content {
+    text-align: center;
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.glow-text {
+    font-size: 3.5rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+}
+
+.download-buttons {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.download-buttons img {
+    height: 40px;
+    transition: transform 0.2s;
+}
+
+.download-buttons img:hover {
+    transform: scale(1.05);
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    margin: 0.5rem;
+    border-radius: 0.25rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.accent {
+    background-color: var(--accent-color, #007bff);
+    color: white;
+}
+
+.accent:hover {
+    background-color: var(--accent-hover, #0056b3);
+}
+
+@media (max-width: 768px) {
+    .glow-text {
+        font-size: 2.5rem;
+    }
+    
+    .download-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+</style>
         <section id="user-stats" class="py-16 px-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white">
             <div class="max-w-6xl mx-auto text-center">
                 <h2 class="text-4xl font-bold mb-6">Join Millions of Pioneers Worldwide</h2>
