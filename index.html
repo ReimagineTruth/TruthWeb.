@@ -27,16 +27,16 @@
         });
       }
 
-      async function initiatePayment(amount, memo) {
+      async function initiatePayment(amount,.ConcurrentModificationException memo, isEscrow = false) {
         try {
           document.querySelector('.loading-overlay').classList.add('active');
-          const paymentData = { amount, memo, metadata: { plan: memo } };
+          const paymentData = { amount, memo, metadata: { plan: memo, escrow: isEscrow } };
           const payment = await Pi.createPayment(paymentData, {
             onReadyForServerApproval: (paymentId) => {
               $.ajax({
                 url: 'http://localhost:3000/payment/approve',
                 method: 'POST',
-                data: { paymentId },
+                data: { paymentId, escrow: isEscrow },
                 success: () => console.log('Payment approved'),
                 error: (err) => console.error('Approval error:', err)
               });
@@ -45,8 +45,8 @@
               $.ajax({
                 url: 'http://localhost:3000/payment/complete',
                 method: 'POST',
-                data: { paymentId, txid },
-                success: () => console.log('Payment completed'),
+                data: { paymentId, txid, escrow: isEscrow },
+                success: () => console.log('Payment completed', isEscrow ? '(Escrow held)' : ''),
                 error: (err) => console.error('Completion error:', err)
               });
             },
@@ -114,7 +114,8 @@
             username: auth.user.username,
             accessToken: auth.accessToken,
             walletAddress: auth.user.wallet_address,
-            piBalance: Math.random() * 1000
+            piBalance: Math.random() * 1000,
+            rewards: 0
           };
           localStorage.setItem('piUser', JSON.stringify(userData));
           updateUIAfterAuth(userData);
@@ -195,6 +196,7 @@
         --nav-text-dark: #E0E0E0;
         --nav-hover-light: #FFD700;
         --nav-hover-dark: #FFD700;
+        --eco-color: #28A745;
       }
       html { scroll-behavior: smooth; }
       body {
@@ -573,6 +575,7 @@
         min-width: 120px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       }
+      .btn i { margin-right: 0.5rem; }
       .btn:hover {
         background: var(--button-hover-bg-color);
         color: var(--button-hover-text-color);
@@ -643,6 +646,7 @@
         text-align: left; 
         transition: transform 0.3s ease, box-shadow 0.3s ease; 
         background: var(--secondary-color); 
+        position: relative;
       }
       .product-card:hover { 
         transform: translateY(-5px); 
@@ -669,6 +673,7 @@
         color: var(--accent-color); 
         margin-bottom: 0.25rem; 
       }
+      .product-price span { font-size: 0.9rem; color: var(--highlight-color); }
       .product-rating { 
         color: #FFA500; 
         font-size: 0.9rem; 
@@ -677,6 +682,17 @@
       .product-reviews { 
         font-size: 0.8rem; 
         color: var(--primary-color); 
+      }
+      .eco-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: var(--eco-color);
+        color: #FFFFFF;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
       }
       .category-filter { 
         display: flex; 
@@ -790,26 +806,28 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
-      .sort-select {
+      .sort-select, .filter-select {
         padding: 0.5rem;
         border-radius: 5px;
         border: 1px solid var(--highlight-color);
         background: var(--secondary-color);
         color: var(--primary-color);
       }
-      .ads-section {
+      .ads-section, .p2p-section, .seller-spotlight {
         padding: 2rem 1rem;
         background: var(--secondary-color);
         border-radius: 15px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
-      .ads-grid {
+      .ads-grid, .p2p-grid, .seller-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 1.5rem;
       }
-      .ad-card {
+      .ad-card, .p2p-card, .seller-card {
         background: var(--background-color);
         border: 1px solid var(--highlight-color);
         border-radius: 10px;
@@ -817,19 +835,22 @@
         text-align: center;
         transition: transform 0.3s ease;
       }
-      .ad-card:hover {
+      .ad-card:hover, .p2p-card:hover, .seller-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
-      .ad-card img {
+      .ad-card img, .p2p-card img, .seller-card img {
         max-width: 100%;
         height: 200px;
         object-fit: cover;
         border-radius: 8px;
         margin-bottom: 0.5rem;
       }
-      .ad-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
-      .ad-price { font-size: 1.5rem; color: var(--accent-color); }
+      .ad-title, .p2p-title, .seller-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+      .ad-price, .p2p-price, .seller-info { font-size: 1.5rem; color: var(--accent-color); }
+      .seller-card .seller-info { font-size: 1rem; color: var(--primary-color); }
+      #pi-rewards { transition: all 0.3s ease; }
+      #pi-rewards:hover { transform: scale(1.05); }
       @media (min-width: 641px) { 
         .burger-btn { display: none; }
         .desktop-nav { display: flex; }
@@ -845,9 +866,8 @@
         .hero { flex-direction: column; text-align: center; }
         .hero-content { flex-direction: column; }
         .hero-actions { align-items: center; }
-        .product-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+        .product-grid, .ads-grid, .p2p-grid, .seller-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
         .banner img { max-width: 150px; }
-        .ads-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
       }
     </style>
 </head>
@@ -864,6 +884,9 @@
             <div class="search-results"></div>
         </div>
         <div class="flex items-center">
+            <span id="pi-rewards" class="text-sm font-semibold text-[var(--accent-color)]">
+              Pi Rewards: <span id="rewards-points">0</span>
+            </span>
             <nav class="desktop-nav hidden md:flex items-center">
                 <ul class="flex space-x-4">
                     <li class="nav-item">
@@ -1023,12 +1046,20 @@
         <section id="storefront" class="py-16 px-4 max-w-6xl mx-auto">
             <div class="sort-filter">
                 <h2 class="section-title text-3xl font-bold">Featured Products</h2>
-                <select class="sort-select" onchange="sortProducts(this.value)">
-                    <option value="default">Sort by: Featured</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
-                    <option value="rating">Rating</option>
-                </select>
+                <div class="flex gap-4">
+                    <select class="sort-select" onchange="sortProducts(this.value)">
+                        <option value="default">Sort by: Featured</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                        <option value="rating">Rating</option>
+                    </select>
+                    <select class="filter-select" onchange="filterProducts(this.value)">
+                        <option value="all">Filter: All</option>
+                        <option value="eco">Eco-Friendly</option>
+                        <option value="below-50">Below 50 Pi</option>
+                        <option value="above-100">Above 100 Pi</option>
+                    </select>
+                </div>
             </div>
             <div class="product-grid" id="product-grid"></div>
             <div class="text-center mt-6">
@@ -1038,6 +1069,19 @@
         <section id="ads" class="ads-section max-w-6xl mx-auto">
             <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb Ads - Discover More</h2>
             <div class="ads-grid" id="ads-grid"></div>
+        </section>
+        <section id="p2p" class="p2p-section max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Peer-to-Peer Listings</h2>
+            <div class="p2p-grid" id="p2p-grid"></div>
+        </section>
+        <section id="sellers" class="seller-spotlight max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Pi Sellers</h2>
+            <div class="seller-grid" id="seller-grid"></div>
+        </section>
+        <section id="rewards" class="py-16 px-4 max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Your Pi Rewards</h2>
+            <p class="text-lg text-center">Points: <span id="rewards-display">0</span></p>
+            <button class="btn accent mx-auto mt-4 block" onclick="redeemRewards()">Redeem Rewards</button>
         </section>
         <section id="recommendations" class="py-16 px-4 max-w-6xl mx-auto">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Recommended for You</h2>
@@ -1110,11 +1154,11 @@
 
     <script>
         const products = [
-            { id: 1, name: "Pi Smartwatch", price: 150, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120 },
-            { id: 2, name: "Pi T-Shirt", price: 25, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85 },
-            { id: 3, name: "Pi Home Speaker", price: 80, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200 },
-            { id: 4, name: "Pi Headphones", price: 60, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95 },
-            { id: 5, name: "Pi Sneakers", price: 45, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.6, reviews: 150 },
+            { id: 1, name: "Pi Smartwatch", basePrice: 150, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true },
+            { id: 2, name: "Pi T-Shirt", basePrice: 25, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false },
+            { id: 3, name: "Pi Home Speaker", basePrice: 80, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true },
+            { id: 4, name: "Pi Headphones", basePrice: 60, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false },
+            { id: 5, name: "Pi Sneakers", basePrice: 45, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.6, reviews: 150, engagement: 0, isEco: true },
         ];
 
         const ads = [
@@ -1123,18 +1167,41 @@
             { id: 3, name: "Pi Home Essentials", price: 120, image: "https://via.placeholder.com/300x200" },
         ];
 
+        const p2pListings = [
+            { id: 1, name: "Handmade Pi Necklace", price: 15, image: "https://via.placeholder.com/300x200", seller: "Pioneer123" },
+            { id: 2, name: "Used Pi Laptop", price: 200, image: "https://via.placeholder.com/300x200", seller: "TechPioneer" },
+        ];
+
+        const featuredSellers = [
+            { id: 1, name: "EcoPi Store", sales: 500, image: "https://via.placeholder.com/300x200" },
+            { id: 2, name: "PiFashion Hub", sales: 300, image: "https://via.placeholder.com/300x200" },
+        ];
+
+        let cart = [];
+        let userRewards = 0;
+
         function renderProducts(productsToRender, containerId = "product-grid") {
             const productGrid = document.getElementById(containerId);
             productGrid.innerHTML = "";
             productsToRender.forEach(product => {
+                const currentPrice = calculateDynamicPrice(product);
                 const card = document.createElement("div");
                 card.className = "product-card";
                 card.innerHTML = `
                     <img src="${product.image}" alt="${product.name}">
                     <h3 class="product-title">${product.name}</h3>
-                    <p class="product-price">${product.price} Pi</p>
+                    <p class="product-price" data-base-price="${product.basePrice}">
+                        ${currentPrice} Pi <span>(Original: ${product.basePrice} Pi)</span>
+                    </p>
                     <div class="product-rating">${"★".repeat(Math.floor(product.rating))} (${product.reviews})</div>
-                    <button class="btn mt-2" onclick="addToCart(${product.id})">Add to Cart</button>
+                    ${product.isEco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
+                    <div class="flex flex-col gap-2 mt-2">
+                        <a href="product.html?id=${product.id}" class="text-sm text-[var(--accent-color)] hover:underline">View Product</a>
+                        <button class="btn" onclick="addToCart(${product.id}, ${currentPrice})">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        <button class="btn accent" onclick="buyNow(${product.id}, ${currentPrice})">Buy Now</button>
+                    </div>
                 `;
                 productGrid.appendChild(card);
             });
@@ -1156,6 +1223,45 @@
             });
         }
 
+        function renderP2PListings() {
+            const p2pGrid = document.getElementById("p2p-grid");
+            p2pGrid.innerHTML = "";
+            p2pListings.forEach(listing => {
+                const card = document.createElement("div");
+                card.className = "p2p-card";
+                card.innerHTML = `
+                    <img src="${listing.image}" alt="${listing.name}">
+                    <h3 class="p2p-title">${listing.name}</h3>
+                    <p class="p2p-price">${listing.price} Pi</p>
+                    <p class="text-sm">Seller: ${listing.seller}</p>
+                    <button class="btn accent mt-2" onclick="buyP2P(${listing.id}, ${listing.price})">Buy with Escrow</button>
+                `;
+                p2pGrid.appendChild(card);
+            });
+        }
+
+        function renderSellers() {
+            const sellerGrid = document.getElementById("seller-grid");
+            sellerGrid.innerHTML = "";
+            featuredSellers.forEach(seller => {
+                const card = document.createElement("div");
+                card.className = "seller-card";
+                card.innerHTML = `
+                    <img src="${seller.image}" alt="${seller.name}">
+                    <h3 class="seller-title">${seller.name}</h3>
+                    <p class="seller-info">${seller.sales} Sales</p>
+                    <a href="vendor.html" class="btn accent mt-2">Visit Store</a>
+                `;
+                sellerGrid.appendChild(card);
+            });
+        }
+
+        function calculateDynamicPrice(product) {
+            const engagementFactor = Math.min(product.engagement / 100, 0.3); // Max 30% discount
+            const discount = product.basePrice * engagementFactor;
+            return Math.round(product.basePrice - discount);
+        }
+
         function filterCategory(category) {
             const filtered = category === "all" ? products : products.filter(p => p.category === category);
             renderProducts(filtered);
@@ -1164,28 +1270,93 @@
         function sortProducts(sortBy) {
             let sorted = [...products];
             if (sortBy === "price-low") {
-                sorted.sort((a, b) => a.price - b.price);
+                sorted.sort((a, b) => calculateDynamicPrice(a) - calculateDynamicPrice(b));
             } else if (sortBy === "price-high") {
-                sorted.sort((a, b) => b.price - a.price);
+                sorted.sort((a, b) => calculateDynamicPrice(b) - calculateDynamicPrice(a));
             } else if (sortBy === "rating") {
                 sorted.sort((a, b) => b.rating - a.rating);
             }
             renderProducts(sorted);
         }
 
-        let cart = [];
-        function addToCart(productId) {
+        function filterProducts(filter) {
+            let filtered = [...products];
+            if (filter === "eco") {
+                filtered = filtered.filter(p => p.isEco);
+            } else if (filter === "below-50") {
+                filtered = filtered.filter(p => calculateDynamicPrice(p) < 50);
+            } else if (filter === "above-100") {
+                filtered = filtered.filter(p => calculateDynamicPrice(p) > 100);
+            }
+            renderProducts(filtered);
+        }
+
+        function addToCart(productId, price) {
             const product = products.find(p => p.id === productId);
-            cart.push(product);
+            cart.push({ ...product, price });
+            product.engagement += 10;
             document.getElementById("cart-count").textContent = cart.length;
-            addNotification(`${product.name} added to cart!`);
+            awardPiRewards(5);
+            addNotification(`${product.name} added to cart for ${price} Pi! +5 Rewards`);
+            renderProducts(products);
+        }
+
+        async function buyNow(productId, price) {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (!userData) {
+                alert('Please authenticate to buy.');
+                return;
+            }
+            try {
+                await initiatePayment(price, `Instant Purchase: ${products.find(p => p.id === productId).name}`);
+                awardPiRewards(10);
+                addNotification(`Purchased ${products.find(p => p.id === productId).name} for ${price} Pi! +10 Rewards`);
+            } catch (error) {
+                addNotification('Purchase failed. Try again.');
+            }
+        }
+
+        async function buyP2P(listingId, price) {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (!userData) {
+                alert('Please authenticate to buy.');
+                return;
+            }
+            try {
+                await initiatePayment(price, `P2P Purchase: ${p2pListings.find(l => l.id === listingId).name}`, true);
+                addNotification(`Purchased ${p2pListings.find(l => l.id === listingId).name} for ${price} Pi with Escrow!`);
+            } catch (error) {
+                addNotification('P2P Purchase failed. Try again.');
+            }
+        }
+
+        function awardPiRewards(points) {
+            userRewards += points;
+            document.getElementById("rewards-points").textContent = userRewards;
+            document.getElementById("rewards-display").textContent = userRewards;
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (userData) {
+                userData.rewards = userRewards;
+                localStorage.setItem('piUser', JSON.stringify(userData));
+            }
+        }
+
+        function redeemRewards() {
+            if (userRewards >= 50) {
+                userRewards -= 50;
+                document.getElementById("rewards-points").textContent = userRewards;
+                document.getElementById("rewards-display").textContent = userRewards;
+                addNotification("Redeemed 50 Pi Rewards for a 10 Pi discount!");
+            } else {
+                addNotification("Need 50+ points to redeem!");
+            }
         }
 
         function searchProducts() {
             const query = document.querySelector(".search-input").value.toLowerCase();
             const filtered = products.filter(p => p.name.toLowerCase().includes(query));
             const searchResults = document.querySelector(".search-results");
-            searchResults.innerHTML = filtered.map(p => `<div class="search-result-item">${p.name} - ${p.price} Pi</div>`).join("");
+            searchResults.innerHTML = filtered.map(p => `<div class="search-result-item">${p.name} - ${calculateDynamicPrice(p)} Pi</div>`).join("");
             searchResults.classList.toggle("active", query.length > 2);
             if (query.length > 2) renderProducts(filtered);
         }
@@ -1224,9 +1395,17 @@
             if (localStorage.getItem('darkMode') === 'true') {
                 document.body.classList.add('dark');
             }
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (userData && userData.rewards) {
+                userRewards = userData.rewards;
+                document.getElementById("rewards-points").textContent = userRewards;
+                document.getElementById("rewards-display").textContent = userRewards;
+            }
             renderProducts(products);
             renderProducts(products.slice(0, 3), "recommended-grid");
             renderAds();
+            renderP2PListings();
+            renderSellers();
             const burgerBtn = document.querySelector('.burger-btn');
             const mobileMenu = document.querySelector('.mobile-menu');
             burgerBtn.addEventListener('click', () => {
@@ -1251,6 +1430,12 @@
                 header.classList.toggle('scrolled', scrollTop > 50);
                 lastScrollTop = scrollTop;
             });
+            setInterval(() => {
+                products.forEach(p => {
+                    p.engagement += Math.floor(Math.random() * 5);
+                });
+                renderProducts(products);
+            }, 30000);
         });
     </script>
 </body>
