@@ -985,7 +985,7 @@
         </ul>
     </nav>
     <main>
-       <section class="hero">
+<section class="hero">
     <div class="hero-background"></div>
     <div class="hero-content">
         <h1 class="glow-text">TruthWeb</h1>
@@ -998,7 +998,7 @@
         </div>
         <p class="text-sm mt-4">Over 10M+ million downloads worldwide!</p>
         <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
-        <button id="auth-btn" class="btn accent rounded" onclick="authenticateUser()">Authenticate with Pi</button>
+        <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Authenticate with Pi</button>
         <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
         <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
     </div>
@@ -1057,7 +1057,7 @@
 .btn {
     padding: 0.75rem 1.5rem;
     margin: 0.5rem;
-    border-radius: 0.25rem;
+    border-radius: 9999px; /* Changed to fully rounded (pill-shaped) buttons */
     border: none;
     cursor: pointer;
     transition: background-color 0.2s;
