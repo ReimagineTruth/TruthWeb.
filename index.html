@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Pi Network SDK and Authentication Logic -->
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -57,6 +56,22 @@
           throw error;
         } finally {
           document.querySelector('.loading-overlay').classList.remove('active');
+        }
+      }
+
+      async function subscribe(plan) {
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        if (!userData) {
+          alert('Please authenticate to subscribe.');
+          return;
+        }
+        const plans = { basic: 10, pro: 25, elite: 50 };
+        const amount = plans[plan];
+        try {
+          await initiatePayment(amount, `${plan} Plan Subscription`);
+          addNotification(`Subscribed to ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan!`);
+        } catch (error) {
+          alert('Subscription failed. Please try again.');
         }
       }
 
@@ -487,7 +502,6 @@
       .hero {
         min-height: 100vh;
         display: flex;
-        flex-direction: column;
         justify-content: center;
         align-items: center;
         position: relative;
@@ -523,7 +537,8 @@
         border-radius: 15px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         animation: slideUp 1.2s ease-out forwards;
-        max-width: 90%;
+        max-width: 800px;
+        width: 100%;
         margin: 0 auto;
       }
       @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
@@ -743,15 +758,48 @@
       .stat-item:hover i { transform: scale(1.1); }
       .video-player-section { background: var(--primary-color); color: var(--text-color); padding: 2rem 1rem; }
       .video-container { max-width: 1000px; margin: 0 auto; }
-      .main-video-card { background: var(--secondary-color); border: 1px solid var(--highlight-color); border-radius: 10px; padding: 1.5rem; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; }
+      .main-video-card {
+        background: var(--secondary-color);
+        border: 1px solid var(--highlight-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        color: var(--primary-color);
+      }
+      body.dark .main-video-card {
+        background: var(--dark-secondary);
+        color: var(--dark-text);
+      }
       .main-video-card:hover { transform: translateY(-5px); }
       .main-video-card iframe { width: 100%; height: 400px; border: none; border-radius: 10px; }
-      .video-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+      .video-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        color: var(--primary-color);
+      }
+      body.dark .video-controls {
+        color: var(--dark-text);
+      }
       .control-btn { background: var(--button-bg-color); color: var(--button-text-color); padding: 0.5rem 1rem; border: 1px solid var(--highlight-color); border-radius: 9999px; cursor: pointer; transition: all 0.3s ease; }
       .control-btn:hover { background: var(--button-hover-bg-color); color: var(--button-hover-text-color); transform: scale(1.05); }
       .interaction-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; margin-right: 1rem; transition: color 0.3s ease, transform 0.3s ease; }
       .interaction-btn:hover, .interaction-btn.active { color: var(--accent-color); transform: scale(1.1); }
-      .comment-section { margin-top: 1.5rem; max-height: 200px; overflow-y: auto; background: #F5F5F5; padding: 1rem; border-radius: 10px; }
+      .comment-section {
+        margin-top: 1.5rem;
+        max-height: 200px;
+        overflow-y: auto;
+        background: #F5F5F5;
+        padding: 1rem;
+        border-radius: 10px;
+        color: var(--primary-color);
+      }
+      body.dark .comment-section {
+        background: var(--dark-highlight);
+        color: var(--dark-text);
+      }
       .comment { border-bottom: 1px solid #E0E0E0; padding: 0.5rem 0; color: var(--primary-color); }
       .comment:last-child { border-bottom: none; }
       .comment-input { width: 100%; padding: 0.75rem; margin-top: 1rem; border: 1px solid var(--highlight-color); border-radius: 8px; font-family: 'Poppins', sans-serif; background: var(--secondary-color); color: var(--primary-color); }
@@ -823,15 +871,26 @@
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       .input-error { border-color: #FF4444; }
       .error-message { color: #FF4444; font-size: 0.85rem; margin-top: 0.25rem; }
+      #video-title,
+      #video-description {
+        color: var(--primary-color);
+      }
+      body.dark #video-title,
+      body.dark #video-description {
+        color: var(--dark-text);
+      }
       @media (min-width: 641px) { 
         .footer-menu { display: none; } 
         .go-to-top { bottom: 20px; } 
-        .body { padding-bottom: 0; } 
+        body { padding-bottom: 0; } 
         .burger-btn { display: none; }
         .desktop-nav { display: flex; }
       }
       @media (max-width: 640px) {
-        .hero-content { padding: 1.5rem; }
+        .hero-content {
+          padding: 1.5rem;
+          max-width: 100%;
+        }
         .hero-background {
           background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(255, 215, 0, 0.15)), 
                       url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1080&q=80') 
@@ -866,11 +925,13 @@
         .btn { padding: 0.5rem 1.2rem; }
         .card i { font-size: 2.25rem; }
         footer .social-icons a, footer .footer-links a { font-size: 1rem; }
+        .hero-content { max-width: 700px; }
       }
       @media (min-width: 1025px) {
         .search-container { max-width: 400px; }
         .glow-text { font-size: 3rem; }
         footer .social-icons a, footer .footer-links a { font-size: 1rem; }
+        .hero-content { max-width: 800px; }
       }
     </style>
 </head>
@@ -986,8 +1047,8 @@
             <div class="max-w-4xl mx-auto text-center">
                 <div class="main-video-card">
                     <iframe id="main-video" src="https://www.youtube.com/embed/MfOVBHbgDK8?enablejsapi=1&si=TM_tVWd25-1I1JMK" title="Happy Pi Day 2025!" allowfullscreen></iframe>
-                    <h3 id="video-title" class="text-xl font-semibold mt-4 text-[var(--primary-color)]">Happy Pi Day 2025!</h3>
-                    <p id="video-description" class="text-lg mt-2 text-[var(--primary-color)]">Happy Pi Day 2025, Pi Network’s 6th official anniversary!</p>
+                    <h3 id="video-title" class="text-xl font-semibold mt-4">Happy Pi Day 2025!</h3>
+                    <p id="video-description" class="text-lg mt-2">Happy Pi Day 2025, Pi Network’s 6th official anniversary!</p>
                     <div class="video-controls">
                         <div>
                             <button class="control-btn" onclick="prevVideo()">❮ Prev</button>
@@ -1001,7 +1062,7 @@
                         </div>
                     </div>
                     <div class="comment-section">
-                        <h4 class="text-lg font-semibold mb-2 text-[var(--primary-color)]">Comments</h4>
+                        <h4 class="text-lg font-semibold mb-2">Comments</h4>
                         <div id="comments-list">
                             <div class="comment">PioneerA: Great showcase of TruthWeb!</div>
                             <div class="comment">UserB: Loving the app features!</div>
@@ -1010,7 +1071,6 @@
                     </div>
                 </div>
             </div>
-        </section>
         </section>
         <section id="core-features" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Core Features</h2>
@@ -1030,43 +1090,51 @@
             <p class="text-center text-lg mb-12 max-w-2xl mx-auto">We collaborate with leading organizations to drive innovation in blockchain and AI. <em>This is a sample Business Partners page, not official.</em></p>
             <div class="relative max-w-6xl mx-auto">
                 <div class="carousel">
-                    <div class="card bg-gradient-to-br from-[var(--secondary-color)] to-gray-100 text-[var(--primary-color)] min-w-[280px] snap-center rounded-xl p-6 flex flex-col items-center justify-between transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                        <img loading="lazy" src="https://i.ibb.co/RGWhLsQr/pi-network-pi-icons-pi-logo-design-illustration-trendy-and-modern-crypto-currency-pi-symbol-for-logo.jpg" alt="Pi Network Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" onerror="this.src='https://via.placeholder.com/96x96?text=Pi+Network';">
+                    <div class="card min-w-[280px] snap-center">
+                        <img loading="lazy" src="https://i.ibb.co/RGWhLsQr/pi-network-pi-icons-pi-logo-design-illustration-trendy-and-modern-crypto-currency-pi-symbol-for-logo.jpg" 
+                             alt="Pi Network Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" 
+                             onerror="this.src='https://via.placeholder.com/96x96?text=Pi+Network';">
                         <h3 class="text-xl font-semibold mb-2">Pi Network</h3>
-                        <p class="text-sm text-center text-gray-700">Pioneering mobile-first blockchain technology and decentralized ecosystems.</p>
+                        <p class="text-sm text-center">Pioneering mobile-first blockchain technology and decentralized ecosystems.</p>
                         <a href="https://minepi.com" target="_blank" class="btn mt-4 bg-[var(--accent-color)] text-[var(--primary-color)] hover:bg-[#FFA500] border-none">Learn More</a>
                     </div>
-                    <div class="card bg-gradient-to-br from-[var(--secondary-color)] to-gray-100 text-[var(--primary-color)] min-w-[280px] snap-center rounded-xl p-6 flex flex-col items-center justify-between transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                        <img loading="lazy" src="https://i.ibb.co/152gNjb/openai-chatgpt-logo-icon-free-png.webp" alt="OpenAI Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" onerror="this.src='https://via.placeholder.com/96x96?text=OpenAI';">
+                    <div class="card min-w-[280px] snap-center">
+                        <img loading="lazy" src="https://i.ibb.co/152gNjb/openai-chatgpt-logo-icon-free-png.webp" 
+                             alt="OpenAI Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" 
+                             onerror="this.src='https://via.placeholder.com/96x96?text=OpenAI';">
                         <h3 class="text-xl font-semibold mb-2">OpenAI</h3>
-                        <p class="text-sm text-center text-gray-700">Advancing AI integration and ethical implementation in blockchain systems.</p>
+                        <p class="text-sm text-center">Advancing AI integration and ethical implementation in blockchain systems.</p>
                         <a href="https://openai.com" target="_blank" class="btn mt-4 bg-[var(--accent-color)] text-[var(--primary-color)] hover:bg-[#FFA500] border-none">Learn More</a>
                     </div>
-                    <div class="card bg-gradient-to-br from-[var(--secondary-color)] to-gray-100 text-[var(--primary-color)] min-w-[280px] snap-center rounded-xl p-6 flex flex-col items-center justify-between transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                        <img loading="lazy" src="https://i.ibb.co/0RbTWGxz/OKX-Logo-svg.png" alt="OKX Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" onerror="this.src='https://via.placeholder.com/96x96?text=OKX';">
+                    <div class="card min-w-[280px] snap-center">
+                        <img loading="lazy" src="https://i.ibb.co/0RbTWGxz/OKX-Logo-svg.png" 
+                             alt="OKX Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" 
+                             onerror="this.src='https://via.placeholder.com/96x96?text=OKX';">
                         <h3 class="text-xl font-semibold mb-2">OKX</h3>
-                        <p class="text-sm text-center text-gray-700">Providing secure crypto trading infrastructure and liquidity solutions.</p>
+                        <p class="text-sm text-center">Providing secure crypto trading infrastructure and liquidity solutions.</p>
                         <a href="https://www.okx.com" target="_blank" class="btn mt-4 bg-[var(--accent-color)] text-[var(--primary-color)] hover:bg-[#FFA500] border-none">Learn More</a>
                     </div>
-                    <div class="card bg-gradient-to-br from-[var(--secondary-color)] to-gray-100 text-[var(--primary-color)] min-w-[280px] snap-center rounded-xl p-6 flex flex-col items-center justify-between transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                        <img loading="lazy" src="https://i.ibb.co/DHLPvq43/block-s-right.webp" alt="Stanford University Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" onerror="this.src='https://via.placeholder.com/96x96?text=Stanford';">
+                    <div class="card min-w-[280px] snap-center">
+                        <img loading="lazy" src="https://i.ibb.co/DHLPvq43/block-s-right.webp" 
+                             alt="Stanford University Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" 
+                             onerror="this.src='https://via.placeholder.com/96x96?text=Stanford';">
                         <h3 class="text-xl font-semibold mb-2">Stanford University</h3>
-                        <p class="text-sm text-center text-gray-700">Collaborating on blockchain research and AI ethics frameworks.</p>
+                        <p class="text-sm text-center">Collaborating on blockchain research and AI ethics frameworks.</p>
                         <a href="https://www.stanford.edu" target="_blank" class="btn mt-4 bg-[var(--accent-color)] text-[var(--primary-color)] hover:bg-[#FFA500] border-none">Learn More</a>
                     </div>
-                    <div class="card bg-gradient-to-br from-[var(--secondary-color)] to-gray-100 text-[var(--primary-color)] min-w-[280px] snap-center rounded-xl p-6 flex flex-col items-center justify-between transform transition-all duration-500 hover:scale-105 hover:shadow-2xl">
-                        <img loading="lazy" src="https://i.ibb.co/Pvv2fdWM/nvidia-logo-brandlogos-net.png" alt="NVIDIA Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" onerror="this.src='https://via.placeholder.com/96x96?text=NVIDIA';">
+                    <div class="card min-w-[280px] snap-center">
+                        <img loading="lazy" src="https://i.ibb.co/Pvv2fdWM/nvidia-logo-brandlogos-net.png" 
+                             alt="NVIDIA Logo" class="h-24 w-24 object-contain mb-4 transition-transform duration-300 hover:scale-110" 
+                             onerror="this.src='https://via.placeholder.com/96x96?text=NVIDIA';">
                         <h3 class="text-xl font-semibold mb-2">NVIDIA</h3>
-                        <p class="text-sm text-center text-gray-700">Powering AI computing and GPU acceleration for blockchain networks.</p>
+                        <p class="text-sm text-center">Powering AI computing and GPU acceleration for blockchain networks.</p>
                         <a href="https://www.nvidia.com" target="_blank" class="btn mt-4 bg-[var(--accent-color)] text-[var(--primary-color)] hover:bg-[#FFA500] border-none">Learn More</a>
                     </div>
                 </div>
                 <button class="carousel-prev" aria-label="Previous Partner"><i class="fas fa-chevron-left"></i></button>
                 <button class="carousel-next" aria-label="Next Partner"><i class="fas fa-chevron-right"></i></button>
             </div>
-            <div class="text-center mt-12">
-                <a href="business-partners.html" class="btn accent px-6 py-3 text-lg">View All Partners</a>
-            </div>
+        </section>
         </section>
         <section id="new-features" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">New Features</h2>
@@ -1325,7 +1393,7 @@
                 <a href="payment-plans.html" class="btn accent">Learn More About Plans</a>
             </div>
         </section>
-       </section>
+         </section>
 <section id="payment-plans" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Join the TruthWeb Movement</h2>
    
@@ -1361,176 +1429,258 @@
         </div>
         <p class="mt-4">© 2025 TruthWeb (Testnet Mode). All rights reserved. Built with <i class="fas fa-heart text-red-500"></i> for the Pi Network Community.</p>
     </footer>
-    <nav class="footer-menu sm:hidden">
+    <nav class="footer-menu md:hidden">
         <a href="index.html" aria-label="Home"><i class="fas fa-home"></i></a>
         <a href="marketplace.html" aria-label="Marketplace"><i class="fas fa-shopping-cart"></i></a>
         <a href="profile.html" aria-label="Profile"><i class="fas fa-user"></i></a>
         <a href="wallet.html" aria-label="Wallet"><i class="fas fa-wallet"></i></a>
         <a href="community.html" aria-label="Community"><i class="fas fa-users"></i></a>
-      </nav>
-      <button class="go-to-top" aria-label="Go to top"><i class="fas fa-arrow-up"></i></button>
-      <script>
-        let player;
-        function onYouTubeIframeAPIReady() { player = new YT.Player('main-video', { events: { 'onReady': onPlayerReady } }); }
-        function onPlayerReady(event) { console.log('YouTube player is ready'); }
-        function togglePlayPause() {
-            const btn = document.getElementById('play-pause-btn');
-            if (player.getPlayerState() === 1) { player.pauseVideo(); btn.innerHTML = '▶ Play'; } 
-            else { player.playVideo(); btn.innerHTML = '❚❚ Pause'; }
-        }
-        // Video Player Logic
-  const videos = [
-    { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
+    </nav>
+    <button class="go-to-top" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
+
+    <script>
+      let player;
+      const videoPlaylist = [
+         { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
     { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
     { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
   ];
-        let currentVideoIndex = 0;
-        function updateVideo() {
-            const video = videos[currentVideoIndex];
-            player.loadVideoById(video.id);
-            document.getElementById('video-title').textContent = video.title;
-            document.getElementById('video-description').textContent = video.description;
-            document.getElementById('play-pause-btn').innerHTML = '▶ Play';
-        }
-        function prevVideo() { currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length; updateVideo(); }
-        function nextVideo() { currentVideoIndex = (currentVideoIndex + 1) % videos.length; updateVideo(); }
-        function toggleLike(btn) { btn.classList.toggle('active'); const count = document.getElementById('like-count'); count.textContent = parseInt(count.textContent) + (btn.classList.contains('active') ? 1 : -1); }
-        function shareVideo(platform) { const url = `https://www.youtube.com/watch?v=${videos[currentVideoIndex].id}`; window.open(platform === 'twitter' ? `https://twitter.com/intent/tweet?url=${url}` : `https://t.me/share/url?url=${url}`, '_blank'); }
-        function postComment() {
-            const input = document.getElementById('comment-input');
-            if (input.value.trim()) {
-                const commentList = document.getElementById('comments-list');
-                const username = document.getElementById('username').textContent;
-                const commentDiv = document.createElement('div');
-                commentDiv.className = 'comment';
-                commentDiv.textContent = `${username}: ${input.value}`;
-                commentList.appendChild(commentDiv);
-                input.value = '';
-                commentList.scrollTop = commentList.scrollHeight;
-            }
-        }
-        document.querySelector('.burger-btn').addEventListener('click', () => {
-            const btn = document.querySelector('.burger-btn');
-            const menu = document.querySelector('.mobile-menu');
-            btn.classList.toggle('open');
-            menu.classList.toggle('open');
+      let currentVideoIndex = 0;
+
+      function onYouTubeIframeAPIReady() {
+        player = new YT.Player('main-video', {
+          events: {
+            'onReady': onPlayerReady,
+            'onStateChange': onPlayerStateChange
+          }
         });
-        let lastScroll = 0;
-        window.addEventListener('scroll', () => {
-            const scrollTop = window.scrollY;
-            const header = document.querySelector('.sticky-header');
-            const progressBar = document.querySelector('.progress-bar');
-            const goToTop = document.querySelector('.go-to-top');
-            const footerMenu = document.querySelector('.footer-menu');
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            progressBar.style.width = `${(scrollTop / docHeight) * 100}%`;
-            header.classList.toggle('scrolled', scrollTop > 50);
-            header.classList.toggle('hidden', scrollTop > lastScroll && scrollTop > 100);
-            goToTop.classList.toggle('visible', scrollTop > 300);
-            footerMenu.classList.toggle('hidden', scrollTop > lastScroll && scrollTop > 100);
-            lastScroll = scrollTop;
+      }
+
+      function onPlayerReady(event) {
+        document.getElementById('play-pause-btn').textContent = '▶ Play';
+      }
+
+      function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.PLAYING) {
+          document.getElementById('play-pause-btn').textContent = '❚❚ Pause';
+        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+          document.getElementById('play-pause-btn').textContent = '▶ Play';
+        }
+      }
+
+      function togglePlayPause() {
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+          player.pauseVideo();
+        } else {
+          player.playVideo();
+        }
+      }
+
+      function nextVideo() {
+        currentVideoIndex = (currentVideoIndex + 1) % videoPlaylist.length;
+        updateVideo();
+      }
+
+      function prevVideo() {
+        currentVideoIndex = (currentVideoIndex - 1 + videoPlaylist.length) % videoPlaylist.length;
+        updateVideo();
+      }
+
+      function updateVideo() {
+        const video = videoPlaylist[currentVideoIndex];
+        player.loadVideoById(video.id);
+        document.getElementById('video-title').textContent = video.title;
+        document.getElementById('video-description').textContent = video.description;
+        document.getElementById('like-count').textContent = '0';
+        document.querySelectorAll('.interaction-btn').forEach(btn => btn.classList.remove('active'));
+      }
+
+      function toggleLike(button) {
+        button.classList.toggle('active');
+        const likeCount = document.getElementById('like-count');
+        let count = parseInt(likeCount.textContent);
+        likeCount.textContent = button.classList.contains('active') ? count + 1 : count - 1;
+      }
+
+      function shareVideo(platform) {
+        const video = videoPlaylist[currentVideoIndex];
+        const url = `https://www.youtube.com/watch?v=${video.id}`;
+        let shareUrl;
+        if (platform === 'twitter') {
+          shareUrl = `https://twitter.com/intent/tweet?text=Check out this video: ${video.title}&url=${encodeURIComponent(url)}`;
+        } else if (platform === 'telegram') {
+          shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(video.title)}`;
+        }
+        window.open(shareUrl, '_blank');
+      }
+
+      function postComment() {
+        const input = document.getElementById('comment-input');
+        const commentText = input.value.trim();
+        if (commentText) {
+          const commentList = document.getElementById('comments-list');
+          const newComment = document.createElement('div');
+          newComment.className = 'comment';
+          newComment.textContent = `${document.getElementById('username').textContent}: ${commentText}`;
+          commentList.appendChild(newComment);
+          input.value = '';
+          commentList.scrollTop = commentList.scrollHeight;
+        }
+      }
+
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+      }
+
+      function updateProfileSection(userData) {
+        const profileDetails = document.getElementById('profile-details');
+        profileDetails.innerHTML = `
+          <h3 class="text-xl font-semibold mb-2">Welcome, ${userData.username}!</h3>
+          <p>User ID: ${userData.uid}</p>
+          <p>Wallet Address: ${userData.walletAddress.slice(0, 6)}...${userData.walletAddress.slice(-4)}</p>
+          <p>Pi Balance: ${userData.piBalance.toFixed(2)} Pi</p>
+          <button class="btn mt-4" onclick="window.location.href='profile.html'">View Full Profile</button>
+        `;
+        updateWalletBalance(userData.piBalance);
+      }
+
+      function updateWalletBalance(balance) {
+        document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>${balance.toFixed(2)} Pi</span>`;
+      }
+
+      function checkWalletBalance() {
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        if (userData) {
+          const newBalance = userData.piBalance + (Math.random() * 10 - 5);
+          userData.piBalance = Math.max(0, newBalance);
+          localStorage.setItem('piUser', JSON.stringify(userData));
+          updateWalletBalance(userData.piBalance);
+          addNotification('Wallet balance refreshed!');
+        } else {
+          alert('Please authenticate to check your wallet balance.');
+        }
+      }
+
+      function addNotification(message) {
+        const dropdown = document.getElementById('notification-dropdown');
+        const countElement = document.getElementById('notification-count');
+        let count = parseInt(countElement.textContent);
+        countElement.textContent = count + 1;
+
+        const notification = document.createElement('div');
+        notification.className = 'notification-item';
+        notification.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+        dropdown.insertBefore(notification, dropdown.firstChild);
+        dropdown.scrollTop = 0;
+
+        if (dropdown.classList.contains('active')) {
+          dropdown.style.display = 'block';
+        }
+      }
+
+      function toggleNotifications() {
+        const dropdown = document.getElementById('notification-dropdown');
+        dropdown.classList.toggle('active');
+        dropdown.style.display = dropdown.classList.contains('active') ? 'block' : 'none';
+      }
+
+      function copyReferralLink() {
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        const referralCode = userData ? userData.uid : 'YOUR_CODE';
+        const referralLink = `https://truthweb.io/ref/${referralCode}`;
+        navigator.clipboard.writeText(referralLink).then(() => {
+          addNotification('Referral link copied to clipboard!');
         });
-        function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-        function toggleDarkMode() { document.body.classList.toggle('dark'); localStorage.setItem('darkMode', document.body.classList.contains('dark')); }
-        if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
+        document.getElementById('referral-code').textContent = referralCode;
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        if (localStorage.getItem('darkMode') === 'true') {
+          document.body.classList.add('dark');
+        }
+
+        const burgerBtn = document.querySelector('.burger-btn');
+        const mobileMenu = document.querySelector('.mobile-menu');
+        burgerBtn.addEventListener('click', () => {
+          burgerBtn.classList.toggle('open');
+          mobileMenu.classList.toggle('open');
+        });
+
         const searchInput = document.querySelector('.search-input');
         const searchResults = document.querySelector('.search-results');
-        const pages = [
-            { title: 'Home', url: 'index.html' },
-            { title: 'Marketplace', url: 'marketplace.html' },
-            { title: 'Profile', url: 'profile.html' },
-            { title: 'Wallet', url: 'wallet.html' },
-            { title: 'Ledger Testnet', url: 'ledger-testnet.html' },
-            { title: 'Community', url: 'community.html' },
-            { title: 'Developers', url: 'developers.html' },
-            { title: 'About', url: 'about.html' }
-        ];
         searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
-            searchResults.innerHTML = '';
-            if (query) {
-                const results = pages.filter(page => page.title.toLowerCase().includes(query));
-                results.forEach(result => {
-                    const div = document.createElement('div');
-                    div.className = 'search-result-item';
-                    div.textContent = result.title;
-                    div.onclick = () => window.location.href = result.url;
-                    searchResults.appendChild(div);
-                });
-                searchResults.classList.toggle('active', results.length > 0);
+          const query = searchInput.value.trim();
+          if (query.length > 2) {
+            searchResults.innerHTML = `
+              <div class="search-result-item">Search result for "${query}"</div>
+              <div class="search-result-item">Another result for "${query}"</div>
+            `;
+            searchResults.classList.add('active');
+          } else {
+            searchResults.classList.remove('active');
+          }
+        });
+
+        const progressBar = document.querySelector('.progress-bar');
+        const goToTopBtn = document.querySelector('.go-to-top');
+        let lastScrollTop = 0;
+        const header = document.querySelector('.sticky-header');
+        const footerMenu = document.querySelector('.footer-menu');
+
+        window.addEventListener('scroll', () => {
+          const scrollTop = window.scrollY;
+          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+          const scrollPercent = (scrollTop / docHeight) * 100;
+          progressBar.style.width = `${scrollPercent}%`;
+
+          goToTopBtn.classList.toggle('visible', scrollTop > 200);
+
+          if (scrollTop > lastScrollTop && scrollTop > 100) {
+            header.classList.add('hidden');
+            footerMenu.classList.add('hidden');
+          } else {
+            header.classList.remove('hidden');
+            footerMenu.classList.remove('hidden');
+          }
+          header.classList.toggle('scrolled', scrollTop > 50);
+          lastScrollTop = scrollTop;
+        });
+
+        goToTopBtn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        const statCounters = document.querySelectorAll('#user-stats h3');
+        statCounters.forEach(counter => {
+          const target = parseInt(counter.getAttribute('data-count'));
+          let current = 0;
+          const increment = target / 100;
+          const updateCounter = () => {
+            current += increment;
+            if (current >= target) {
+              counter.textContent = target.toLocaleString();
             } else {
-                searchResults.classList.remove('active');
+              counter.textContent = Math.floor(current).toLocaleString();
+              requestAnimationFrame(updateCounter);
             }
+          };
+          updateCounter();
         });
-        document.addEventListener('click', (e) => { if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) searchResults.classList.remove('active'); });
-        const counters = document.querySelectorAll('.stat-item h3');
-        counters.forEach(counter => {
-            const updateCount = () => {
-                const target = +counter.getAttribute('data-count');
-                const count = +counter.innerText;
-                const speed = 200;
-                const inc = target / speed;
-                if (count < target) {
-                    counter.innerText = Math.ceil(count + inc);
-                    setTimeout(updateCount, 20);
-                } else {
-                    counter.innerText = target.toLocaleString();
-                }
-            };
-            const observer = new IntersectionObserver((entries) => { if (entries[0].isIntersecting) updateCount(); }, { threshold: 0.5 });
-            observer.observe(counter);
-        });
+
         const carousel = document.querySelector('.carousel');
         const prevBtn = document.querySelector('.carousel-prev');
         const nextBtn = document.querySelector('.carousel-next');
-        prevBtn.addEventListener('click', () => carousel.scrollBy({ left: -300, behavior: 'smooth' }));
-        nextBtn.addEventListener('click', () => carousel.scrollBy({ left: 300, behavior: 'smooth' }));
-        function addNotification(message) {
-            const dropdown = document.getElementById('notification-dropdown');
-            const count = document.getElementById('notification-count');
-            const item = document.createElement('div');
-            item.className = 'notification-item';
-            item.textContent = message;
-            dropdown.appendChild(item);
-            count.textContent = parseInt(count.textContent) + 1;
-            dropdown.scrollTop = dropdown.scrollHeight;
-        }
-        function toggleNotifications() { document.getElementById('notification-dropdown').classList.toggle('active'); }
-        function updateProfileSection(userData) {
-            const profileDetails = document.getElementById('profile-details');
-            profileDetails.innerHTML = `
-                <i class="fas fa-user-circle text-4xl mb-4"></i>
-                <h3 class="text-xl font-semibold mb-2">${userData.username}</h3>
-                <p>UID: ${userData.uid}</p>
-                <p>Wallet: ${userData.walletAddress.slice(0, 6)}...${userData.walletAddress.slice(-4)}</p>
-                <p>Pi Balance: ${userData.piBalance.toFixed(2)} Pi</p>
-                <button class="btn mt-4" onclick="checkWalletBalance()">Refresh Balance</button>
-            `;
-        }
-        async function checkWalletBalance() {
-            const userData = JSON.parse(localStorage.getItem('piUser'));
-            if (!userData) return;
-            try {
-                document.querySelector('.loading-overlay').classList.add('active');
-                const response = await $.ajax({
-                    url: 'http://localhost:3000/wallet/balance',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify({ walletAddress: userData.walletAddress })
-                });
-                userData.piBalance = response.balance || Math.random() * 1000;
-                localStorage.setItem('piUser', JSON.stringify(userData));
-                updateProfileSection(userData);
-                document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>${userData.piBalance.toFixed(2)} Pi</span>`;
-                addNotification(`Balance updated: ${userData.piBalance.toFixed(2)} Pi`);
-            } catch (error) {
-                console.error('Balance check failed:', error);
-                addNotification('Failed to refresh balance');
-            } finally {
-                document.querySelector('.loading-overlay').classList.remove('active');
-            }
-        }
+        const cardWidth = document.querySelector('.carousel .card').offsetWidth + 24;
+
+        prevBtn.addEventListener('click', () => {
+          carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
+        });
+
+        nextBtn.addEventListener('click', () => {
+          carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
+        });
+      });
     </script>
 </body>
 </html>
-       
