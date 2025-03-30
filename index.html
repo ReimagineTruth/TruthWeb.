@@ -190,10 +190,17 @@
         --dark-primary: #FFFFFF;
         --dark-secondary: #1A1A1A;
         --dark-text: #E0E0E0;
+        --dark-highlight: #555555;
         --banner-bg-light: #ECEFF1;
         --banner-bg-dark: #2A2A2A;
         --banner-border-light: #CFD8DC;
         --banner-border-dark: #444444;
+        --nav-bg-light: #FFFFFF;
+        --nav-bg-dark: #1A1A1A;
+        --nav-text-light: #000000;
+        --nav-text-dark: #E0E0E0;
+        --nav-hover-light: #FFD700;
+        --nav-hover-dark: #FFD700;
       }
       html { scroll-behavior: smooth; }
       body {
@@ -205,14 +212,14 @@
         overflow-x: hidden;
         line-height: 1.6;
         padding-bottom: 60px;
-        transition: background 0.3s, color 0.3s;
+        transition: all 0.3s ease;
       }
       body.dark {
         --primary-color: var(--dark-primary);
         --secondary-color: var(--dark-secondary);
         --text-color: var(--dark-text);
         --background-color: #121212;
-        --highlight-color: #555555;
+        --highlight-color: var(--dark-highlight);
         --button-bg-color: #333333;
         --button-hover-bg-color: #FFD700;
         --button-hover-text-color: #000000;
@@ -257,9 +264,9 @@
         top: 0;
         width: 100%;
         z-index: 1000;
-        background: var(--primary-color);
-        color: var(--text-color);
-        transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+        background: var(--nav-bg-light);
+        color: var(--nav-text-light);
+        transition: all 0.3s ease;
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -267,27 +274,60 @@
         height: 64px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
-      .sticky-header.hidden { transform: translateY(-100%); }
+      body.dark .sticky-header {
+        background: var(--nav-bg-dark);
+        color: var(--nav-text-dark);
+      }
       .sticky-header.scrolled {
         background: var(--secondary-color);
-        color: var(--primary-color);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
       }
-      body.dark .sticky-header {
-        background: var(--dark-secondary);
-        color: var(--dark-text);
-      }
-      body.dark .sticky-header.scrolled {
-        background: #333333;
-        color: var(--dark-text);
-      }
+      .sticky-header.hidden { transform: translateY(-100%); }
       .sticky-header .logo-text {
         font-size: 1.5rem;
         font-weight: 700;
-        color: var(--text-color);
+        color: var(--nav-text-light);
         transition: color 0.3s ease;
       }
-      .sticky-header.scrolled .logo-text { color: var(--primary-color); }
+      body.dark .sticky-header .logo-text {
+        color: var(--nav-text-dark);
+      }
+      .sticky-header.scrolled .logo-text {
+        color: var(--nav-text-light);
+      }
+      body.dark .sticky-header.scrolled .logo-text {
+        color: var(--nav-text-dark);
+      }
+      .desktop-nav .nav-item a {
+        color: var(--nav-text-light);
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+      }
+      body.dark .desktop-nav .nav-item a {
+        color: var(--nav-text-dark);
+      }
+      .sticky-header.scrolled .desktop-nav .nav-item a {
+        color: var(--nav-text-light);
+      }
+      body.dark .sticky-header.scrolled .desktop-nav .nav-item a {
+        color: var(--nav-text-dark);
+      }
+      .desktop-nav .nav-item a:hover {
+        color: var(--nav-hover-light);
+      }
+      body.dark .desktop-nav .nav-item a:hover {
+        color: var(--nav-hover-dark);
+      }
+      .desktop-nav .nav-item { transition: transform 0.3s ease; animation: fadeInUp 0.5s ease-in-out forwards; }
+      .desktop-nav .nav-item:nth-child(1) { animation-delay: 0.1s; }
+      .desktop-nav .nav-item:nth-child(2) { animation-delay: 0.2s; }
+      .desktop-nav .nav-item:nth-child(3) { animation-delay: 0.3s; }
+      .desktop-nav .nav-item:nth-child(4) { animation-delay: 0.4s; }
+      .desktop-nav .nav-item:nth-child(5) { animation-delay: 0.5s; }
+      .desktop-nav .nav-item:nth-child(6) { animation-delay: 0.6s; }
+      .desktop-nav .nav-item:nth-child(7) { animation-delay: 0.7s; }
+      .desktop-nav .nav-item:nth-child(8) { animation-delay: 0.8s; }
+      .desktop-nav .nav-item:hover { transform: scale(1.1) translateY(-5px); }
       .burger-btn {
         display: flex;
         cursor: pointer;
@@ -302,11 +342,19 @@
       .burger-btn span {
         width: 100%;
         height: 3px;
-        background: var(--text-color);
+        background: var(--nav-text-light);
         margin: 2px 0;
         transition: all 0.3s ease;
       }
-      .sticky-header.scrolled .burger-btn span { background: var(--primary-color); }
+      body.dark .burger-btn span {
+        background: var(--nav-text-dark);
+      }
+      .sticky-header.scrolled .burger-btn span {
+        background: var(--nav-text-light);
+      }
+      body.dark .sticky-header.scrolled .burger-btn span {
+        background: var(--nav-text-dark);
+      }
       .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
       .burger-btn.open span:nth-child(2) { opacity: 0; transform: scale(0); }
       .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
@@ -317,12 +365,16 @@
         width: 80%;
         max-width: 300px;
         height: calc(100vh - 64px);
-        background: var(--primary-color);
-        color: var(--text-color);
+        background: var(--nav-bg-light);
+        color: var(--nav-text-light);
         transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
         z-index: 999;
         padding: 1rem;
         animation: fadeInMenu 0.4s ease-out forwards;
+      }
+      body.dark .mobile-menu {
+        background: var(--nav-bg-dark);
+        color: var(--nav-text-dark);
       }
       .mobile-menu.open { left: 0; }
       @keyframes fadeInMenu { from { opacity: 0; } to { opacity: 1; } }
@@ -330,29 +382,20 @@
       .mobile-menu .nav-item a {
         display: block;
         padding: 0.75rem;
-        color: var(--text-color);
+        color: var(--nav-text-light);
         font-size: 1.1rem;
         transition: all 0.3s ease;
       }
-      .mobile-menu .nav-item a:hover { color: var(--highlight-color); transform: translateX(10px) scale(1.05); }
-      .desktop-nav { display: flex; }
-      .desktop-nav .nav-item { transition: transform 0.3s ease; animation: fadeInUp 0.5s ease-in-out forwards; }
-      .desktop-nav .nav-item a {
-        color: var(--text-color);
-        padding: 0.5rem 1rem;
-        transition: all 0.3s ease;
+      body.dark .mobile-menu .nav-item a {
+        color: var(--nav-text-dark);
       }
-      .sticky-header.scrolled .desktop-nav .nav-item a { color: var(--primary-color); }
-      .desktop-nav .nav-item a:hover { color: var(--highlight-color); transform: scale(1.1); }
-      .desktop-nav .nav-item:nth-child(1) { animation-delay: 0.1s; }
-      .desktop-nav .nav-item:nth-child(2) { animation-delay: 0.2s; }
-      .desktop-nav .nav-item:nth-child(3) { animation-delay: 0.3s; }
-      .desktop-nav .nav-item:nth-child(4) { animation-delay: 0.4s; }
-      .desktop-nav .nav-item:nth-child(5) { animation-delay: 0.5s; }
-      .desktop-nav .nav-item:nth-child(6) { animation-delay: 0.6s; }
-      .desktop-nav .nav-item:nth-child(7) { animation-delay: 0.7s; }
-      .desktop-nav .nav-item:nth-child(8) { animation-delay: 0.8s; }
-      .desktop-nav .nav-item:hover { transform: scale(1.1) translateY(-5px); }
+      .mobile-menu .nav-item a:hover {
+        color: var(--nav-hover-light);
+        transform: translateX(10px) scale(1.05);
+      }
+      body.dark .mobile-menu .nav-item a:hover {
+        color: var(--nav-hover-dark);
+      }
       .search-container {
         position: relative;
         flex-grow: 1;
@@ -382,11 +425,19 @@
         right: 10px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--primary-color);
+        color: var(--nav-text-light);
         font-size: 1.2rem;
         transition: transform 0.3s ease, color 0.3s ease;
       }
-      .sticky-header.scrolled .search-icon { color: var(--primary-color); }
+      body.dark .search-icon {
+        color: var(--nav-text-dark);
+      }
+      .sticky-header.scrolled .search-icon {
+        color: var(--nav-text-light);
+      }
+      body.dark .sticky-header.scrolled .search-icon {
+        color: var(--nav-text-dark);
+      }
       .search-input:focus + .search-icon { transform: translateY(-50%) scale(1.1); }
       .search-results {
         position: absolute;
@@ -414,12 +465,20 @@
       }
       .search-result-item:hover { background: var(--highlight-color); transform: scale(1.02); }
       .icon {
-        color: var(--text-color);
+        color: var(--nav-text-light);
         font-size: 1.25rem;
         transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
         margin-left: 0.75rem;
       }
-      .sticky-header.scrolled .icon { color: var(--primary-color); }
+      body.dark .icon {
+        color: var(--nav-text-dark);
+      }
+      .sticky-header.scrolled .icon {
+        color: var(--nav-text-light);
+      }
+      body.dark .sticky-header.scrolled .icon {
+        color: var(--nav-text-dark);
+      }
       .icon:hover { transform: scale(1.15) rotate(5deg); }
       .icon.authenticated { color: var(--accent-color); }
       .floating-effect { transition: transform 0.3s ease; }
@@ -434,7 +493,6 @@
         position: relative;
         overflow: hidden;
         padding: 1rem;
-        background: var(--primary-color); /* Fallback color */
         color: var(--text-color);
         text-align: center;
         animation: fadeInHero 1s ease-out forwards;
@@ -445,10 +503,13 @@
         left: 0;
         width: 100%;
         height: 100%;
-        background: linear-gradient(135deg, rgba(0, 0, 0, 0.9), rgba(255, 215, 0, 0.2)), url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(255, 215, 0, 0.2)), 
+                    url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') 
+                    no-repeat center center/cover;
         z-index: 0;
         animation: backgroundShift 20s infinite ease-in-out;
-        opacity: 0.85;
+        opacity: 0.9;
+        filter: brightness(0.8);
       }
       @keyframes backgroundShift {
         0%, 100% { transform: scale(1.05) translateX(0); }
@@ -458,22 +519,24 @@
         position: relative;
         z-index: 1;
         padding: 2rem;
-        background: rgba(0, 0, 0, 0.5); /* Slight overlay for readability */
+        background: rgba(0, 0, 0, 0.5);
         border-radius: 15px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         animation: slideUp 1.2s ease-out forwards;
+        max-width: 90%;
+        margin: 0 auto;
       }
-      @keyframes slideUp {
-        from { opacity: 0; transform: translateY(50px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-      @keyframes fadeInHero { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+      @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       body.dark .hero-background {
-        background: linear-gradient(135deg, rgba(18, 18, 18, 0.9), rgba(255, 215, 0, 0.3)), url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+        background: linear-gradient(135deg, rgba(18, 18, 18, 0.8), rgba(255, 215, 0, 0.3)), 
+                    url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') 
+                    no-repeat center center/cover;
+        filter: brightness(0.7);
       }
       body.dark .hero-content {
         background: rgba(18, 18, 18, 0.6);
       }
+      @keyframes fadeInHero { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
       .glow-text {
         font-size: 3rem;
         font-weight: 700;
@@ -634,6 +697,42 @@
       footer .social-icons { margin-bottom: 1rem; }
       footer .social-icons a { font-size: 1.25rem; margin: 0 0.5rem; }
       footer .footer-links a { margin: 0 0.5rem; text-decoration: none; }
+      .footer-menu {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--nav-bg-light);
+        color: var(--nav-text-light);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        height: 60px;
+        z-index: 1000;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+      body.dark .footer-menu {
+        background: var(--nav-bg-dark);
+        color: var(--nav-text-dark);
+      }
+      .footer-menu.hidden { transform: translateY(100%); }
+      .footer-menu a {
+        color: var(--nav-text-light);
+        font-size: 1.5rem;
+        padding: 0.5rem;
+        transition: transform 0.3s ease, color 0.3s ease;
+      }
+      body.dark .footer-menu a {
+        color: var(--nav-text-dark);
+      }
+      .footer-menu a:hover {
+        color: var(--nav-hover-light);
+        transform: scale(1.2);
+      }
+      body.dark .footer-menu a:hover {
+        color: var(--nav-hover-dark);
+      }
       .download-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
       .download-btn img { height: 40px; transition: transform 0.3s ease; }
       .download-btn:hover img { transform: scale(1.1); }
@@ -642,10 +741,6 @@
       .stat-item:hover { transform: scale(1.05); }
       .stat-item i { color: var(--text-color); transition: transform 0.3s ease; }
       .stat-item:hover i { transform: scale(1.1); }
-      .footer-menu { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--primary-color); display: flex; justify-content: space-around; align-items: center; height: 60px; z-index: 1000; box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2); transition: transform 0.3s ease; }
-      .footer-menu.hidden { transform: translateY(100%); }
-      .footer-menu a { color: var(--text-color); font-size: 1.5rem; padding: 0.5rem; transition: transform 0.3s ease, color 0.3s ease; }
-      .footer-menu a:hover { color: var(--accent-color); transform: scale(1.2); }
       .video-player-section { background: var(--primary-color); color: var(--text-color); padding: 2rem 1rem; }
       .video-container { max-width: 1000px; margin: 0 auto; }
       .main-video-card { background: var(--secondary-color); border: 1px solid var(--highlight-color); border-radius: 10px; padding: 1.5rem; box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); transition: transform 0.3s ease; }
@@ -728,8 +823,20 @@
       @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
       .input-error { border-color: #FF4444; }
       .error-message { color: #FF4444; font-size: 0.85rem; margin-top: 0.25rem; }
-      @media (min-width: 641px) { .footer-menu { display: none; } .go-to-top { bottom: 20px; } body { padding-bottom: 0; } }
+      @media (min-width: 641px) { 
+        .footer-menu { display: none; } 
+        .go-to-top { bottom: 20px; } 
+        .body { padding-bottom: 0; } 
+        .burger-btn { display: none; }
+        .desktop-nav { display: flex; }
+      }
       @media (max-width: 640px) {
+        .hero-content { padding: 1.5rem; }
+        .hero-background {
+          background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(255, 215, 0, 0.15)), 
+                      url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1080&q=80') 
+                      no-repeat center center/cover;
+        }
         .burger-btn { display: flex; }
         .desktop-nav { display: none; }
         .search-container { max-width: 120px; margin: 0 0.5rem; }
@@ -752,14 +859,8 @@
         .go-to-top { width: 40px; height: 40px; font-size: 1.2rem; bottom: 80px; }
         .main-video-card iframe { height: 200px; }
         .video-controls { flex-direction: column; gap: 0.5rem; }
-        .hero-content { padding: 1.5rem; }
-        .hero-background {
-          background: linear-gradient(135deg, rgba(0, 0, 0, 0.8), rgba(255, 215, 0, 0.15)), url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1080&q=80') no-repeat center center/cover;
-        }
       }
       @media (min-width: 641px) and (max-width: 1024px) {
-        .burger-btn { display: none; }
-        .desktop-nav { display: flex; }
         .search-container { max-width: 300px; }
         .glow-text { font-size: 2.5rem; }
         .btn { padding: 0.5rem 1.2rem; }
@@ -767,8 +868,6 @@
         footer .social-icons a, footer .footer-links a { font-size: 1rem; }
       }
       @media (min-width: 1025px) {
-        .burger-btn { display: none; }
-        .desktop-nav { display: flex; }
         .search-container { max-width: 400px; }
         .glow-text { font-size: 3rem; }
         footer .social-icons a, footer .footer-links a { font-size: 1rem; }
@@ -826,19 +925,22 @@
     </nav>
     <main>
         <section class="hero">
-            <h1 class="glow-text">TruthWeb</h1>
-            <p class="text-xl mt-4 md:text-2xl">The Ultimate Decentralized Pi Network Hub</p>
-            <p class="text-lg mt-2">Join over 60+ Million Pioneers worldwide in the leading platform for Pi Network</p>
-            <p class="text-sm mt-2 opacity-75">[This is a test net mode, not official]</p>
-            <div class="download-buttons">
-                <a href="https://play.google.com/store" target="_blank" class="download-btn"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play"></a>
-                <a href="https://www.apple.com/app-store/" target="_blank" class="download-btn"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store"></a>
+            <div class="hero-background"></div>
+            <div class="hero-content">
+                <h1 class="glow-text">TruthWeb</h1>
+                <p class="text-xl mt-4 md:text-2xl">The Ultimate Decentralized Pi Network Hub</p>
+                <p class="text-lg mt-2">Join over 60+ Million Pioneers worldwide in the leading platform for Pi Network</p>
+                <p class="text-sm mt-2 opacity-75">[This is a test net mode, not official]</p>
+                <div class="download-buttons">
+                    <a href="https://play.google.com/store" target="_blank" class="download-btn"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play"></a>
+                    <a href="https://www.apple.com/app-store/" target="_blank" class="download-btn"><img loading="lazy" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store"></a>
+                </div>
+                <p class="text-sm mt-4">Over 10M+ million downloads worldwide!</p>
+                <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
+                <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Authenticate with Pi</button>
+                <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
+                <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
             </div>
-            <p class="text-sm mt-4">Over 10M+ million downloads worldwide!</p>
-            <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
-            <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Authenticate with Pi</button>
-            <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
-            <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
         </section>
         <section id="user-stats" class="py-16 px-4 bg-gradient-to-r from-purple-500 to-blue-500 text-white">
             <div class="max-w-6xl mx-auto text-center">
@@ -878,7 +980,7 @@
                     </div>
                 </div>
             </div>
-   </section>
+        </section>
         <section id="video-player" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Videos</h2>
             <div class="max-w-4xl mx-auto text-center">
@@ -1431,3 +1533,4 @@
     </script>
 </body>
 </html>
+       
