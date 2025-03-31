@@ -1,0 +1,23 @@
+ecommerce-truthweb/
+├── /assets/                # Static assets (images, fonts, etc.)
+│   ├── /images/           # Product, auction, and ad images
+│   │   ├── products/
+│   │   ├── auctions/
+│   │   └── ads/
+│   ├── /fonts/            # Custom fonts (e.g., Poppins if not using Google Fonts)
+│   └── /icons/            # Icons (e.g., Font Awesome files if not using CDN)
+├── /css/                  # Stylesheets
+│   └── styles.css         # Extracted CSS from the inline <style> tag
+├── /js/                   # JavaScript files
+│   ├── main.js            # Core logic (rendering, events, etc.)
+│   ├── auctions.js        # Auction-specific logic (timers, bidding)
+│   ├── payments.js        # Pi Network payment integration
+│   └── auth.js            # Authentication logic
+├── /docs/                 # Documentation
+│   ├── README.md          # Project overview, setup instructions
+│   └── architecture.md    # High-level system overview
+├── /html/                 # HTML templates (if modularized)
+│   └── index.html         # Main HTML file (refactored)
+├── .gitignore             # Files to ignore (e.g., node_modules, .env)
+├── package.json           # Node.js dependencies (if using tools like Tailwind locally)
+└── LICENSE                # License file (e.g., MIT)
