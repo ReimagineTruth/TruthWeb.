@@ -840,22 +840,40 @@
         max-height: 200px;
         padding: 1rem;
       }
-      .live-chat-btn {
+      /* Footer Navigation Styles */
+      .footer-menu {
         position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: var(--accent-color);
-        color: var(--primary-color);
-        padding: 1rem;
-        border-radius: 9999px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: var(--footer-bg);
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 0.5rem 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
         z-index: 1000;
       }
-      .live-chat-btn:hover { transform: scale(1.1); }
+      .footer-menu a {
+        color: var(--footer-text);
+        font-size: 1.5rem;
+        transition: color 0.3s ease, transform 0.3s ease;
+        padding: 0.5rem;
+      }
+      .footer-menu a:hover {
+        color: var(--footer-link-hover);
+        transform: scale(1.2);
+      }
+      body.dark .footer-menu {
+        background: var(--nav-bg-dark);
+      }
+      body.dark .footer-menu a {
+        color: var(--nav-text-dark);
+      }
       @media (min-width: 641px) { 
         .burger-btn { display: none; }
         .desktop-nav { display: flex; }
+        .footer-menu { display: none; } /* Hide footer menu on desktop */
       }
       @media (max-width: 640px) {
         .burger-btn { display: flex; }
@@ -1140,7 +1158,13 @@
         </div>
     </footer>
     <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
-    <button class="live-chat-btn" onclick="openChat()"><i class="fas fa-comment"></i> Live Chat</button>
+    <nav class="footer-menu" role="navigation" aria-label="Mobile Footer Navigation">
+        <a href="index.html"><i class="fas fa-home"></i></a>
+        <a href="marketplace.html"><i class="fas fa-shopping-cart"></i></a>
+        <a href="profile.html"><i class="fas fa-user"></i></a>
+        <a href="walletdashboard.html"><i class="fas fa-wallet"></i></a>
+        <a href="community.html"><i class="fas fa-users"></i></a>
+    </nav>
 
     <script>
         Pi.init({ 
@@ -1488,7 +1512,7 @@
             });
         }
 
-        function loadTestimonials(testimonialsArray) {
+                function loadTestimonials(testimonialsArray) {
             const grid = document.getElementById('testimonials-grid');
             if (!grid) return;
             grid.innerHTML = '';
@@ -1505,41 +1529,80 @@
         }
 
         function addToCart(productId) {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (!userData) {
+                alert('Please sign in to add items to your cart (Testnet Mode).');
+                return;
+            }
             cartCount++;
             document.getElementById('cart-count').textContent = cartCount;
             const product = products.find(p => p.id === productId);
-            addNotification(`Added ${product.name} to cart (Testnet Mode)`);
+            addNotification(`Added ${product.name} to cart! (Testnet Mode)`);
         }
 
         function viewAd(adId) {
             const ad = ads.find(a => a.id === adId);
-            addNotification(`Viewing deal: ${ad.name} (Testnet Mode)`);
+            addNotification(`Viewing ad: ${ad.name} - ${ad.price} Pi (Testnet Mode)`);
         }
 
-                function viewP2P(listingId) {
+        function viewP2P(listingId) {
             const listing = p2pListings.find(l => l.id === listingId);
-            addNotification(`Contacting seller for: ${listing.name} by ${listing.seller} (Testnet Mode)`);
-            // Simulate opening a chat or redirecting to a messaging page
-            console.log(`Opening chat with ${listing.seller} for listing ${listing.name}`);
+            addNotification(`Contacting seller for: ${listing.name} - ${listing.price} Pi (Testnet Mode)`);
         }
 
         function visitSeller(sellerId) {
             const seller = featuredSellers.find(s => s.id === sellerId);
-            addNotification(`Visiting store: ${seller.name} (Testnet Mode)`);
-            // Simulate redirecting to seller's store page
-            console.log(`Redirecting to ${seller.name}'s store`);
+            addNotification(`Visiting ${seller.name}'s store (Testnet Mode)`);
         }
 
-        function addNotification(message) {
-            notificationCount++;
-            document.getElementById('notification-count').textContent = notificationCount;
-            const dropdown = document.getElementById('notification-dropdown');
-            const notification = document.createElement('div');
-            notification.className = 'notification-item';
-            notification.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
-            dropdown.insertBefore(notification, dropdown.firstChild);
-            // Limit to 10 notifications
-            if (dropdown.children.length > 10) dropdown.removeChild(dropdown.lastChild);
+        function filterCategory(category) {
+            let filteredProducts = category === 'all' ? products : products.filter(p => p.category === category);
+            loadProducts(filteredProducts, 'product-grid');
+        }
+
+        function sortProducts(criteria) {
+            let sortedProducts = [...products];
+            if (criteria === 'price-low') {
+                sortedProducts.sort((a, b) => a.basePrice - b.basePrice);
+            } else if (criteria === 'price-high') {
+                sortedProducts.sort((a, b) => b.basePrice - a.basePrice);
+            } else if (criteria === 'rating') {
+                sortedProducts.sort((a, b) => b.rating - a.rating);
+            }
+            loadProducts(sortedProducts, 'product-grid');
+        }
+
+        function filterProducts(criteria) {
+            let filteredProducts = [...products];
+            if (criteria === 'eco') {
+                filteredProducts = filteredProducts.filter(p => p.isEco);
+            } else if (criteria === 'below-50') {
+                filteredProducts = filteredProducts.filter(p => p.basePrice < 50);
+            } else if (criteria === 'above-100') {
+                filteredProducts = filteredProducts.filter(p => p.basePrice > 100);
+            }
+            loadProducts(filteredProducts, 'product-grid');
+        }
+
+        function searchProducts(query) {
+            const resultsDiv = document.getElementById('search-results');
+            if (!query) {
+                resultsDiv.classList.remove('active');
+                return;
+            }
+            const filteredProducts = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+            resultsDiv.innerHTML = '';
+            filteredProducts.forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `${product.name} - ${product.basePrice} Pi`;
+                item.onclick = () => {
+                    addToCart(product.id);
+                    resultsDiv.classList.remove('active');
+                };
+                resultsDiv.appendChild(item);
+            });
+            resultsDiv.classList.add('active');
         }
 
         function toggleNotifications() {
@@ -1547,78 +1610,27 @@
             dropdown.classList.toggle('active');
         }
 
+        function addNotification(message) {
+            notificationCount++;
+            document.getElementById('notification-count').textContent = notificationCount;
+            const dropdown = document.getElementById('notification-dropdown');
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.textContent = message;
+            dropdown.insertBefore(item, dropdown.firstChild);
+        }
+
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
             const modeIcon = document.querySelector('.dark-mode-toggle i');
             const isDark = document.body.classList.contains('dark');
-            localStorage.setItem('darkMode', isDark);
             modeIcon.classList.toggle('fa-moon', !isDark);
             modeIcon.classList.toggle('fa-sun', isDark);
+            localStorage.setItem('darkMode', isDark);
         }
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function searchProducts(query) {
-            if (query.length < 2) {
-                document.getElementById('search-results').classList.remove('active');
-                return;
-            }
-            const results = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
-            const searchResults = document.getElementById('search-results');
-            searchResults.innerHTML = '';
-            if (results.length > 0) {
-                results.slice(0, 5).forEach(product => {
-                    const item = document.createElement('div');
-                    item.className = 'search-result-item';
-                    item.innerHTML = `
-                        <img src="${product.image}" alt="${product.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px; margin-right: 10px;">
-                        <span>${product.name} - ${product.basePrice} Pi</span>
-                    `;
-                    item.onclick = () => {
-                        addToCart(product.id);
-                        searchResults.classList.remove('active');
-                        document.querySelector('.search-input').value = '';
-                    };
-                    searchResults.appendChild(item);
-                });
-                searchResults.classList.add('active');
-            } else {
-                searchResults.classList.remove('active');
-            }
-        }
-
-        function filterCategory(category) {
-            const filtered = category === 'all' ? products : products.filter(p => p.category === category);
-            loadProducts(filtered, 'product-grid');
-            addNotification(`Filtered products by ${category} (Testnet Mode)`);
-        }
-
-        function sortProducts(criteria) {
-            let sorted = [...products];
-            if (criteria === 'price-low') {
-                sorted.sort((a, b) => a.basePrice - b.basePrice);
-            } else if (criteria === 'price-high') {
-                sorted.sort((a, b) => b.basePrice - a.basePrice);
-            } else if (criteria === 'rating') {
-                sorted.sort((a, b) => b.rating - a.rating);
-            }
-            loadProducts(sorted, 'product-grid');
-            addNotification(`Sorted products by ${criteria.replace('-', ' ')} (Testnet Mode)`);
-        }
-
-        function filterProducts(criteria) {
-            let filtered = [...products];
-            if (criteria === 'eco') {
-                filtered = filtered.filter(p => p.isEco);
-            } else if (criteria === 'below-50') {
-                filtered = filtered.filter(p => p.basePrice < 50);
-            } else if (criteria === 'above-100') {
-                filtered = filtered.filter(p => p.basePrice > 100);
-            }
-            loadProducts(filtered, 'product-grid');
-            addNotification(`Filtered products: ${criteria} (Testnet Mode)`);
         }
 
         function toggleFAQ(element) {
@@ -1626,23 +1638,21 @@
             faqItem.classList.toggle('active');
         }
 
-        function openChat() {
-            addNotification('Opening live chat (Testnet Mode)');
-            console.log('Live chat opened');
-            // Simulate opening a chat window
-        }
-
         function redeemRewards() {
             const userData = JSON.parse(localStorage.getItem('piUser'));
             if (!userData) {
-                addNotification('Please sign in to redeem rewards (Testnet Mode)');
+                alert('Please sign in to redeem rewards (Testnet Mode).');
                 return;
             }
             const rewards = Math.floor(Math.random() * 100);
             userData.rewards = (userData.rewards || 0) + rewards;
             localStorage.setItem('piUser', JSON.stringify(userData));
             document.getElementById('rewards-display').textContent = userData.rewards;
-            addNotification(`Redeemed ${rewards} Pi points! Total: ${userData.rewards} (Testnet Mode)`);
+            addNotification(`Redeemed ${rewards} Pi points! (Testnet Mode)`);
+        }
+
+        function openChat() {
+            alert('Live Chat feature coming soon! (Testnet Mode)');
         }
     </script>
 </body>
