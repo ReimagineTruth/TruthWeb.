@@ -526,6 +526,23 @@
       .footer-bottom {
         text-align: center;
         padding-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+      }
+      .footer-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .footer-logo {
+        width: 150px;
+        height: auto;
+        transition: transform 0.3s ease;
+      }
+      .footer-logo:hover {
+        transform: scale(1.1);
       }
       .footer-bottom .social-icons {
         display: flex;
@@ -857,6 +874,7 @@
         .product-title { font-size: 0.9rem; }
         .product-price { font-size: 1.1rem; }
         .ads-grid, .p2p-grid, .seller-grid, .testimonials-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        .footer-logo { width: 120px; }
       }
       @media (min-width: 641px) and (max-width: 1024px) {
         .search-container { max-width: 300px; }
@@ -1019,6 +1037,21 @@
                 </div>
             </div>
         </section>
+        <div class="text-center mt-12">
+            <a href="payment-plans.html" class="btn accent">Learn More About Plans</a>
+        </div>
+        <section id="payment-plans" class="py-16 px-4">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Join the TruthWeb Movement</h2>
+            <div class="max-w-4xl mx-auto text-center">
+                <p class="text-lg mb-6 md:text-xl">Be part of a global revolution in decentralized finance and community-driven innovation. Sign up today and start exploring TruthWeb!</p>
+                <a href="auth.html" class="btn accent">Get Started</a>
+                <div class="flex justify-center space-x-4 mt-4">
+                    <a href="https://www.youtube.com/@TruthWebYoutube?sub_confirmation=1" target="_blank" class="btn">Subscribe</a>
+                    <a href="donate.html" target="_blank" class="btn">Donate</a>
+                    <a href="https://www.okx.com/join/96663535" target="_blank" class="btn">Join OKX</a>
+                </div>
+            </div>
+        </section>
     </main>
     <footer>
         <div class="footer-container">
@@ -1099,6 +1132,9 @@
                 <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <div class="footer-center">
+                <img src="https://i.ibb.co/sdWFrmt5/Untitled-design-1-removebg-preview.png" alt="TruthWeb Logo" class="footer-logo">
             </div>
             <p>© 2025 TruthWeb (Testnet Mode). All rights reserved.<br>Built with <i class="fas fa-heart"></i> for the Pi Network Community.</p>
         </div>
@@ -1273,11 +1309,11 @@
         }
 
         const products = [
-            { id: 1, name: "Pi Smartwatch", basePrice: 150, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true },
-            { id: 2, name: "Pi T-Shirt", basePrice: 25, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false },
-            { id: 3, name: "Pi Home Speaker", basePrice: 80, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true },
-            { id: 4, name: "Pi Headphones", basePrice: 60, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false },
-            { id: 5, name: "Pi Sneakers", basePrice: 45, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.6, reviews: 150, engagement: 0, isEco: true }
+            { id: 1, name: "Pi Smartwatch", basePrice: 150, category: "electronics", image: "https://images.unsplash.com/photo-1523275339254-cc177407ce42?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80", rating: 4.5, reviews: 120, engagement: 0, isEco: true },
+            { id: 2, name: "Pi T-Shirt", basePrice: 25, category: "fashion", image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80", rating: 4.0, reviews: 85, engagement: 0, isEco: false },
+            { id: 3, name: "Pi Home Speaker", basePrice: 80, category: "home", image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80", rating: 4.8, reviews: 200, engagement: 0, isEco: true },
+            { id: 4, name: "Pi Headphones", basePrice: 60, category: "electronics", image: "https://images.unsplash.com/photo-1505751172876-fa1923c5c528?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80", rating: 4.2, reviews: 95, engagement: 0, isEco: false },
+            { id: 5, name: "Pi Sneakers", basePrice: 45, category: "fashion", image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80", rating: 4.6, reviews: 150, engagement: 0, isEco: true }
         ];
 
         const ads = [
@@ -1480,24 +1516,30 @@
             addNotification(`Viewing deal: ${ad.name} (Testnet Mode)`);
         }
 
-        function viewP2P(listingId) {
+                function viewP2P(listingId) {
             const listing = p2pListings.find(l => l.id === listingId);
-            addNotification(`Contacting seller for ${listing.name} (Testnet Mode)`);
+            addNotification(`Contacting seller for: ${listing.name} by ${listing.seller} (Testnet Mode)`);
+            // Simulate opening a chat or redirecting to a messaging page
+            console.log(`Opening chat with ${listing.seller} for listing ${listing.name}`);
         }
 
         function visitSeller(sellerId) {
             const seller = featuredSellers.find(s => s.id === sellerId);
-            addNotification(`Visiting ${seller.name}'s store (Testnet Mode)`);
+            addNotification(`Visiting store: ${seller.name} (Testnet Mode)`);
+            // Simulate redirecting to seller's store page
+            console.log(`Redirecting to ${seller.name}'s store`);
         }
 
         function addNotification(message) {
             notificationCount++;
             document.getElementById('notification-count').textContent = notificationCount;
             const dropdown = document.getElementById('notification-dropdown');
-            const item = document.createElement('div');
-            item.className = 'notification-item';
-            item.textContent = message;
-            dropdown.insertBefore(item, dropdown.firstChild);
+            const notification = document.createElement('div');
+            notification.className = 'notification-item';
+            notification.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+            dropdown.insertBefore(notification, dropdown.firstChild);
+            // Limit to 10 notifications
+            if (dropdown.children.length > 10) dropdown.removeChild(dropdown.lastChild);
         }
 
         function toggleNotifications() {
@@ -1505,83 +1547,89 @@
             dropdown.classList.toggle('active');
         }
 
-        function searchProducts(query) {
-            const results = document.getElementById('search-results');
-            if (query.length < 2) {
-                results.classList.remove('active');
-                return;
-            }
-            const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
-            results.innerHTML = '';
-            filtered.forEach(product => {
-                const item = document.createElement('div');
-                item.className = 'search-result-item';
-                item.innerHTML = `${product.name} - ${product.basePrice} Pi`;
-                item.onclick = () => addToCart(product.id);
-                results.appendChild(item);
-            });
-            results.classList.add('active');
-        }
-
-                function filterCategory(category) {
-            const filtered = category === 'all' ? products : products.filter(p => p.category === category);
-            loadProducts(filtered, 'product-grid');
-        }
-
-        function sortProducts(criteria) {
-            let sortedProducts = [...products];
-            switch (criteria) {
-                case 'price-low':
-                    sortedProducts.sort((a, b) => a.basePrice - b.basePrice);
-                    break;
-                case 'price-high':
-                    sortedProducts.sort((a, b) => b.basePrice - a.basePrice);
-                    break;
-                case 'rating':
-                    sortedProducts.sort((a, b) => b.rating - a.rating);
-                    break;
-                default:
-                    sortedProducts = [...products]; // Reset to default
-            }
-            loadProducts(sortedProducts, 'product-grid');
-        }
-
-        function filterProducts(criteria) {
-            let filteredProducts = [...products];
-            switch (criteria) {
-                case 'eco':
-                    filteredProducts = filteredProducts.filter(p => p.isEco);
-                    break;
-                case 'below-50':
-                    filteredProducts = filteredProducts.filter(p => p.basePrice < 50);
-                    break;
-                case 'above-100':
-                    filteredProducts = filteredProducts.filter(p => p.basePrice > 100);
-                    break;
-                default:
-                    filteredProducts = [...products]; // Show all
-            }
-            loadProducts(filteredProducts, 'product-grid');
-        }
-
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
+            const modeIcon = document.querySelector('.dark-mode-toggle i');
             const isDark = document.body.classList.contains('dark');
             localStorage.setItem('darkMode', isDark);
-            const modeIcon = document.querySelector('.dark-mode-toggle i');
-            if (modeIcon) {
-                modeIcon.classList.toggle('fa-moon', !isDark);
-                modeIcon.classList.toggle('fa-sun', isDark);
-            }
+            modeIcon.classList.toggle('fa-moon', !isDark);
+            modeIcon.classList.toggle('fa-sun', isDark);
         }
 
         function scrollToTop() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        function searchProducts(query) {
+            if (query.length < 2) {
+                document.getElementById('search-results').classList.remove('active');
+                return;
+            }
+            const results = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+            const searchResults = document.getElementById('search-results');
+            searchResults.innerHTML = '';
+            if (results.length > 0) {
+                results.slice(0, 5).forEach(product => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.innerHTML = `
+                        <img src="${product.image}" alt="${product.name}" style="width: 40px; height: 40px; object-fit: cover; border-radius: 5px; margin-right: 10px;">
+                        <span>${product.name} - ${product.basePrice} Pi</span>
+                    `;
+                    item.onclick = () => {
+                        addToCart(product.id);
+                        searchResults.classList.remove('active');
+                        document.querySelector('.search-input').value = '';
+                    };
+                    searchResults.appendChild(item);
+                });
+                searchResults.classList.add('active');
+            } else {
+                searchResults.classList.remove('active');
+            }
+        }
+
+        function filterCategory(category) {
+            const filtered = category === 'all' ? products : products.filter(p => p.category === category);
+            loadProducts(filtered, 'product-grid');
+            addNotification(`Filtered products by ${category} (Testnet Mode)`);
+        }
+
+        function sortProducts(criteria) {
+            let sorted = [...products];
+            if (criteria === 'price-low') {
+                sorted.sort((a, b) => a.basePrice - b.basePrice);
+            } else if (criteria === 'price-high') {
+                sorted.sort((a, b) => b.basePrice - a.basePrice);
+            } else if (criteria === 'rating') {
+                sorted.sort((a, b) => b.rating - a.rating);
+            }
+            loadProducts(sorted, 'product-grid');
+            addNotification(`Sorted products by ${criteria.replace('-', ' ')} (Testnet Mode)`);
+        }
+
+        function filterProducts(criteria) {
+            let filtered = [...products];
+            if (criteria === 'eco') {
+                filtered = filtered.filter(p => p.isEco);
+            } else if (criteria === 'below-50') {
+                filtered = filtered.filter(p => p.basePrice < 50);
+            } else if (criteria === 'above-100') {
+                filtered = filtered.filter(p => p.basePrice > 100);
+            }
+            loadProducts(filtered, 'product-grid');
+            addNotification(`Filtered products: ${criteria} (Testnet Mode)`);
+        }
+
         function toggleFAQ(element) {
             const faqItem = element.parentElement;
             faqItem.classList.toggle('active');
+        }
+
+        function openChat() {
+            addNotification('Opening live chat (Testnet Mode)');
+            console.log('Live chat opened');
+            // Simulate opening a chat window
         }
 
         function redeemRewards() {
@@ -1590,70 +1638,12 @@
                 addNotification('Please sign in to redeem rewards (Testnet Mode)');
                 return;
             }
-            const rewards = parseInt(document.getElementById('rewards-display').textContent) || 0;
-            if (rewards <= 0) {
-                addNotification('No rewards available to redeem (Testnet Mode)');
-                return;
-            }
-            userData.rewards = (userData.rewards || 0) - rewards;
+            const rewards = Math.floor(Math.random() * 100);
+            userData.rewards = (userData.rewards || 0) + rewards;
             localStorage.setItem('piUser', JSON.stringify(userData));
             document.getElementById('rewards-display').textContent = userData.rewards;
-            addNotification(`Redeemed ${rewards} reward points! (Testnet Mode)`);
+            addNotification(`Redeemed ${rewards} Pi points! Total: ${userData.rewards} (Testnet Mode)`);
         }
-
-        function openChat() {
-            addNotification('Live Chat is not yet implemented in Testnet Mode');
-            // Future implementation could open a chat widget
-        }
-
-        function updateCartCount() {
-            document.getElementById('cart-count').textContent = cartCount;
-        }
-
-        function resetNotifications() {
-            notificationCount = 0;
-            document.getElementById('notification-count').textContent = notificationCount;
-            document.getElementById('notification-dropdown').innerHTML = '';
-        }
-
-        // Close search results when clicking outside
-        document.addEventListener('click', (e) => {
-            const searchContainer = document.querySelector('.search-container');
-            if (!searchContainer.contains(e.target)) {
-                document.getElementById('search-results').classList.remove('active');
-            }
-        });
-
-        // Close mobile menu when clicking outside
-        document.addEventListener('click', (e) => {
-            const mobileMenu = document.querySelector('.mobile-menu');
-            const burgerBtn = document.querySelector('.burger-btn');
-            if (!mobileMenu.contains(e.target) && !burgerBtn.contains(e.target) && mobileMenu.classList.contains('open')) {
-                mobileMenu.classList.remove('open');
-                burgerBtn.classList.remove('open');
-            }
-        });
-
-        // Close notification dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            const notificationBell = document.querySelector('.notification-bell');
-            const dropdown = document.getElementById('notification-dropdown');
-            if (!notificationBell.contains(e.target) && dropdown.classList.contains('active')) {
-                dropdown.classList.remove('active');
-            }
-        });
-
-        // Simulate dynamic reward updates (for demo purposes)
-        setInterval(() => {
-            const userData = JSON.parse(localStorage.getItem('piUser'));
-            if (userData && Math.random() > 0.8) { // 20% chance every 10s
-                userData.rewards = (userData.rewards || 0) + Math.floor(Math.random() * 10);
-                localStorage.setItem('piUser', JSON.stringify(userData));
-                document.getElementById('rewards-display').textContent = userData.rewards;
-                addNotification('You earned new reward points! (Testnet Mode)');
-            }
-        }, 10000);
     </script>
 </body>
 </html>
-       
