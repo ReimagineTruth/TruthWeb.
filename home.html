@@ -1126,9 +1126,9 @@
             <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Videos</h2>
             <div class="max-w-4xl mx-auto text-center">
                 <div class="main-video-card">
-                    <iframe id="main-video" src="https://www.youtube.com/embed/WLihlM7KOoY?enablejsapi=1&si=TM_tVWd25-1I1JMK" title="Experience The Power Of TruthWeb In The Pi Network Ecosystem!" allowfullscreen></iframe>
-                    <h3 id="video-title" class="text-xl font-semibold mt-4">Happy Pi Day 2025!</h3>
-                    <p id="video-description" class="text-lg mt-2">Are you ready to explore the hidden potential of TRUTHWEB?!</p>
+                    <iframe id="main-video" src="https://www.youtube.com/embed/WLihlM7KOoY?enablejsapi=1" title="Experience The Power Of TruthWeb In The Pi Network Ecosystem!" allowfullscreen></iframe>
+                    <h3 id="video-title" class="text-xl font-semibold mt-4">Experience The Power Of TruthWeb In The Pi Network Ecosystem!</h3>
+                    <p id="video-description" class="text-lg mt-2">Are you ready to explore the hidden potential of TRUTHWEB?</p>
                     <div class="video-controls">
                         <div>
                             <button class="control-btn" onclick="prevVideo()">❮ Prev</button>
@@ -1136,7 +1136,7 @@
                             <button class="control-btn" onclick="nextVideo()">Next ❯</button>
                         </div>
                         <div class="flex items-center">
-                            <button class="interaction-btn" onclick="toggleLike(this)"><i class="far fa-thumbs-up"></i> <span id="like-count">0</span></button>
+                            <button class="interaction-btn" data-action="like" onclick="toggleLike(this)"><i class="far fa-thumbs-up"></i> <span id="like-count">0</span></button>
                             <button class="interaction-btn" onclick="shareVideo('twitter')"><i class="fab fa-twitter"></i></button>
                             <button class="interaction-btn" onclick="shareVideo('telegram')"><i class="fab fa-telegram"></i></button>
                         </div>
@@ -1218,14 +1218,7 @@
                 <div class="card"><i class="fas fa-robot"></i><h3 class="text-xl font-semibold mb-2">AI-Powered Insights</h3><p>Get personalized trading and investment recommendations.</p><a href="ai-powered-pi-insights.html" class="btn">Try Now</a></div>
                 <div class="card"><i class="fas fa-mobile-alt"></i><h3 class="text-xl font-semibold mb-2">Mobile App Enhancements</h3><p>Enjoy a revamped UI, push notifications, and offline mode.</p><a href="mobile-enhancements.html" class="btn">Learn More</a></div>
             </div>
-        </section>
-        <section id="ai-bot" class="py-16 px-4">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb AI Bot</h2>
-            <div class="max-w-4xl mx-auto text-center">
-                <p class="text-lg mb-6 md:text-xl">Our advanced AI Bot is here to assist you 24/7 with marketplace navigation, trading queries, and more—ensuring a seamless user experience.</p>
-                <a href="truwebbot.html" class="btn">Chat Now</a>
-            </div>
-        </section>
+           </section>
         <section id="feed" class="py-16 px-4">
             <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb Feed</h2>
             <p class="text-center text-lg mb-8 max-w-2xl mx-auto">The TruthWeb Feed connects Pioneers worldwide, showcasing user posts, updates, and sponsored ads. Share your experiences, discover Pi-powered products, and stay informed—all in one decentralized hub.</p>
@@ -1514,249 +1507,275 @@
     <button class="go-to-top" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
 
     <script>
-      let player;
-      const videoPlaylist = [
-          { id: "WLihlM7KOoY", title: "Experience The Power Of TruthWeb In The Pi Network Ecosystem!", description: "Are you ready to explore the hidden potential of TRUTHWEB?" },
-         { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
-    { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
-    { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
-  ];
-      let currentVideoIndex = 0;
+        let player;
+        const videoPlaylist = [
+            { id: "WLihlM7KOoY", title: "Experience The Power Of TruthWeb In The Pi Network Ecosystem!", description: "Are you ready to explore the hidden potential of TRUTHWEB?" },
+            { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
+            { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
+            { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
+        ];
+        let currentVideoIndex = 0;
+        let likeCounts = {};
 
-      function onYouTubeIframeAPIReady() {
-        player = new YT.Player('main-video', {
-          events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-          }
-        });
-      }
-
-      function onPlayerReady(event) {
-        document.getElementById('play-pause-btn').textContent = '▶ Play';
-      }
-
-      function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.PLAYING) {
-          document.getElementById('play-pause-btn').textContent = '❚❚ Pause';
-        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-          document.getElementById('play-pause-btn').textContent = '▶ Play';
-        }
-      }
-
-      function togglePlayPause() {
-        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-          player.pauseVideo();
-        } else {
-          player.playVideo();
-        }
-      }
-
-      function nextVideo() {
-        currentVideoIndex = (currentVideoIndex + 1) % videoPlaylist.length;
-        updateVideo();
-      }
-
-      function prevVideo() {
-        currentVideoIndex = (currentVideoIndex - 1 + videoPlaylist.length) % videoPlaylist.length;
-        updateVideo();
-      }
-
-      function updateVideo() {
-        const video = videoPlaylist[currentVideoIndex];
-        player.loadVideoById(video.id);
-        document.getElementById('video-title').textContent = video.title;
-        document.getElementById('video-description').textContent = video.description;
-        document.getElementById('like-count').textContent = '0';
-        document.querySelectorAll('.interaction-btn').forEach(btn => btn.classList.remove('active'));
-      }
-
-      function toggleLike(button) {
-        button.classList.toggle('active');
-        const likeCount = document.getElementById('like-count');
-        let count = parseInt(likeCount.textContent);
-        likeCount.textContent = button.classList.contains('active') ? count + 1 : count - 1;
-      }
-
-      function shareVideo(platform) {
-        const video = videoPlaylist[currentVideoIndex];
-        const url = `https://www.youtube.com/watch?v=${video.id}`;
-        let shareUrl;
-        if (platform === 'twitter') {
-          shareUrl = `https://twitter.com/intent/tweet?text=Check out this video: ${video.title}&url=${encodeURIComponent(url)}`;
-        } else if (platform === 'telegram') {
-          shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(video.title)}`;
-        }
-        window.open(shareUrl, '_blank');
-      }
-
-      function postComment() {
-        const input = document.getElementById('comment-input');
-        const commentText = input.value.trim();
-        if (commentText) {
-          const commentList = document.getElementById('comments-list');
-          const newComment = document.createElement('div');
-          newComment.className = 'comment';
-          newComment.textContent = `${document.getElementById('username').textContent}: ${commentText}`;
-          commentList.appendChild(newComment);
-          input.value = '';
-          commentList.scrollTop = commentList.scrollHeight;
-        }
-      }
-
-      function toggleDarkMode() {
-        document.body.classList.toggle('dark');
-        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-      }
-
-      function updateProfileSection(userData) {
-        const profileDetails = document.getElementById('profile-details');
-        profileDetails.innerHTML = `
-          <h3 class="text-xl font-semibold mb-2">Welcome, ${userData.username}!</h3>
-          <p>User ID: ${userData.uid}</p>
-          <p>Wallet Address: ${userData.walletAddress.slice(0, 6)}...${userData.walletAddress.slice(-4)}</p>
-          <p>Pi Balance: ${userData.piBalance.toFixed(2)} Pi</p>
-          <button class="btn mt-4" onclick="window.location.href='profile.html'">View Full Profile</button>
-        `;
-        updateWalletBalance(userData.piBalance);
-      }
-
-      function updateWalletBalance(balance) {
-        document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>${balance.toFixed(2)} Pi</span>`;
-      }
-
-      function checkWalletBalance() {
-        const userData = JSON.parse(localStorage.getItem('piUser'));
-        if (userData) {
-          const newBalance = userData.piBalance + (Math.random() * 10 - 5);
-          userData.piBalance = Math.max(0, newBalance);
-          localStorage.setItem('piUser', JSON.stringify(userData));
-          updateWalletBalance(userData.piBalance);
-          addNotification('Wallet balance refreshed!');
-        } else {
-          alert('Please authenticate to check your wallet balance.');
-        }
-      }
-
-      function addNotification(message) {
-        const dropdown = document.getElementById('notification-dropdown');
-        const countElement = document.getElementById('notification-count');
-        let count = parseInt(countElement.textContent);
-        countElement.textContent = count + 1;
-
-        const notification = document.createElement('div');
-        notification.className = 'notification-item';
-        notification.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
-        dropdown.insertBefore(notification, dropdown.firstChild);
-        dropdown.scrollTop = 0;
-
-        if (dropdown.classList.contains('active')) {
-          dropdown.style.display = 'block';
-        }
-      }
-
-      function toggleNotifications() {
-        const dropdown = document.getElementById('notification-dropdown');
-        dropdown.classList.toggle('active');
-        dropdown.style.display = dropdown.classList.contains('active') ? 'block' : 'none';
-      }
-
-      function copyReferralLink() {
-        const userData = JSON.parse(localStorage.getItem('piUser'));
-        const referralCode = userData ? userData.uid : 'YOUR_CODE';
-        const referralLink = `https://truthweb.io/ref/${referralCode}`;
-        navigator.clipboard.writeText(referralLink).then(() => {
-          addNotification('Referral link copied to clipboard!');
-        });
-        document.getElementById('referral-code').textContent = referralCode;
-      }
-
-      document.addEventListener('DOMContentLoaded', () => {
-        if (localStorage.getItem('darkMode') === 'true') {
-          document.body.classList.add('dark');
-        }
-
-        const burgerBtn = document.querySelector('.burger-btn');
-        const mobileMenu = document.querySelector('.mobile-menu');
-        burgerBtn.addEventListener('click', () => {
-          burgerBtn.classList.toggle('open');
-          mobileMenu.classList.toggle('open');
-        });
-
-        const searchInput = document.querySelector('.search-input');
-        const searchResults = document.querySelector('.search-results');
-        searchInput.addEventListener('input', () => {
-          const query = searchInput.value.trim();
-          if (query.length > 2) {
-            searchResults.innerHTML = `
-              <div class="search-result-item">Search result for "${query}"</div>
-              <div class="search-result-item">Another result for "${query}"</div>
-            `;
-            searchResults.classList.add('active');
-          } else {
-            searchResults.classList.remove('active');
-          }
-        });
-
-        const progressBar = document.querySelector('.progress-bar');
-        const goToTopBtn = document.querySelector('.go-to-top');
-        let lastScrollTop = 0;
-        const header = document.querySelector('.sticky-header');
-        const footerMenu = document.querySelector('.footer-menu');
-
-        window.addEventListener('scroll', () => {
-          const scrollTop = window.scrollY;
-          const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-          const scrollPercent = (scrollTop / docHeight) * 100;
-          progressBar.style.width = `${scrollPercent}%`;
-
-          goToTopBtn.classList.toggle('visible', scrollTop > 200);
-
-          if (scrollTop > lastScrollTop && scrollTop > 100) {
-            header.classList.add('hidden');
-            footerMenu.classList.add('hidden');
-          } else {
-            header.classList.remove('hidden');
-            footerMenu.classList.remove('hidden');
-          }
-          header.classList.toggle('scrolled', scrollTop > 50);
-          lastScrollTop = scrollTop;
-        });
-
-        goToTopBtn.addEventListener('click', () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-
-        const statCounters = document.querySelectorAll('#user-stats h3');
-        statCounters.forEach(counter => {
-          const target = parseInt(counter.getAttribute('data-count'));
-          let current = 0;
-          const increment = target / 100;
-          const updateCounter = () => {
-            current += increment;
-            if (current >= target) {
-              counter.textContent = target.toLocaleString();
-            } else {
-              counter.textContent = Math.floor(current).toLocaleString();
-              requestAnimationFrame(updateCounter);
+        function onYouTubeIframeAPIReady() {
+            try {
+                player = new YT.Player('main-video', {
+                    height: '400',
+                    width: '100%',
+                    videoId: videoPlaylist[currentVideoIndex].id,
+                    playerVars: {
+                        controls: 0,
+                        rel: 0,
+                        showinfo: 0,
+                        modestbranding: 1
+                    },
+                    events: {
+                        'onReady': onPlayerReady,
+                        'onStateChange': onPlayerStateChange,
+                        'onError': onPlayerError
+                    }
+                });
+            } catch (error) {
+                console.error('Failed to initialize YouTube player:', error);
+                addNotification('Error loading video player. Please refresh the page.');
             }
-          };
-          updateCounter();
-        });
+        }
 
-        const carousel = document.querySelector('.carousel');
-        const prevBtn = document.querySelector('.carousel-prev');
-        const nextBtn = document.querySelector('.carousel-next');
-        const cardWidth = document.querySelector('.carousel .card').offsetWidth + 24;
+        function onPlayerReady(event) {
+            document.getElementById('play-pause-btn').textContent = '▶ Play';
+            updateVideoUI();
+        }
 
-        prevBtn.addEventListener('click', () => {
-          carousel.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-        });
+        function onPlayerStateChange(event) {
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            if (event.data === YT.PlayerState.PLAYING) {
+                playPauseBtn.textContent = '❚❚ Pause';
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                playPauseBtn.textContent = '▶ Play';
+            }
+        }
 
-        nextBtn.addEventListener('click', () => {
-          carousel.scrollBy({ left: cardWidth, behavior: 'smooth' });
+        function onPlayerError(event) {
+            console.error('YouTube Player Error:', event.data);
+            addNotification('Error playing video. Skipping to next...');
+            nextVideo();
+        }
+
+        function togglePlayPause() {
+            if (!player) {
+                console.error('Player not initialized');
+                addNotification('Video player not ready. Please wait...');
+                return;
+            }
+            const state = player.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else if (state === YT.PlayerState.PAUSED || state === YT.PlayerState.CUED) {
+                player.playVideo();
+            }
+        }
+
+        function nextVideo() {
+            currentVideoIndex = (currentVideoIndex + 1) % videoPlaylist.length;
+            updateVideo();
+        }
+
+        function prevVideo() {
+            currentVideoIndex = (currentVideoIndex - 1 + videoPlaylist.length) % videoPlaylist.length;
+            updateVideo();
+        }
+
+        function updateVideo() {
+            if (!player) {
+                console.error('Player not initialized');
+                return;
+            }
+            const video = videoPlaylist[currentVideoIndex];
+            player.loadVideoById(video.id);
+            document.getElementById('video-title').textContent = video.title;
+            document.getElementById('video-description').textContent = video.description;
+            const likeCount = document.getElementById('like-count');
+            likeCount.textContent = likeCounts[video.id] || 0;
+            const likeBtn = document.querySelector('.interaction-btn[data-action="like"]');
+            likeBtn.classList.toggle('active', !!likeCounts[video.id]);
+        }
+
+        function toggleLike(button) {
+            if (!player) return;
+            const video = videoPlaylist[currentVideoIndex];
+            button.classList.toggle('active');
+            const likeCount = document.getElementById('like-count');
+            let count = parseInt(likeCount.textContent) || 0;
+            if (button.classList.contains('active')) {
+                likeCounts[video.id] = count + 1;
+            } else {
+                likeCounts[video.id] = Math.max(0, count - 1);
+            }
+            likeCount.textContent = likeCounts[video.id];
+        }
+
+        function shareVideo(platform) {
+            const video = videoPlaylist[currentVideoIndex];
+            const url = `https://www.youtube.com/watch?v=${video.id}`;
+            let shareUrl;
+            if (platform === 'twitter') {
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this video: ${video.title}`)}&url=${encodeURIComponent(url)}`;
+            } else if (platform === 'telegram') {
+                shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(video.title)}`;
+            }
+            window.open(shareUrl, '_blank');
+            addNotification(`Shared "${video.title}" on ${platform}!`);
+        }
+
+        function postComment() {
+            const input = document.getElementById('comment-input');
+            const commentText = input.value.trim();
+            if (commentText) {
+                const userData = JSON.parse(localStorage.getItem('piUser'));
+                const username = userData ? userData.username : 'Guest';
+                const commentList = document.getElementById('comments-list');
+                const newComment = document.createElement('div');
+                newComment.className = 'comment';
+                newComment.textContent = `${username}: ${commentText}`;
+                commentList.appendChild(newComment);
+                input.value = '';
+                commentList.scrollTop = commentList.scrollHeight;
+                addNotification('Comment posted!');
+            }
+        }
+
+        function updateVideoUI() {
+            const video = videoPlaylist[currentVideoIndex];
+            document.getElementById('video-title').textContent = video.title;
+            document.getElementById('video-description').textContent = video.description;
+            document.getElementById('like-count').textContent = likeCounts[video.id] || 0;
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            const modeIcon = document.querySelector('.icon i:last-child');
+            modeIcon.classList.toggle('fa-moon');
+            modeIcon.classList.toggle('fa-sun');
+        }
+
+        function updateProfileSection(userData) {
+            const profileDetails = document.getElementById('profile-details');
+            profileDetails.innerHTML = `
+                <p><strong>Username:</strong> ${userData.username}</p>
+                <p><strong>UID:</strong> ${userData.uid}</p>
+                <p><strong>Wallet Address:</strong> ${userData.walletAddress}</p>
+                <p><strong>Pi Balance:</strong> ${userData.piBalance.toFixed(2)} Pi</p>
+            `;
+        }
+
+        function checkWalletBalance() {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (userData) {
+                document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>${userData.piBalance.toFixed(2)} Pi</span>`;
+                addNotification('Wallet balance refreshed!');
+            } else {
+                document.getElementById('wallet-balance').innerHTML = `Pi Balance: <span>0 Pi</span>`;
+                addNotification('Please authenticate to view your balance.');
+            }
+        }
+
+        function addNotification(message) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const countElement = document.getElementById('notification-count');
+            let count = parseInt(countElement.textContent) || 0;
+            count++;
+            countElement.textContent = count;
+            const notification = document.createElement('div');
+            notification.className = 'notification-item';
+            notification.textContent = message;
+            dropdown.insertBefore(notification, dropdown.firstChild);
+            if (!dropdown.classList.contains('active')) {
+                setTimeout(() => dropdown.classList.add('active'), 100);
+                setTimeout(() => dropdown.classList.remove('active'), 3000);
+            }
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+                document.querySelector('.icon i:last-child').classList.replace('fa-moon', 'fa-sun');
+            }
+
+            const burgerBtn = document.querySelector('.burger-btn');
+            const mobileMenu = document.querySelector('.mobile-menu');
+            burgerBtn.addEventListener('click', () => {
+                burgerBtn.classList.toggle('open');
+                mobileMenu.classList.toggle('open');
+            });
+
+            const searchInput = document.querySelector('.search-input');
+            const searchResults = document.querySelector('.search-results');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim().toLowerCase();
+                if (query.length > 2) {
+                    const results = ['Marketplace', 'Wallet', 'Profile', 'Community'].filter(item => item.toLowerCase().includes(query));
+                    searchResults.innerHTML = results.map(item => `<div class="search-result-item">${item}</div>`).join('');
+                    searchResults.classList.add('active');
+                } else {
+                    searchResults.classList.remove('active');
+                }
+            });
+
+            const progressBar = document.querySelector('.progress-bar');
+            const goToTopBtn = document.querySelector('.go-to-top');
+            let lastScroll = 0;
+            window.addEventListener('scroll', () => {
+                const scrollTop = window.scrollY;
+                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+                const scrollPercent = (scrollTop / docHeight) * 100;
+                progressBar.style.width = `${scrollPercent}%`;
+
+                goToTopBtn.classList.toggle('visible', scrollTop > 300);
+
+                const header = document.querySelector('.sticky-header');
+                const footerMenu = document.querySelector('.footer-menu');
+                if (scrollTop > lastScroll && scrollTop > 100) {
+                    header.classList.add('hidden');
+                    footerMenu.classList.add('hidden');
+                } else {
+                    header.classList.remove('hidden');
+                    footerMenu.classList.remove('hidden');
+                }
+                header.classList.toggle('scrolled', scrollTop > 50);
+                lastScroll = scrollTop;
+            });
+
+            goToTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+            const statCounters = document.querySelectorAll('#user-stats h3');
+            statCounters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-count'));
+                let count = 0;
+                const increment = target / 100;
+                const updateCounter = () => {
+                    count += increment;
+                    if (count >= target) {
+                        counter.textContent = target.toLocaleString();
+                    } else {
+                        counter.textContent = Math.floor(count).toLocaleString();
+                        requestAnimationFrame(updateCounter);
+                    }
+                };
+                updateCounter();
+            });
+
+            const carousel = document.querySelector('.carousel');
+            const prevBtn = document.querySelector('.carousel-prev');
+            const nextBtn = document.querySelector('.carousel-next');
+            prevBtn.addEventListener('click', () => carousel.scrollBy({ left: -300, behavior: 'smooth' }));
+            nextBtn.addEventListener('click', () => carousel.scrollBy({ left: 300, behavior: 'smooth' }));
         });
-      });
     </script>
 </body>
 </html>
