@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
-    <title>TruthWeb - #1 Pi Network E-Commerce Hub</title>
+    <title>TruthWeb - #1 Pi Network E-Commerce Hub (Testnet Mode)</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -20,7 +20,7 @@
         const paymentId = payment.identifier;
         const txid = payment.transaction?.txid;
         return $.ajax({
-          url: 'http://localhost:3000/payment/complete',
+          url: 'http://localhost:3000/payment/complete', // Mocked for demo
           method: 'POST',
           data: { paymentId, txid, debug: 'cancel' },
           error: (xhr, status, error) => console.error('Payment completion error:', error)
@@ -34,7 +34,7 @@
           const payment = await Pi.createPayment(paymentData, {
             onReadyForServerApproval: (paymentId) => {
               $.ajax({
-                url: 'http://localhost:3000/payment/approve',
+                url: 'http://localhost:3000/payment/approve', // Mocked
                 method: 'POST',
                 data: { paymentId, escrow: isEscrow },
                 success: () => console.log('Payment approved'),
@@ -43,7 +43,7 @@
             },
             onReadyForServerCompletion: (paymentId, txid) => {
               $.ajax({
-                url: 'http://localhost:3000/payment/complete',
+                url: 'http://localhost:3000/payment/complete', // Mocked
                 method: 'POST',
                 data: { paymentId, txid, escrow: isEscrow },
                 success: () => console.log('Payment completed', isEscrow ? '(Escrow held)' : ''),
@@ -51,11 +51,15 @@
               });
             },
             onCancel: () => console.log('Payment cancelled'),
-            onError: (error) => console.error('Payment error:', error)
+            onError: (error) => {
+              console.error('Payment error:', error);
+              addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
+            }
           });
           return payment;
         } catch (error) {
           console.error('Payment initiation failed:', error);
+          addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
           throw error;
         } finally {
           document.querySelector('.loading-overlay').classList.remove('active');
@@ -65,16 +69,16 @@
       async function subscribe(plan) {
         const userData = JSON.parse(localStorage.getItem('piUser'));
         if (!userData) {
-          alert('Please authenticate to subscribe.');
+          alert('Please authenticate to subscribe (Testnet Mode).');
           return;
         }
         const plans = { basic: 10, pro: 25, elite: 50 };
         const amount = plans[plan];
         try {
-          await initiatePayment(amount, `${plan} Plan Subscription`);
-          addNotification(`Subscribed to ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan!`);
+          await initiatePayment(amount, `${plan} Plan Subscription (Testnet Mode)`);
+          addNotification(`Subscribed to ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan! (Testnet Mode)`);
         } catch (error) {
-          alert('Subscription failed. Please try again.');
+          alert('Subscription failed. Please try again (Testnet Mode).');
         }
       }
 
@@ -87,13 +91,13 @@
           document.getElementById('username').textContent = 'Guest';
           document.getElementById('auth-btn').style.display = 'inline-flex';
           document.getElementById('logout-btn').style.display = 'none';
-          document.getElementById('auth-status').textContent = 'Not authenticated';
+          document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
         }
       }
 
       function updateUIAfterAuth(userData) {
         document.getElementById('username').textContent = userData.username;
-        document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...)`;
+        document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...) - Testnet Mode`;
         document.getElementById('auth-btn').style.display = 'none';
         document.getElementById('logout-btn').style.display = 'inline-flex';
         const profileIcon = document.querySelector('.icon[href="profile.html"] i');
@@ -119,10 +123,10 @@
           };
           localStorage.setItem('piUser', JSON.stringify(userData));
           updateUIAfterAuth(userData);
-          addNotification(`Welcome back, ${userData.username}!`);
+          addNotification(`Welcome back, ${userData.username}! (Testnet Mode)`);
         } catch (error) {
           console.error('Authentication failed:', error);
-          document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'}`;
+          document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'} (Testnet Mode)`;
         } finally {
           document.getElementById('auth-btn').classList.remove('authenticating');
           document.querySelector('.loading-overlay').classList.remove('active');
@@ -132,7 +136,7 @@
       function logoutUser() {
         localStorage.removeItem('piUser');
         document.getElementById('username').textContent = 'Guest';
-        document.getElementById('auth-status').textContent = 'Not authenticated';
+        document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
         document.getElementById('auth-btn').style.display = 'inline-flex';
         document.getElementById('logout-btn').style.display = 'none';
         const profileIcon = document.querySelector('.icon[href="profile.html"] i');
@@ -147,7 +151,7 @@
         if (!userData) return false;
         try {
           const response = await $.ajax({
-            url: 'http://localhost:3000/auth/verify',
+            url: 'http://localhost:3000/auth/verify', // Mocked
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify({ accessToken: userData.accessToken })
@@ -197,6 +201,7 @@
         --nav-hover-light: #FFD700;
         --nav-hover-dark: #FFD700;
         --eco-color: #28A745;
+        --testnet-badge: #f97316;
       }
       html { scroll-behavior: smooth; }
       body {
@@ -294,6 +299,15 @@
       body.dark .sticky-header.scrolled .logo-text {
         color: var(--nav-text-dark);
       }
+      .testnet-badge {
+        background: var(--testnet-badge);
+        color: #fff;
+        padding: 0.25rem 0.75rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+      }
       .desktop-nav .nav-item a {
         color: var(--nav-text-light);
         padding: 0.5rem 1rem;
@@ -372,26 +386,70 @@
       .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
       .mobile-menu {
         position: fixed;
-        top: 64px;
+        top: 0;
         left: -100%;
         width: 85%;
         max-width: 350px;
-        height: calc(100vh - 64px);
+        height: 100vh;
         background: var(--nav-bg-light);
         color: var(--nav-text-light);
         transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
         z-index: 999;
         padding: 1rem;
         overflow-y: auto;
-        animation: fadeInMenu 0.4s ease-out forwards;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
       }
       body.dark .mobile-menu {
         background: var(--nav-bg-dark);
         color: var(--nav-text-dark);
       }
       .mobile-menu.open { left: 0; }
-      @keyframes fadeInMenu { from { opacity: 0; } to { opacity: 1; } }
+      .mobile-menu-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--highlight-color);
+      }
+      .mobile-menu-close {
+        background: none;
+        border: none;
+        color: var(--nav-text-light);
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+      body.dark .mobile-menu-close { color: var(--nav-text-dark); }
+      .mobile-menu-close:hover { transform: scale(1.2); }
       .mobile-menu ul { list-style: none; padding: 0; }
+      .mobile-menu .menu-section { margin-bottom: 1rem; }
+      .mobile-menu .menu-section h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .mobile-menu .menu-section h3::after {
+        content: '\f078'; /* Chevron down */
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 0.9rem;
+        transition: transform 0.3s ease;
+      }
+      .mobile-menu .menu-section.collapsed h3::after {
+        transform: rotate(180deg);
+      }
+      .mobile-menu .menu-section ul {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .mobile-menu .menu-section:not(.collapsed) ul {
+        max-height: 500px; /* Adjust based on content */
+      }
       .mobile-menu .nav-item a {
         display: block;
         padding: 0.75rem;
@@ -404,13 +462,11 @@
       }
       .mobile-menu .nav-item a:hover {
         color: var(--nav-hover-light);
-        transform: translateX(10px) scale(1.05);
+        transform: translateX(10px);
       }
       body.dark .mobile-menu .nav-item a:hover {
         color: var(--nav-hover-dark);
       }
-      .mobile-menu .menu-section { margin-bottom: 1.5rem; }
-      .mobile-menu .menu-section h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; }
       .search-container {
         position: relative;
         flex-grow: 1;
@@ -816,18 +872,18 @@
         background: var(--secondary-color);
         color: var(--primary-color);
       }
-      .ads-section, .p2p-section, .seller-spotlight {
+      .ads-section, .p2p-section, .seller-spotlight, .video-section, .faq-section, .testimonials-section {
         padding: 2rem 1rem;
         background: var(--secondary-color);
         border-radius: 15px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
-      .ads-grid, .p2p-grid, .seller-grid {
+      .ads-grid, .p2p-grid, .seller-grid, .testimonials-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 1.5rem;
       }
-      .ad-card, .p2p-card, .seller-card {
+      .ad-card, .p2p-card, .seller-card, .testimonial-card {
         background: var(--background-color);
         border: 1px solid var(--highlight-color);
         border-radius: 10px;
@@ -835,22 +891,97 @@
         text-align: center;
         transition: transform 0.3s ease;
       }
-      .ad-card:hover, .p2p-card:hover, .seller-card:hover {
+      .ad-card:hover, .p2p-card:hover, .seller-card:hover, .testimonial-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
       }
-      .ad-card img, .p2p-card img, .seller-card img {
+      .ad-card img, .p2p-card img, .seller-card img, .testimonial-card img {
         max-width: 100%;
         height: 200px;
         object-fit: cover;
         border-radius: 8px;
         margin-bottom: 0.5rem;
       }
-      .ad-title, .p2p-title, .seller-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+      .ad-title, .p2p-title, .seller-title, .testimonial-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
       .ad-price, .p2p-price, .seller-info { font-size: 1.5rem; color: var(--accent-color); }
-      .seller-card .seller-info { font-size: 1rem; color: var(--primary-color); }
+      .seller-card .seller-info, .testimonial-card .testimonial-text { font-size: 1rem; color: var(--primary-color); }
       #pi-rewards { transition: all 0.3s ease; }
       #pi-rewards:hover { transform: scale(1.05); }
+      .video-container {
+        position: relative;
+        padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        height: 0;
+        overflow: hidden;
+        max-width: 100%;
+        background: #000;
+        border-radius: 10px;
+      }
+      .video-container iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .video-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1rem;
+      }
+      .faq-item {
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--highlight-color);
+      }
+      .faq-question {
+        font-size: 1.25rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+      }
+      .faq-question::after {
+        content: '\f078'; /* Chevron down */
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        transition: transform 0.3s ease;
+      }
+      .faq-item.active .faq-question::after {
+        transform: rotate(180deg);
+      }
+      .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+        padding: 0 1rem;
+      }
+      .faq-item.active .faq-answer {
+        max-height: 200px; /* Adjust based on content */
+        padding: 1rem;
+      }
+      .live-chat-btn {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--accent-color);
+        color: var(--primary-color);
+        padding: 1rem;
+        border-radius: 9999px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+        z-index: 1000;
+      }
+      .live-chat-btn:hover { transform: scale(1.1); }
+      .social-share { display: flex; gap: 0.5rem; margin-top: 0.5rem; }
+      .social-share a {
+        color: var(--primary-color);
+        font-size: 1.25rem;
+        transition: transform 0.3s ease;
+      }
+      .social-share a:hover { transform: scale(1.2); }
       @media (min-width: 641px) { 
         .burger-btn { display: none; }
         .desktop-nav { display: flex; }
@@ -866,8 +997,9 @@
         .hero { flex-direction: column; text-align: center; }
         .hero-content { flex-direction: column; }
         .hero-actions { align-items: center; }
-        .product-grid, .ads-grid, .p2p-grid, .seller-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        .product-grid, .ads-grid, .p2p-grid, .seller-grid, .testimonials-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
         .banner img { max-width: 150px; }
+        .video-container { padding-bottom: 75%; } /* Adjust for mobile */
       }
     </style>
 </head>
@@ -876,12 +1008,12 @@
     <div class="loading-overlay"><div class="loader"></div></div>
     <header class="sticky-header">
         <div class="flex items-center">
-            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span></a>
+            <a href="home.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
         </div>
         <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search millions of products with Pi..." aria-label="Search Products" oninput="searchProducts()">
+            <input type="text" class="search-input" placeholder="Search millions of products with Pi..." aria-label="Search Products" oninput="searchProducts(this.value)">
             <i class="fas fa-search search-icon"></i>
-            <div class="search-results"></div>
+            <div class="search-results" id="search-results"></div>
         </div>
         <div class="flex items-center">
             <span id="pi-rewards" class="text-sm font-semibold text-[var(--accent-color)]">
@@ -890,7 +1022,7 @@
             <nav class="desktop-nav hidden md:flex items-center">
                 <ul class="flex space-x-4">
                     <li class="nav-item">
-                        <a href="home.html">Community Home</a>
+                        <a href="home.html">Home</a>
                         <div class="mega-menu">
                             <div class="mega-menu-column">
                                 <h4>Social</h4>
@@ -988,15 +1120,19 @@
                 <div class="notification-dropdown" id="notification-dropdown"></div>
             </div>
             <div class="icon floating-effect" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></div>
-            <div class="burger-btn"><span></span><span></span><span></span></div>
+            <div class="burger-btn" onclick="toggleMobileMenu()"><span></span><span></span><span></span></div>
         </div>
     </header>
     <nav class="mobile-menu">
+        <div class="mobile-menu-header">
+            <span class="logo-text">TruthWeb</span>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
         <ul>
             <li class="menu-section">
-                <h3>Main Navigation</h3>
+                <h3 onclick="toggleMenuSection(this)">Main Navigation</h3>
                 <ul>
-                    <li class="nav-item"><a href="home.html">Community Home</a></li>
+                    <li class="nav-item"><a href="home.html">Home</a></li>
                     <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
                     <li class="nav-item"><a href="profile.html">Profile</a></li>
                     <li class="nav-item"><a href="wallet.html">Wallet</a></li>
@@ -1005,7 +1141,7 @@
                 </ul>
             </li>
             <li class="menu-section">
-                <h3>About TruthWeb</h3>
+                <h3 onclick="toggleMenuSection(this)">About TruthWeb</h3>
                 <ul>
                     <li class="nav-item"><a href="about.html">About Us</a></li>
                     <li class="nav-item"><a href="developers.html">Developers</a></li>
@@ -1014,7 +1150,7 @@
                 </ul>
             </li>
             <li class="menu-section">
-                <h3>Shop</h3>
+                <h3 onclick="toggleMenuSection(this)">Shop</h3>
                 <ul>
                     <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
                     <li class="nav-item"><a href="pi-powered-marketplace.html">Pi-Powered Marketplace</a></li>
@@ -1024,7 +1160,7 @@
                 </ul>
             </li>
             <li class="menu-section">
-                <h3>Account & Wallet</h3>
+                <h3 onclick="toggleMenuSection(this)">Account & Wallet</h3>
                 <ul>
                     <li class="nav-item"><a href="profile.html">Your Profile</a></li>
                     <li class="nav-item"><a href="wallet.html">Your Wallet</a></li>
@@ -1034,7 +1170,7 @@
                 </ul>
             </li>
             <li class="menu-section">
-                <h3>Community & Social</h3>
+                <h3 onclick="toggleMenuSection(this)">Community & Social</h3>
                 <ul>
                     <li class="nav-item"><a href="community.html">Community</a></li>
                     <li class="nav-item"><a href="truthwebfeed.html">TruthWeb Feed</a></li>
@@ -1044,7 +1180,7 @@
                 </ul>
             </li>
             <li class="menu-section">
-                <h3>Business & Security</h3>
+                <h3 onclick="toggleMenuSection(this)">Business & Security</h3>
                 <ul>
                     <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
                     <li class="nav-item"><a href="api-docs.html">Open-Source API</a></li>
@@ -1054,7 +1190,7 @@
                 </ul>
             </li>
             <li class="menu-section">
-                <h3>Support</h3>
+                <h3 onclick="toggleMenuSection(this)">Support</h3>
                 <ul>
                     <li class="nav-item"><a href="contact.html">Contact Us</a></li>
                     <li class="nav-item"><a href="faq.html">FAQ</a></li>
@@ -1073,7 +1209,7 @@
                     <p class="text-xl mt-2 md:text-2xl">Your Pi-Powered Global Marketplace</p>
                     <p class="text-lg mt-2">Shop, Sell, and Trade with 60M+ Pioneers Worldwide</p>
                     <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
-                    <p id="auth-status" class="text-sm mt-2">Not authenticated</p>
+                    <p id="auth-status" class="text-sm mt-2">Not authenticated (Testnet Mode)</p>
                     <div class="category-filter">
                         <button class="category-btn" onclick="filterCategory('all')">All</button>
                         <button class="category-btn" onclick="filterCategory('electronics')">Electronics</button>
@@ -1084,21 +1220,31 @@
                 <div class="hero-actions">
                     <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Sign In with Pi</button>
                     <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
-                    <a href="marketplace.html" class="btn">Explore Marketplace</a>
+                    <a href="home.html" class="btn">Visit Community Home</a>
                 </div>
             </div>
         </section>
         <section class="banner max-w-6xl mx-auto">
             <div>
-                <h2 class="text-2xl font-bold">Pi Deals of the Day</h2>
+                <h2 class="text-2xl font-bold">Pi Deals of the Day (Testnet Mode)</h2>
                 <p class="text-lg">Save up to 50% with Pi - Limited Time Only!</p>
                 <a href="deals.html" class="btn accent mt-2">Shop Now</a>
             </div>
             <img src="https://via.placeholder.com/300x150" alt="Deals Banner">
         </section>
+        <section id="video" class="video-section max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Discover TruthWeb (Testnet Mode)</h2>
+            <div class="video-container">
+                <div id="video-player"></div>
+            </div>
+            <div class="video-controls">
+                <button id="play-pause-btn" class="btn" onclick="togglePlayPause()">▶ Play</button>
+                <button class="btn" onclick="stopVideo()">■ Stop</button>
+            </div>
+        </section>
         <section id="storefront" class="py-16 px-4 max-w-6xl mx-auto">
             <div class="sort-filter">
-                <h2 class="section-title text-3xl font-bold">Featured Products</h2>
+                <h2 class="section-title text-3xl font-bold">Featured Products (Testnet Mode)</h2>
                 <div class="flex gap-4">
                     <select class="sort-select" onchange="sortProducts(this.value)">
                         <option value="default">Sort by: Featured</option>
@@ -1120,32 +1266,53 @@
             </div>
         </section>
         <section id="ads" class="ads-section max-w-6xl mx-auto">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb Ads - Discover More</h2>
+            <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb Ads - Discover More (Testnet Mode)</h2>
             <div class="ads-grid" id="ads-grid"></div>
         </section>
         <section id="p2p" class="p2p-section max-w-6xl mx-auto">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Peer-to-Peer Listings</h2>
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Peer-to-Peer Listings (Testnet Mode)</h2>
             <div class="p2p-grid" id="p2p-grid"></div>
         </section>
         <section id="sellers" class="seller-spotlight max-w-6xl mx-auto">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Pi Sellers</h2>
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Pi Sellers (Testnet Mode)</h2>
             <div class="seller-grid" id="seller-grid"></div>
         </section>
         <section id="rewards" class="py-16 px-4 max-w-6xl mx-auto">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Your Pi Rewards</h2>
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Your Pi Rewards (Testnet Mode)</h2>
             <p class="text-lg text-center">Points: <span id="rewards-display">0</span></p>
             <button class="btn accent mx-auto mt-4 block" onclick="redeemRewards()">Redeem Rewards</button>
         </section>
         <section id="recommendations" class="py-16 px-4 max-w-6xl mx-auto">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Recommended for You</h2>
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Recommended for You (Testnet Mode)</h2>
             <div class="product-grid" id="recommended-grid"></div>
+        </section>
+        <section id="testimonials" class="testimonials-section max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">What Pioneers Say (Testnet Mode)</h2>
+            <div class="testimonials-grid" id="testimonials-grid"></div>
+        </section>
+        <section id="faq" class="faq-section max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Frequently Asked Questions (Testnet Mode)</h2>
+            <div id="faq-list">
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">What is TruthWeb?</div>
+                    <div class="faq-answer">TruthWeb is a Pi Network-powered e-commerce hub where you can shop, sell, and trade using Pi cryptocurrency with a global community of over 60 million Pioneers (Testnet Mode).</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">How do I pay with Pi?</div>
+                    <div class="faq-answer">Sign in with your Pi account, select a product, and choose "Buy Now" or "Add to Cart." Payments are processed securely via the Pi SDK (Testnet Mode).</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question" onclick="toggleFAQ(this)">Is TruthWeb safe?</div>
+                    <div class="faq-answer">Yes, we use KYC verification, fraud detection, and an escrow system to ensure secure transactions (Testnet Mode).</div>
+                </div>
+            </div>
         </section>
     </main>
     <footer>
         <div class="max-w-6xl mx-auto flex flex-wrap justify-between">
             <div class="footer-column">
                 <h3>About TruthWeb</h3>
-                <a href="home.html">Community Home</a>
+                <a href="home.html">Home</a>
                 <a href="about.html">About Us</a>
                 <a href="developers.html">Developers</a>
                 <a href="truwebbot.html">TruthWeb AI Bot</a>
@@ -1204,8 +1371,10 @@
         </div>
     </footer>
     <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
+    <button class="live-chat-btn" onclick="openChat()"><i class="fas fa-comment"></i> Live Chat</button>
 
     <script>
+        // Data
         const products = [
             { id: 1, name: "Pi Smartwatch", basePrice: 150, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true },
             { id: 2, name: "Pi T-Shirt", basePrice: 25, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false },
@@ -1230,11 +1399,68 @@
             { id: 2, name: "PiFashion Hub", sales: 300, image: "https://via.placeholder.com/300x200" },
         ];
 
+        const testimonials = [
+            { id: 1, name: "Jane P.", text: "TruthWeb made shopping with Pi so easy! Love the eco-friendly options.", image: "https://via.placeholder.com/300x200" },
+            { id: 2, name: "Mark T.", text: "Selling my handmade goods here boosted my income. Great platform!", image: "https://via.placeholder.com/300x200" },
+        ];
+
         let cart = [];
         let userRewards = 0;
+        let player;
 
+        // YouTube Player
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('video-player', {
+                height: '100%',
+                width: '100%',
+                videoId: 'WLihlM7KOoY',
+                playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0 },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange,
+                    'onError': onPlayerError
+                }
+            });
+        }
+
+        function onPlayerReady(event) {
+            document.getElementById('play-pause-btn').textContent = '▶ Play';
+        }
+
+        function onPlayerStateChange(event) {
+            if (event.data === YT.PlayerState.PLAYING) {
+                document.getElementById('play-pause-btn').textContent = '❚❚ Pause';
+                awardPiRewards(2);
+                addNotification('Watching TruthWeb video! +2 Rewards (Testnet Mode)');
+            } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                document.getElementById('play-pause-btn').textContent = '▶ Play';
+            }
+        }
+
+        function onPlayerError(event) {
+            console.error('YouTube Player Error:', event.data);
+            document.getElementById('video-player').innerHTML = '<p>Video unavailable. Please try again later (Testnet Mode).</p>';
+        }
+
+        function togglePlayPause() {
+            if (!player) return;
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
+        function stopVideo() {
+            if (!player) return;
+            player.stopVideo();
+            document.getElementById('play-pause-btn').textContent = '▶ Play';
+        }
+
+        // Rendering Functions
         function renderProducts(productsToRender, containerId = "product-grid") {
             const productGrid = document.getElementById(containerId);
+            if (!productGrid) return;
             productGrid.innerHTML = "";
             productsToRender.forEach(product => {
                 const currentPrice = calculateDynamicPrice(product);
@@ -1255,6 +1481,11 @@
                         </button>
                         <button class="btn accent" onclick="buyNow(${product.id}, ${currentPrice})">Buy Now</button>
                     </div>
+                    <div class="social-share">
+                        <a href="#" onclick="shareProduct('${product.name}', ${currentPrice}, 'twitter')"><i class="fab fa-twitter"></i></a>
+                        <a href="#" onclick="shareProduct('${product.name}', ${currentPrice}, 'facebook')"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" onclick="shareProduct('${product.name}', ${currentPrice}, 'telegram')"><i class="fab fa-telegram-plane"></i></a>
+                    </div>
                 `;
                 productGrid.appendChild(card);
             });
@@ -1262,6 +1493,7 @@
 
         function renderAds() {
             const adsGrid = document.getElementById("ads-grid");
+            if (!adsGrid) return;
             adsGrid.innerHTML = "";
             ads.forEach(ad => {
                 const card = document.createElement("div");
@@ -1270,7 +1502,7 @@
                     <img src="${ad.image}" alt="${ad.name}">
                     <h3 class="ad-title">${ad.name}</h3>
                     <p class="ad-price">${ad.price} Pi</p>
-                    <a href="marketplace.html" class="btn accent mt-2">Shop Now</a>
+                    <button class="btn accent mt-2" onclick="buyNow(${ad.id}, ${ad.price}, 'ad')">Explore Deal</button>
                 `;
                 adsGrid.appendChild(card);
             });
@@ -1278,6 +1510,7 @@
 
         function renderP2PListings() {
             const p2pGrid = document.getElementById("p2p-grid");
+            if (!p2pGrid) return;
             p2pGrid.innerHTML = "";
             p2pListings.forEach(listing => {
                 const card = document.createElement("div");
@@ -1286,8 +1519,8 @@
                     <img src="${listing.image}" alt="${listing.name}">
                     <h3 class="p2p-title">${listing.name}</h3>
                     <p class="p2p-price">${listing.price} Pi</p>
-                    <p class="text-sm">Seller: ${listing.seller}</p>
-                    <button class="btn accent mt-2" onclick="buyP2P(${listing.id}, ${listing.price})">Buy with Escrow</button>
+                    <p>Seller: ${listing.seller}</p>
+                    <button class="btn accent mt-2" onclick="buyNow(${listing.id}, ${listing.price}, 'p2p')">Buy Now</button>
                 `;
                 p2pGrid.appendChild(card);
             });
@@ -1295,6 +1528,7 @@
 
         function renderSellers() {
             const sellerGrid = document.getElementById("seller-grid");
+            if (!sellerGrid) return;
             sellerGrid.innerHTML = "";
             featuredSellers.forEach(seller => {
                 const card = document.createElement("div");
@@ -1303,16 +1537,73 @@
                     <img src="${seller.image}" alt="${seller.name}">
                     <h3 class="seller-title">${seller.name}</h3>
                     <p class="seller-info">${seller.sales} Sales</p>
-                    <a href="vendor.html" class="btn accent mt-2">Visit Store</a>
+                    <a href="vendor.html?seller=${seller.id}" class="btn mt-2">Visit Store</a>
                 `;
                 sellerGrid.appendChild(card);
             });
         }
 
+        function renderTestimonials() {
+            const testimonialsGrid = document.getElementById("testimonials-grid");
+            if (!testimonialsGrid) return;
+            testimonialsGrid.innerHTML = "";
+            testimonials.forEach(testimonial => {
+                const card = document.createElement("div");
+                card.className = "testimonial-card";
+                card.innerHTML = `
+                    <img src="${testimonial.image}" alt="${testimonial.name}">
+                    <h3 class="testimonial-title">${testimonial.name}</h3>
+                    <p class="testimonial-text">"${testimonial.text}"</p>
+                `;
+                testimonialsGrid.appendChild(card);
+            });
+        }
+
+        // Utility Functions
         function calculateDynamicPrice(product) {
-            const engagementFactor = Math.min(product.engagement / 100, 0.3); // Max 30% discount
-            const discount = product.basePrice * engagementFactor;
-            return Math.round(product.basePrice - discount);
+            return Math.max(10, product.basePrice * (1 - product.engagement * 0.01)).toFixed(2);
+        }
+
+        function searchProducts(query) {
+            const searchResults = document.getElementById("search-results");
+            if (!query) {
+                searchResults.classList.remove("active");
+                return;
+            }
+            const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+            searchResults.innerHTML = "";
+            filtered.forEach(product => {
+                const item = document.createElement("div");
+                item.className = "search-result-item";
+                item.innerHTML = `${product.name} - ${calculateDynamicPrice(product)} Pi`;
+                item.onclick = () => window.location.href = `product.html?id=${product.id}`;
+                searchResults.appendChild(item);
+            });
+            searchResults.classList.add("active");
+        }
+
+        function sortProducts(criteria) {
+            let sorted = [...products];
+            if (criteria === "price-low") {
+                sorted.sort((a, b) => calculateDynamicPrice(a) - calculateDynamicPrice(b));
+            } else if (criteria === "price-high") {
+                sorted.sort((a, b) => calculateDynamicPrice(b) - calculateDynamicPrice(a));
+            } else if (criteria === "rating") {
+                sorted.sort((a, b) => b.rating - a.rating);
+            }
+            renderProducts(sorted);
+        }
+
+        function filterProducts(criteria) {
+            let filtered = [...products];
+            if (criteria === "eco") {
+                filtered = filtered.filter(p => p.isEco);
+            } else if (criteria === "below-50") {
+                filtered = filtered.filter(p => calculateDynamicPrice(p) < 50);
+            } else if (criteria === "above-100") {
+                filtered = filtered.filter(p => calculateDynamicPrice(p) > 100);
+            }
+            renderProducts(filtered);
         }
 
         function filterCategory(category) {
@@ -1320,176 +1611,178 @@
             renderProducts(filtered);
         }
 
-        function sortProducts(sortBy) {
-            let sorted = [...products];
-            if (sortBy === "price-low") {
-                sorted.sort((a, b) => calculateDynamicPrice(a) - calculateDynamicPrice(b));
-            } else if (sortBy === "price-high") {
-                sorted.sort((a, b) => calculateDynamicPrice(b) - calculateDynamicPrice(a));
-            } else if (sortBy === "rating") {
-                sorted.sort((a, b) => b.rating - a.rating);
-            }
-            renderProducts(sorted);
-        }
-
-        function filterProducts(filter) {
-            let filtered = [...products];
-            if (filter === "eco") {
-                filtered = filtered.filter(p => p.isEco);
-            } else if (filter === "below-50") {
-                filtered = filtered.filter(p => calculateDynamicPrice(p) < 50);
-            } else if (filter === "above-100") {
-                filtered = filtered.filter(p => calculateDynamicPrice(p) > 100);
-            }
-            renderProducts(filtered);
-        }
-
         function addToCart(productId, price) {
             const product = products.find(p => p.id === productId);
+            if (!product) return;
             cart.push({ ...product, price });
-            product.engagement += 10;
-            document.getElementById("cart-count").textContent = cart.length;
+            updateCartCount();
+            addNotification(`${product.name} added to cart! (Testnet Mode)`);
             awardPiRewards(5);
-            addNotification(`${product.name} added to cart for ${price} Pi! +5 Rewards`);
-            renderProducts(products);
         }
 
-        async function buyNow(productId, price) {
-            const userData = JSON.parse(localStorage.getItem('piUser'));
+        function buyNow(productId, price, type = "product") {
+            const userData = JSON.parse(localStorage.getItem("piUser"));
             if (!userData) {
-                alert('Please authenticate to buy.');
+                alert("Please sign in with Pi to purchase (Testnet Mode).");
                 return;
             }
-            try {
-                await initiatePayment(price, `Instant Purchase: ${products.find(p => p.id === productId).name}`);
-                awardPiRewards(10);
-                addNotification(`Purchased ${products.find(p => p.id === productId).name} for ${price} Pi! +10 Rewards`);
-            } catch (error) {
-                addNotification('Purchase failed. Try again.');
-            }
+            let item;
+            if (type === "product") item = products.find(p => p.id === productId);
+            else if (type === "ad") item = ads.find(a => a.id === productId);
+            else if (type === "p2p") item = p2pListings.find(l => l.id === productId);
+            if (!item) return;
+
+            initiatePayment(price, `Purchase: ${item.name} (Testnet Mode)`, true)
+                .then(() => {
+                    addNotification(`Successfully purchased ${item.name} for ${price} Pi! (Testnet Mode)`);
+                    awardPiRewards(10);
+                })
+                .catch(err => console.error("Purchase failed:", err));
         }
 
-        async function buyP2P(listingId, price) {
-            const userData = JSON.parse(localStorage.getItem('piUser'));
-            if (!userData) {
-                alert('Please authenticate to buy.');
-                return;
-            }
-            try {
-                await initiatePayment(price, `P2P Purchase: ${p2pListings.find(l => l.id === listingId).name}`, true);
-                addNotification(`Purchased ${p2pListings.find(l => l.id === listingId).name} for ${price} Pi with Escrow!`);
-            } catch (error) {
-                addNotification('P2P Purchase failed. Try again.');
-            }
+        function updateCartCount() {
+            document.getElementById("cart-count").textContent = cart.length;
         }
 
         function awardPiRewards(points) {
             userRewards += points;
             document.getElementById("rewards-points").textContent = userRewards;
             document.getElementById("rewards-display").textContent = userRewards;
-            const userData = JSON.parse(localStorage.getItem('piUser'));
-            if (userData) {
-                userData.rewards = userRewards;
-                localStorage.setItem('piUser', JSON.stringify(userData));
-            }
         }
 
         function redeemRewards() {
-            if (userRewards >= 50) {
-                userRewards -= 50;
-                document.getElementById("rewards-points").textContent = userRewards;
-                document.getElementById("rewards-display").textContent = userRewards;
-                addNotification("Redeemed 50 Pi Rewards for a 10 Pi discount!");
-            } else {
-                addNotification("Need 50+ points to redeem!");
+            if (userRewards < 50) {
+                addNotification("You need at least 50 points to redeem rewards (Testnet Mode).");
+                return;
             }
+            userRewards -= 50;
+            document.getElementById("rewards-points").textContent = userRewards;
+            document.getElementById("rewards-display").textContent = userRewards;
+            addNotification("Redeemed 50 Pi Rewards! (Testnet Mode)");
         }
 
-        function searchProducts() {
-            const query = document.querySelector(".search-input").value.toLowerCase();
-            const filtered = products.filter(p => p.name.toLowerCase().includes(query));
-            const searchResults = document.querySelector(".search-results");
-            searchResults.innerHTML = filtered.map(p => `<div class="search-result-item">${p.name} - ${calculateDynamicPrice(p)} Pi</div>`).join("");
-            searchResults.classList.toggle("active", query.length > 2);
-            if (query.length > 2) renderProducts(filtered);
+        function shareProduct(name, price, platform) {
+            const url = `${window.location.origin}/product.html?name=${encodeURIComponent(name)}`;
+            const text = `Check out ${name} on TruthWeb for ${price} Pi! (Testnet Mode) ${url}`;
+            let shareUrl;
+            if (platform === "twitter") shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            else if (platform === "facebook") shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(text)}`;
+            else if (platform === "telegram") shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+            window.open(shareUrl, "_blank");
+            awardPiRewards(3);
+            addNotification(`Shared ${name} on ${platform}! +3 Rewards (Testnet Mode)`);
         }
 
         function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-        }
-
-        function addNotification(message) {
-            const dropdown = document.getElementById('notification-dropdown');
-            const countElement = document.getElementById('notification-count');
-            let count = parseInt(countElement.textContent);
-            countElement.textContent = count + 1;
-            const notification = document.createElement('div');
-            notification.className = 'notification-item';
-            notification.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
-            dropdown.insertBefore(notification, dropdown.firstChild);
-            dropdown.scrollTop = 0;
-            if (dropdown.classList.contains('active')) {
-                dropdown.style.display = 'block';
-            }
+            document.body.classList.toggle("dark");
+            localStorage.setItem("darkMode", document.body.classList.contains("dark"));
         }
 
         function toggleNotifications() {
-            const dropdown = document.getElementById('notification-dropdown');
-            dropdown.classList.toggle('active');
-            dropdown.style.display = dropdown.classList.contains('active') ? 'block' : 'none';
+            const dropdown = document.getElementById("notification-dropdown");
+            dropdown.classList.toggle("active");
+        }
+
+        function addNotification(message) {
+            const dropdown = document.getElementById("notification-dropdown");
+            const count = document.getElementById("notification-count");
+            const item = document.createElement("div");
+            item.className = "notification-item";
+            item.textContent = message;
+            dropdown.appendChild(item);
+            count.textContent = parseInt(count.textContent) + 1;
+            dropdown.classList.add("active");
+            setTimeout(() => dropdown.classList.remove("active"), 3000);
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.querySelector(".mobile-menu");
+            const burger = document.querySelector(".burger-btn");
+            menu.classList.toggle("open");
+            burger.classList.toggle("open");
+        }
+
+        function closeMobileMenu() {
+            const menu = document.querySelector(".mobile-menu");
+            const burger = document.querySelector(".burger-btn");
+            menu.classList.remove("open");
+            burger.classList.remove("open");
+        }
+
+        function toggleMenuSection(element) {
+            const section = element.parentElement;
+            section.classList.toggle("collapsed");
+        }
+
+        function toggleFAQ(element) {
+            const faqItem = element.parentElement;
+            faqItem.classList.toggle("active");
+        }
+
+        function openChat() {
+            alert("Live chat is coming soon! (Testnet Mode)");
         }
 
         function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
+        // Event Listeners and Initial Setup
+        window.addEventListener("scroll", () => {
+            const progressBar = document.querySelector(".progress-bar");
+            const goToTop = document.querySelector(".go-to-top");
+            const header = document.querySelector(".sticky-header");
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            progressBar.style.width = `${scrollPercent}%`;
+
+            if (scrollTop > 100) {
+                goToTop.classList.add("visible");
+                header.classList.add("scrolled");
+            } else {
+                goToTop.classList.remove("visible");
+                header.classList.remove("scrolled");
+            }
+
+            const lastScroll = window.lastScrollTop || 0;
+            header.classList.toggle("hidden", scrollTop > lastScroll && scrollTop > 64);
+            window.lastScrollTop = scrollTop;
+        });
+
         document.addEventListener("DOMContentLoaded", () => {
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.body.classList.add('dark');
-            }
-            const userData = JSON.parse(localStorage.getItem('piUser'));
-            if (userData && userData.rewards) {
-                userRewards = userData.rewards;
-                document.getElementById("rewards-points").textContent = userRewards;
-                document.getElementById("rewards-display").textContent = userRewards;
-            }
             renderProducts(products);
-            renderProducts(products.slice(0, 3), "recommended-grid");
+            renderProducts(products.slice(0, 3), "recommended-grid"); // Limited recommendations
             renderAds();
             renderP2PListings();
             renderSellers();
-            const burgerBtn = document.querySelector('.burger-btn');
-            const mobileMenu = document.querySelector('.mobile-menu');
-            burgerBtn.addEventListener('click', () => {
-                burgerBtn.classList.toggle('open');
-                mobileMenu.classList.toggle('open');
-            });
-            const progressBar = document.querySelector('.progress-bar');
-            const goToTopBtn = document.querySelector('.go-to-top');
-            let lastScrollTop = 0;
-            const header = document.querySelector('.sticky-header');
-            window.addEventListener('scroll', () => {
-                const scrollTop = window.scrollY;
-                const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-                const scrollPercent = (scrollTop / docHeight) * 100;
-                progressBar.style.width = `${scrollPercent}%`;
-                goToTopBtn.classList.toggle('visible', scrollTop > 200);
-                if (scrollTop > lastScrollTop && scrollTop > 100) {
-                    header.classList.add('hidden');
-                } else {
-                    header.classList.remove('hidden');
-                }
-                header.classList.toggle('scrolled', scrollTop > 50);
-                lastScrollTop = scrollTop;
-            });
-            setInterval(() => {
-                products.forEach(p => {
-                    p.engagement += Math.floor(Math.random() * 5);
-                });
-                renderProducts(products);
-            }, 30000);
+            renderTestimonials();
+
+            if (localStorage.getItem("darkMode") === "true") {
+                document.body.classList.add("dark");
+            }
+
+            const userData = JSON.parse(localStorage.getItem("piUser"));
+            if (userData) {
+                userRewards = userData.rewards || 0;
+                document.getElementById("rewards-points").textContent = userRewards;
+                document.getElementById("rewards-display").textContent = userRewards;
+            }
         });
+
+        // Animation keyframes (already defined in CSS, but ensuring no missing references)
+        const fadeInUp = `
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        if (!document.querySelector("style[keyframes]")) {
+            const style = document.createElement("style");
+            style.setAttribute("keyframes", "");
+            style.textContent = fadeInUp;
+            document.head.appendChild(style);
+        }
     </script>
 </body>
 </html>
