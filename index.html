@@ -8,11 +8,17 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
     <script>
-      Pi.init({ 
-        version: "2.0", 
-        sandbox: true,
-        appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
-      });
+      let adNetworkSupported = false;
+      (async () => {
+          await Pi.init({ 
+              version: "2.0", 
+              sandbox: true,
+              appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
+          });
+          const nativeFeaturesList = await Pi.nativeFeaturesList();
+          adNetworkSupported = nativeFeaturesList.includes("ad_network");
+          console.log("Ad Network Supported:", adNetworkSupported);
+      })();
       const scopes = ['username', 'payments', 'wallet_address'];
 
       function onIncompletePaymentFound(payment) {
@@ -25,148 +31,6 @@
           data: { paymentId, txid, debug: 'cancel' },
           error: (xhr, status, error) => console.error('Payment completion error:', error)
         });
-      }
-
-      async function initiatePayment(amount, memo, isEscrow = false) {
-        try {
-          document.querySelector('.loading-overlay').classList.add('active');
-          const paymentData = { amount, memo, metadata: { plan: memo, escrow: isEscrow } };
-          const payment = await Pi.createPayment(paymentData, {
-            onReadyForServerApproval: (paymentId) => {
-              $.ajax({
-                url: 'http://localhost:3000/payment/approve',
-                method: 'POST',
-                data: { paymentId, escrow: isEscrow },
-                success: () => console.log('Payment approved'),
-                error: (err) => console.error('Approval error:', err)
-              });
-            },
-            onReadyForServerCompletion: (paymentId, txid) => {
-              $.ajax({
-                url: 'http://localhost:3000/payment/complete',
-                method: 'POST',
-                data: { paymentId, txid, escrow: isEscrow },
-                success: () => console.log('Payment completed', isEscrow ? '(Escrow held)' : ''),
-                error: (err) => console.error('Completion error:', err)
-              });
-            },
-            onCancel: () => console.log('Payment cancelled'),
-            onError: (error) => {
-              console.error('Payment error:', error);
-              addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
-            }
-          });
-          return payment;
-        } catch (error) {
-          console.error('Payment initiation failed:', error);
-          addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
-          throw error;
-        } finally {
-          document.querySelector('.loading-overlay').classList.remove('active');
-        }
-      }
-
-      async function subscribe(plan) {
-        const userData = JSON.parse(localStorage.getItem('piUser'));
-        if (!userData) {
-          alert('Please authenticate to subscribe (Testnet Mode).');
-          return;
-        }
-        const plans = { basic: 10, pro: 25, elite: 50 };
-        const amount = plans[plan];
-        try {
-          await initiatePayment(amount, `${plan} Plan Subscription (Testnet Mode)`);
-          addNotification(`Subscribed to ${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan! (Testnet Mode)`);
-        } catch (error) {
-          alert('Subscription failed. Please try again (Testnet Mode).');
-        }
-      }
-
-      function checkAuthStatus() {
-        const userData = JSON.parse(localStorage.getItem('piUser'));
-        if (userData && userData.username) {
-          updateUIAfterAuth(userData);
-          verifyToken();
-        } else {
-          document.getElementById('username').textContent = 'Guest';
-          document.getElementById('auth-btn').style.display = 'inline-flex';
-          document.getElementById('logout-btn').style.display = 'none';
-          document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
-        }
-      }
-
-      function updateUIAfterAuth(userData) {
-        document.getElementById('username').textContent = userData.username;
-        document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...) - Testnet Mode`;
-        document.getElementById('auth-btn').style.display = 'none';
-        document.getElementById('logout-btn').style.display = 'inline-flex';
-        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
-        if (profileIcon) {
-          profileIcon.classList.replace('fa-user', 'fa-user-check');
-          profileIcon.parentElement.classList.add('authenticated');
-        }
-      }
-
-      async function authenticateUser() {
-        try {
-          document.getElementById('auth-btn').classList.add('authenticating');
-          document.getElementById('auth-status').textContent = 'Authenticating...';
-          document.querySelector('.loading-overlay').classList.add('active');
-          const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-          const userData = {
-            uid: auth.user.uid,
-            username: auth.user.username,
-            accessToken: auth.accessToken,
-            walletAddress: auth.user.wallet_address,
-            piBalance: Math.random() * 1000
-          };
-          localStorage.setItem('piUser', JSON.stringify(userData));
-          updateUIAfterAuth(userData);
-          addNotification(`Welcome back, ${userData.username}! (Testnet Mode)`);
-        } catch (error) {
-          console.error('Authentication failed:', error);
-          document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'} (Testnet Mode)`;
-        } finally {
-          document.getElementById('auth-btn').classList.remove('authenticating');
-          document.querySelector('.loading-overlay').classList.remove('active');
-        }
-      }
-
-      function logoutUser() {
-        localStorage.removeItem('piUser');
-        document.getElementById('username').textContent = 'Guest';
-        document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
-        document.getElementById('auth-btn').style.display = 'inline-flex';
-        document.getElementById('logout-btn').style.display = 'none';
-        const profileIcon = document.querySelector('.icon[href="profile.html"] i');
-        if (profileIcon) {
-          profileIcon.classList.replace('fa-user-check', 'fa-user');
-          profileIcon.parentElement.classList.remove('authenticated');
-        }
-      }
-
-      async function verifyToken() {
-        const userData = JSON.parse(localStorage.getItem('piUser'));
-        if (!userData) return false;
-        try {
-          const response = await $.ajax({
-            url: 'http://localhost:3000/auth/verify',
-            method: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({ accessToken: userData.accessToken })
-          });
-          if (response.valid) {
-            updateUIAfterAuth(userData);
-            return true;
-          } else {
-            logoutUser();
-            return false;
-          }
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          logoutUser();
-          return false;
-        }
       }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -682,7 +546,7 @@
       .card .btn { margin-top: auto; width: auto; padding: 0.5rem 1.5rem; }
       @keyframes slideInCard { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
       footer {
-        background: #000000; /* Updated to pure black */
+        background: #000000;
         color: #E0E0E0;
         padding: 4rem 1rem;
         border-top: 1px solid var(--highlight-color);
@@ -761,53 +625,53 @@
       .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
       .product-grid { 
         display: grid; 
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); 
-        gap: 1.5rem; 
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+        gap: 2rem; 
         padding: 1rem; 
       }
       .product-card { 
         border: 1px solid var(--highlight-color); 
         border-radius: 10px; 
-        padding: 1rem; 
-        text-align: left; 
-        transition: transform 0.3s ease, box-shadow 0.3s ease; 
+        padding: 1.5rem; 
         background: var(--secondary-color); 
+        transition: transform 0.3s ease, box-shadow 0.3s ease; 
+        display: flex;
+        flex-direction: column;
         position: relative;
+        min-height: 450px;
       }
       .product-card:hover { 
         transform: translateY(-5px); 
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); 
       }
-      .product-card img { 
+      .product-image { 
         max-width: 100%; 
-        height: 150px; 
-        object-fit: cover; 
+        height: 200px; 
+        object-fit: contain; 
         border-radius: 8px; 
-        margin-bottom: 0.5rem; 
+        margin-bottom: 1rem; 
       }
       .product-title { 
-        font-size: 1rem; 
-        font-weight: 600; 
-        margin-bottom: 0.25rem; 
-        overflow: hidden; 
-        text-overflow: ellipsis; 
-        white-space: nowrap; 
-      }
-      .product-price { 
         font-size: 1.25rem; 
         font-weight: 600; 
-        color: var(--accent-color); 
-        margin-bottom: 0.25rem; 
+        margin-bottom: 0.5rem; 
+        line-height: 1.3; 
       }
-      .product-price span { font-size: 0.9rem; color: var(--highlight-color); }
+      .product-price { 
+        font-size: 1.5rem; 
+        font-weight: 700; 
+        color: var(--accent-color); 
+        margin-bottom: 0.5rem; 
+      }
+      .product-price span { 
+        font-size: 0.9rem; 
+        color: var(--highlight-color); 
+        font-weight: 400; 
+      }
       .product-rating { 
         color: #FFA500; 
-        font-size: 0.9rem; 
-        margin-bottom: 0.25rem; 
-      }
-      .product-reviews { 
-        font-size: 0.8rem; 
-        color: var(--primary-color); 
+        font-size: 1rem; 
+        margin-bottom: 0.5rem; 
       }
       .eco-badge {
         position: absolute;
@@ -815,10 +679,77 @@
         right: 10px;
         background: var(--eco-color);
         color: #FFFFFF;
-        padding: 0.25rem 0.5rem;
+        padding: 0.25rem 0.75rem;
         border-radius: 9999px;
         font-size: 0.75rem;
         font-weight: 600;
+      }
+      .product-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: auto;
+      }
+      .btn-add-to-cart {
+        background: #F7CA00;
+        color: #000000;
+        border: none;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+      }
+      .btn-add-to-cart:hover {
+        background: #E0B000;
+        transform: scale(1.02);
+      }
+      .btn-watch-ad {
+        background: var(--eco-color);
+        color: #FFFFFF;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 9999px;
+        transition: all 0.3s ease;
+      }
+      .btn-watch-ad:hover {
+        background: #218838;
+        transform: scale(1.05) translateY(-2px);
+      }
+      .quick-view-btn {
+        background: transparent;
+        color: var(--primary-color);
+        border: 1px solid var(--highlight-color);
+        padding: 0.5rem;
+        font-size: 0.9rem;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+      }
+      .quick-view-btn:hover {
+        background: var(--highlight-color);
+        transform: scale(1.02);
+      }
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+      .modal.active { display: flex; }
+      .modal-content {
+        background: var(--secondary-color);
+        padding: 2rem;
+        border-radius: 10px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
       }
       .category-filter { 
         display: flex; 
@@ -1239,16 +1170,28 @@
                     </li>
                 </ul>
             </nav>
-            <a href="cart.html" class="icon cart-icon floating-effect"><i class="fas fa-shopping-cart"></i><span class="cart-count" id="cart-count">0</span></a>
-            <div class="icon floating-effect notification-bell" onclick="toggleNotifications()">
-                <i class="fas fa-bell"></i>
-                <span class="notification-count" id="notification-count">0</span>
-                <div class="notification-dropdown" id="notification-dropdown"></div>
-            </div>
-            <div class="icon floating-effect" onclick="toggleDarkMode()"><i class="fas fa-moon"></i></div>
-            <div class="burger-btn" onclick="toggleMobileMenu()"><span></span><span></span><span></span></div>
+        <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
+            <i class="fas fa-shopping-cart text-lg"></i>
+            <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <a href="profile.html" class="icon floating-effect relative" aria-label="Profile">
+            <i class="fas fa-user text-lg"></i>
+        </a>
+        <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
+            <i class="fas fa-bell text-lg"></i>
+            <span class="notification-count" id="notification-count">0</span>
+            <div class="notification-dropdown" id="notification-dropdown"></div>
         </div>
-    </header>
+        <button class="icon floating-effect relative" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+            <i class="fas fa-moon text-lg"></i>
+        </button>
+        <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+</header>
     <nav class="mobile-menu">
         <div class="mobile-menu-header">
             <span class="logo-text">TruthWeb</span>
@@ -1530,11 +1473,11 @@
 
     <script>
         const products = [
-            { id: 1, name: "Pi Smartwatch", basePrice: 150, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true },
-            { id: 2, name: "Pi T-Shirt", basePrice: 25, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false },
-            { id: 3, name: "Pi Home Speaker", basePrice: 80, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true },
-            { id: 4, name: "Pi Headphones", basePrice: 60, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false },
-            { id: 5, name: "Pi Sneakers", basePrice: 45, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.6, reviews: 150, engagement: 0, isEco: true },
+            { id: 1, name: "Pi Smartwatch", basePrice: 150, discountPrice: 135, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true, description: "Smartwatch with Pi integration" },
+            { id: 2, name: "Pi T-Shirt", basePrice: 25, discountPrice: 20, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false, description: "Comfortable cotton Pi-themed shirt" },
+            { id: 3, name: "Pi Home Speaker", basePrice: 80, discountPrice: 72, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true, description: "High-quality audio with Pi connectivity" },
+            { id: 4, name: "Pi Headphones", basePrice: 60, discountPrice: 54, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false, description: "Noise-cancelling headphones" },
+            { id: 5, name: "Pi Sneakers", basePrice: 45, discountPrice: 40, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.6, reviews: 150, engagement: 0, isEco: true, description: "Eco-friendly stylish sneakers" },
         ];
 
         const ads = [
@@ -1546,8 +1489,7 @@
         const p2pListings = [
             { id: 1, name: "Handmade Pi Necklace", price: 15, image: "https://via.placeholder.com/300x200", seller: "Pioneer123" },
             { id: 2, name: "Used Pi Laptop", price: 200, image: "https://via.placeholder.com/300x200", seller: "TechPioneer" },
-            
-             ];
+        ];
 
         const featuredSellers = [
             { id: 1, name: "EcoPi Store", sales: 500, image: "https://via.placeholder.com/300x200" },
@@ -1571,6 +1513,254 @@
         let lastScrollTop = 0;
         let player;
 
+        async function initiatePayment(amount, memo, isEscrow = false) {
+            try {
+              document.querySelector('.loading-overlay').classList.add('active');
+              const paymentData = { amount, memo, metadata: { plan: memo, escrow: isEscrow } };
+              const payment = await Pi.createPayment(paymentData, {
+                onReadyForServerApproval: (paymentId) => {
+                  $.ajax({
+                    url: 'http://localhost:3000/payment/approve',
+                    method: 'POST',
+                    data: { paymentId, escrow: isEscrow },
+                    success: () => console.log('Payment approved'),
+                    error: (err) => console.error('Approval error:', err)
+                  });
+                },
+                onReadyForServerCompletion: (paymentId, txid) => {
+                  $.ajax({
+                    url: 'http://localhost:3000/payment/complete',
+                    method: 'POST',
+                    data: { paymentId, txid, escrow: isEscrow },
+                    success: () => console.log('Payment completed', isEscrow ? '(Escrow held)' : ''),
+                    error: (err) => console.error('Completion error:', err)
+                  });
+                },
+                onCancel: () => console.log('Payment cancelled'),
+                onError: (error) => {
+                  console.error('Payment error:', error);
+                  addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
+                }
+              });
+              return payment;
+            } catch (error) {
+              console.error('Payment initiation failed:', error);
+              addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
+              throw error;
+            } finally {
+              document.querySelector('.loading-overlay').classList.remove('active');
+            }
+        }
+
+        async function subscribe(plan) {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (!userData) {
+              alert('Please authenticate to subscribe (Testnet Mode)');
+              authenticateUser();
+              return;
+            }
+            const amounts = { basic: 10, pro: 25, enterprise: 50 };
+            const amount = amounts[plan.toLowerCase()] || 10;
+            try {
+              const payment = await initiatePayment(amount, `TruthWeb ${plan} Plan Subscription`, false);
+              console.log('Subscription payment initiated:', payment);
+              addNotification(`Subscribed to ${plan} Plan for ${amount} Pi! (Testnet Mode)`);
+            } catch (error) {
+              console.error('Subscription error:', error);
+            }
+        }
+
+        function checkAuthStatus() {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (userData && userData.accessToken) {
+              verifyToken(userData.accessToken).then(isValid => {
+                if (isValid) {
+                  updateUIAfterAuth(userData);
+                } else {
+                  localStorage.removeItem('piUser');
+                  updateUIAfterAuth(null);
+                }
+              });
+            } else {
+              updateUIAfterAuth(null);
+            }
+        }
+
+        function updateUIAfterAuth(userData) {
+            const authBtn = document.getElementById('auth-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const usernameEl = document.getElementById('username');
+            const authStatusEl = document.getElementById('auth-status');
+            const profileIcon = document.querySelector('.icon[href="profile.html"]');
+            if (userData) {
+              authBtn.style.display = 'none';
+              logoutBtn.style.display = 'inline-flex';
+              usernameEl.textContent = userData.username || 'Pioneer';
+              authStatusEl.textContent = 'Authenticated (Testnet Mode)';
+              authStatusEl.style.color = 'var(--accent-color)';
+              if (profileIcon) profileIcon.classList.add('authenticated');
+            } else {
+              authBtn.style.display = 'inline-flex';
+              logoutBtn.style.display = 'none';
+              usernameEl.textContent = 'Guest';
+              authStatusEl.textContent = 'Not authenticated (Testnet Mode)';
+              authStatusEl.style.color = '';
+              if (profileIcon) profileIcon.classList.remove('authenticated');
+            }
+        }
+
+        async function authenticateUser() {
+            const authBtn = document.getElementById('auth-btn');
+            authBtn.classList.add('authenticating');
+            authBtn.textContent = 'Authenticating...';
+            try {
+              const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
+              localStorage.setItem('piUser', JSON.stringify(authResult));
+              updateUIAfterAuth(authResult);
+              addNotification(`Welcome, ${authResult.username}! (Testnet Mode)`);
+            } catch (err) {
+              console.error('Authentication error:', err);
+              addNotification(`Authentication failed: ${err.message} (Testnet Mode)`);
+            } finally {
+              authBtn.classList.remove('authenticating');
+              authBtn.textContent = 'Sign In with Pi';
+            }
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('piUser');
+            updateUIAfterAuth(null);
+            addNotification('Logged out successfully (Testnet Mode)');
+        }
+
+        async function verifyToken(token) {
+            return new Promise((resolve) => {
+              setTimeout(() => resolve(true), 500);
+            });
+        }
+
+        async function showInterstitialAd() {
+            if (!adNetworkSupported) {
+                addNotification("Ads not supported in this environment (Testnet Mode)");
+                return;
+            }
+            try {
+                const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
+                if (isAdReadyResponse.ready) {
+                    const showAdResponse = await Pi.Ads.showAd("interstitial");
+                    if (showAdResponse.result === "AD_CLOSED") {
+                        addNotification("Interstitial ad viewed! (Testnet Mode)");
+                    }
+                }
+            } catch (error) {
+                console.error("Interstitial ad error:", error);
+                addNotification("Error showing interstitial ad (Testnet Mode)");
+            }
+        }
+
+        async function showRewardedAd(productId = null) {
+            if (!adNetworkSupported) {
+                addNotification("Ads not supported in this environment (Testnet Mode)");
+                return;
+            }
+            try {
+                const isAdReadyResponse = await Pi.Ads.isAdReady("rewarded");
+                if (isAdReadyResponse.ready) {
+                    const showAdResponse = await Pi.Ads.showAd("rewarded");
+                    if (showAdResponse.result === "AD_REWARDED") {
+                        const result = await rewardUserForWatchingRewardedAd(showAdResponse.adId, productId);
+                        if (result.rewarded) {
+                            showModal(`Congratulations! You've earned: ${result.reward} (Testnet Mode)`, "Reward Earned");
+                            if (productId) {
+                                const product = products.find(p => p.id === productId);
+                                if (product) product.discountPrice = Math.max(10, product.discountPrice - 10);
+                                renderProducts(products, 'product-grid');
+                            }
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Rewarded ad error:", error);
+                showModal("Error showing rewarded ad (Testnet Mode)", "Ad Error");
+            }
+        }
+
+        async function rewardUserForWatchingRewardedAd(adId, productId) {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({ rewarded: true, reward: productId ? "10 Pi Discount" : "5 Pi Bonus", adId });
+                }, 1000);
+            });
+        }
+
+        function showModal(message, title, isSuccess = false) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3 class="text-xl font-bold mb-4">${title}</h3>
+                    <p class="mb-4">${message}</p>
+                    <button class="btn ${isSuccess ? 'accent' : ''}" onclick="this.closest('.modal').remove()">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function renderProducts(productList, containerId) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            productList.forEach(product => {
+                const currentPrice = product.discountPrice || product.basePrice;
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}" class="product-image">
+                    <h3 class="product-title">${product.name}</h3>
+                    <p class="product-price">${currentPrice} Pi <span>(Original: ${product.basePrice} Pi)</span></p>
+                    <div class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))} (${product.reviews} reviews)</div>
+                    ${product.isEco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
+                    <div class="product-actions">
+                        <button class="btn btn-add-to-cart" onclick="addToCart(${product.id}, ${currentPrice})"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
+                        <button class="btn quick-view-btn" onclick="showProductDetails(${product.id})"><i class="fas fa-eye"></i> Quick View</button>
+                        <button class="btn-watch-ad" onclick="showRewardedAd(${product.id})"><i class="fas fa-video"></i> Watch Ad for Discount</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function showProductDetails(productId) {
+            const product = products.find(p => p.id === productId);
+            const currentPrice = product.discountPrice || product.basePrice;
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3 class="text-xl font-bold mb-4">${product.name}</h3>
+                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover rounded mb-4">
+                    <p class="mb-2">${product.description}</p>
+                    <p class="product-price mb-2">${currentPrice} Pi <span>(Original: ${product.basePrice} Pi)</span></p>
+                    <div class="product-rating mb-4">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))} (${product.reviews} reviews)</div>
+                    <div class="flex gap-2">
+                        <button class="btn accent" onclick="addToCart(${product.id}, ${currentPrice});this.closest('.modal').remove()">Add to Cart</button>
+                        <button class="btn" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function addToCart(productId, price) {
+            cartCount++;
+            document.getElementById('cart-count').textContent = cartCount;
+            document.getElementById('mobile-cart-count').textContent = cartCount;
+            const product = products.find(p => p.id === productId);
+            addNotification(`Added ${product.name} to cart for ${price} Pi! (Testnet Mode)`);
+            if (cartCount % 3 === 0) {
+                showInterstitialAd();
+            }
+        }
+
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('video-player', {
                 height: '100%',
@@ -1578,24 +1768,26 @@
                 videoId: 'WLihlM7KOoY',
                 playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0 },
                 events: {
-                    'onReady': onPlayerReady
+                    'onReady': (event) => console.log('Video player ready'),
+                    'onStateChange': (event) => {
+                        const playPauseBtn = document.getElementById('play-pause-btn');
+                        if (event.data === YT.PlayerState.PLAYING) {
+                            playPauseBtn.textContent = '❚❚ Pause';
+                        } else {
+                            playPauseBtn.textContent = '▶ Play';
+                        }
+                    }
                 }
             });
         }
 
-        function onPlayerReady(event) {
-            console.log('Video player is ready');
-        }
-
         function togglePlayPause() {
             if (player) {
-                const btn = document.getElementById('play-pause-btn');
-                if (player.getPlayerState() === 1) {
+                const state = player.getPlayerState();
+                if (state === YT.PlayerState.PLAYING) {
                     player.pauseVideo();
-                    btn.innerHTML = '▶ Play';
                 } else {
                     player.playVideo();
-                    btn.innerHTML = '⏸ Pause';
                 }
             }
         }
@@ -1603,27 +1795,7 @@
         function stopVideo() {
             if (player) {
                 player.stopVideo();
-                document.getElementById('play-pause-btn').innerHTML = '▶ Play';
             }
-        }
-
-        function renderProducts(productList, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            productList.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
-                    <h3 class="product-title">${product.name}</h3>
-                    <p class="product-price">${product.basePrice} Pi <span>(Testnet)</span></p>
-                    <div class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</div>
-                    <p class="product-reviews">(${product.reviews} reviews)</p>
-                    ${product.isEco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
-                    <button class="btn mt-2" onclick="addToCart(${product.id})">Add to Cart</button>
-                `;
-                container.appendChild(card);
-            });
         }
 
         function renderAds() {
@@ -1636,7 +1808,7 @@
                     <img src="${ad.image}" alt="${ad.name}">
                     <h3 class="ad-title">${ad.name}</h3>
                     <p class="ad-price">${ad.price} Pi</p>
-                    <button class="btn mt-2">Learn More</button>
+                    <button class="btn" onclick="addNotification('Ad clicked: ${ad.name} (Testnet Mode)')">Learn More</button>
                 `;
                 container.appendChild(card);
             });
@@ -1653,7 +1825,7 @@
                     <h3 class="p2p-title">${listing.name}</h3>
                     <p class="p2p-price">${listing.price} Pi</p>
                     <p>Seller: ${listing.seller}</p>
-                    <button class="btn mt-2">Buy Now</button>
+                    <button class="btn" onclick="initiatePayment(${listing.price}, 'P2P: ${listing.name}', true)">Buy Now</button>
                 `;
                 container.appendChild(card);
             });
@@ -1669,7 +1841,7 @@
                     <img src="${seller.image}" alt="${seller.name}">
                     <h3 class="seller-title">${seller.name}</h3>
                     <p class="seller-info">${seller.bio}</p>
-                    <button class="btn mt-2">Visit Store</button>
+                    <button class="btn" onclick="addNotification('Viewing ${seller.name}\'s store (Testnet Mode)')">Visit Store</button>
                 `;
                 container.appendChild(card);
             });
@@ -1690,22 +1862,21 @@
             });
         }
 
-        function addToCart(productId) {
-            cartCount++;
-            document.getElementById('cart-count').textContent = cartCount;
-            document.getElementById('mobile-cart-count').textContent = cartCount;
-            const product = products.find(p => p.id === productId);
-            addNotification(`Added ${product.name} to cart! (Testnet Mode)`);
-        }
-
         function addNotification(message) {
             notificationCount++;
-            document.getElementById('notification-count').textContent = notificationCount;
             const dropdown = document.getElementById('notification-dropdown');
+            const count = document.getElementById('notification-count');
             const item = document.createElement('div');
             item.className = 'notification-item';
             item.textContent = message;
             dropdown.insertBefore(item, dropdown.firstChild);
+            count.textContent = notificationCount;
+            setTimeout(() => {
+                item.remove();
+                notificationCount--;
+                count.textContent = notificationCount;
+                if (notificationCount === 0) dropdown.classList.remove('active');
+            }, 5000);
         }
 
         function toggleNotifications() {
@@ -1715,19 +1886,25 @@
 
         function searchProducts(query) {
             const resultsContainer = document.getElementById('search-results');
-            if (query.length < 2) {
+            if (!query.trim()) {
                 resultsContainer.classList.remove('active');
                 return;
             }
-            const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+            const filteredProducts = products.filter(product => 
+                product.name.toLowerCase().includes(query.toLowerCase()) || 
+                product.category.toLowerCase().includes(query.toLowerCase())
+            );
             resultsContainer.innerHTML = '';
-            filtered.forEach(product => {
+            filteredProducts.forEach(product => {
                 const item = document.createElement('div');
                 item.className = 'search-result-item';
-                item.innerHTML = `<strong>${product.name}</strong> - ${product.basePrice} Pi`;
+                item.innerHTML = `
+                    <strong>${product.name}</strong><br>
+                    ${product.basePrice} Pi - ${product.category}
+                `;
                 item.onclick = () => {
+                    addNotification(`Viewing ${product.name} (Testnet Mode)`);
                     resultsContainer.classList.remove('active');
-                    document.querySelector('.search-input').value = product.name;
                 };
                 resultsContainer.appendChild(item);
             });
@@ -1735,34 +1912,44 @@
         }
 
         function sortProducts(criteria) {
-            let sorted = [...products];
-            if (criteria === 'price-low') {
-                sorted.sort((a, b) => a.basePrice - b.basePrice);
-            } else if (criteria === 'price-high') {
-                sorted.sort((a, b) => b.basePrice - a.basePrice);
-            } else if (criteria === 'rating') {
-                sorted.sort((a, b) => b.rating - a.rating);
+            let sortedProducts = [...products];
+            switch (criteria) {
+                case 'price-low':
+                    sortedProducts.sort((a, b) => (a.basePrice - b.basePrice));
+                    break;
+                case 'price-high':
+                    sortedProducts.sort((a, b) => (b.basePrice - a.basePrice));
+                    break;
+                case 'rating':
+                    sortedProducts.sort((a, b) => (b.rating - a.rating));
+                    break;
+                default:
+                    sortedProducts = [...products];
             }
-            renderProducts(sorted, 'product-grid');
-            renderProducts(sorted.slice(0, 3), 'recommended-grid');
+            renderProducts(sortedProducts, 'product-grid');
         }
 
         function filterProducts(criteria) {
-            let filtered = [...products];
-            if (criteria === 'eco') {
-                filtered = filtered.filter(p => p.isEco);
-            } else if (criteria === 'below-50') {
-                filtered = filtered.filter(p => p.basePrice < 50);
-            } else if (criteria === 'above-100') {
-                filtered = filtered.filter(p => p.basePrice > 100);
+            let filteredProducts = [...products];
+            switch (criteria) {
+                case 'eco':
+                    filteredProducts = filteredProducts.filter(p => p.isEco);
+                    break;
+                case 'below-50':
+                    filteredProducts = filteredProducts.filter(p => p.basePrice < 50);
+                    break;
+                case 'above-100':
+                    filteredProducts = filteredProducts.filter(p => p.basePrice > 100);
+                    break;
+                default:
+                    filteredProducts = [...products];
             }
-            renderProducts(filtered, 'product-grid');
-            renderProducts(filtered.slice(0, 3), 'recommended-grid');
+            renderProducts(filteredProducts, 'product-grid');
         }
 
         function filterCategory(category) {
-            const filtered = products.filter(p => p.category === category);
-            renderProducts(filtered, 'product-grid');
+            const filteredProducts = products.filter(p => p.category === category);
+            renderProducts(filteredProducts, 'product-grid');
         }
 
         function toggleMobileMenu() {
@@ -1785,16 +1972,17 @@
         }
 
         function toggleFAQ(element) {
-            const item = element.parentElement;
-            item.classList.toggle('active');
+            const faqItem = element.parentElement;
+            faqItem.classList.toggle('active');
         }
 
         function toggleDarkMode() {
             document.body.classList.toggle('dark');
             const icon = document.querySelector('.icon i');
-            icon.classList.toggle('fa-moon');
-            icon.classList.toggle('fa-sun');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            const isDark = document.body.classList.contains('dark');
+            icon.classList.toggle('fa-moon', !isDark);
+            icon.classList.toggle('fa-sun', isDark);
+            localStorage.setItem('darkMode', isDark);
         }
 
         function scrollToTop() {
@@ -1804,15 +1992,21 @@
         function handleScroll() {
             const scrollTop = window.scrollY;
             const header = document.querySelector('.sticky-header');
-            const progressBar = document.querySelector('.progress-bar');
-            const goToTopBtn = document.querySelector('.go-to-top');
+            const goToTop = document.querySelector('.go-to-top');
             const mobileFooterNav = document.querySelector('.mobile-footer-nav');
+            const progressBar = document.querySelector('.progress-bar');
             const docHeight = document.documentElement.scrollHeight - window.innerHeight;
             const scrollPercent = (scrollTop / docHeight) * 100;
 
             progressBar.style.width = `${scrollPercent}%`;
-            header.classList.toggle('scrolled', scrollTop > 50);
-            goToTopBtn.classList.toggle('visible', scrollTop > 300);
+
+            if (scrollTop > 50) {
+                header.classList.add('scrolled');
+                goToTop.classList.add('visible');
+            } else {
+                header.classList.remove('scrolled');
+                goToTop.classList.remove('visible');
+            }
 
             if (scrollTop > lastScrollTop && scrollTop > 100) {
                 header.classList.add('hidden');
@@ -1825,7 +2019,7 @@
         }
 
         function openChat() {
-            alert('Live chat feature coming soon! (Testnet Mode)');
+            window.open('https://t.me/TruthWebSupport', '_blank');
         }
 
         document.addEventListener('DOMContentLoaded', () => {
