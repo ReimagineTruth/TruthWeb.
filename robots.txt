@@ -1,0 +1,39 @@
+# robots.txt for TruthWeb (Testnet Mode)
+# Generated on April 02, 2025
+
+User-agent: *
+# Allow key public pages
+Allow: /home.html
+Allow: /marketplace.html
+Allow: /about.html
+Allow: /support.html
+Allow: /faq.html
+Allow: /terms.html
+Allow: /privacy.html
+
+# Disallow sensitive or development areas (Testnet Mode)
+Disallow: /profile.html
+Disallow: /wallet.html
+Disallow: /cart.html
+Disallow: /vendor.html
+Disallow: /user-profiles-wallet.html
+Disallow: /pitrack.html
+Disallow: /pitrade.html
+Disallow: /kycverification.html
+Disallow: /fraud-detection.html
+Disallow: /api-docs.html
+Disallow: /back.html
+
+# Disallow directories that might contain sensitive data
+Disallow: /admin/
+Disallow: /test/
+Disallow: /sandbox/
+
+# Block query parameters to prevent indexing of dynamic content
+Disallow: /*?*
+
+# Sitemap (optional, uncomment and update if you have one)
+# Sitemap: https://truthweb.example.com/sitemap.xml
+
+# Crawl delay to reduce server load (optional)
+Crawl-delay: 10
