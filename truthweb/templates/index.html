@@ -1,1 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+    <title>TruthWeb - #1 Pi Network E-Commerce Hub (Testnet Mode)</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet"/>
+    <!-- Your existing styles remain here -->
+    <style>
+        /* Your existing CSS styles */
+    </style>
+</head>
+<body onload="checkAuthStatus()">
+    <!-- Your existing HTML structure -->
+    <div class="progress-bar"></div>
+    <div class="loading-overlay"><div class="loader"></div></div>
+    <header class="sticky-header">
+        <!-- Your header content -->
+    </header>
+    <nav class="mobile-menu">
+        <!-- Your mobile menu content -->
+    </nav>
+    <main>
+        <!-- Your main content -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="glow-text">TruthWeb</h1>
+                    <p class="text-xl mt-2 md:text-2xl">Your Pi-Powered Global Marketplace</p>
+                    <p class="text-lg mt-2">Shop, Sell, and Trade with 60M+ Pioneers Worldwide</p>
+                    <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
+                    <p id="auth-status" class="text-sm mt-2">Not authenticated (Testnet Mode)</p>
+                    <!-- Rest of hero content -->
+                </div>
+                <div class="hero-actions">
+                    <a href="/" class="btn">Visit Community Home</a>
+                </div>
+            </div>
+        </section>
+        <!-- Rest of your sections -->
+    </main>
+    <footer>
+        <!-- Your footer content -->
+        <div class="footer-column">
+            <h3>Actions</h3>
+            <ul>
+                <li><button id="auth-btn" class="btn accent w-full mb-2" onclick="authenticateUser()">Sign In with Pi</button></li>
+                <li><button id="logout-btn" class="btn w-full mb-2" onclick="logoutUser()" style="display: none;">Logout</button></li>
+                <!-- Other action buttons -->
+            </ul>
+        </div>
+        <!-- Rest of footer -->
+    </footer>
 
+    <script>
+        // Pi SDK Initialization
+        Pi.init({ 
+            version: "2.0", 
+            sandbox: true,
+            appId: "YOUR_PI_APP_ID" // Replace with your actual Pi App ID
+        });
+
+        const scopes = ['username', 'payments', 'wallet_address'];
+        let accessToken;
+
+        // Handle incomplete payments
+        function onIncompletePaymentFound(payment) {
+            const paymentId = payment.identifier;
+            const txid = payment.transaction?.txid;
+            return $.ajax({
+                url: '/payment/complete',
+                method: 'POST',
+                data: { paymentId, txid, debug: 'cancel' },
+                error: (xhr, status, error) => console.error('Incomplete payment error:', error)
+            });
+        }
+
+        // Check authentication status on load
+        function checkAuthStatus() {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (userData && userData.accessToken) {
+                accessToken = userData.accessToken;
+                updateUIAfterAuth(userData);
+                verifyToken(userData.accessToken);
+            } else {
+                document.getElementById('username').textContent = 'Guest';
+                document.getElementById('auth-btn').style.display = 'block';
+                document.getElementById('logout-btn').style.display = 'none';
+                document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
+            }
+        }
+
+        // Update UI after authentication
+        function updateUIAfterAuth(userData) {
+            document.getElementById('username').textContent = userData.username;
+            document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...) - Testnet Mode`;
+            document.getElementById('auth-btn').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'block';
+            const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+            if (profileIcon) {
+                profileIcon.classList.replace('fa-user', 'fa-user-check');
+                profileIcon.parentElement.classList.add('authenticated');
+            }
+        }
+
+        // Authenticate user with Pi
+        async function authenticateUser() {
+            try {
+                document.getElementById('auth-btn').classList.add('authenticating');
+                document.getElementById('auth-status').textContent = 'Authenticating...';
+                document.querySelector('.loading-overlay').classList.add('active');
+
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                accessToken = auth.accessToken;
+                const userData = {
+                    username: auth.user.username,
+                    accessToken: auth.accessToken,
+                    walletAddress: auth.user.wallet_address
+                };
+                localStorage.setItem('piUser', JSON.stringify(userData));
+                updateUIAfterAuth(userData);
+                addNotification(`Welcome back, ${userData.username}! (Testnet Mode)`);
+            } catch (error) {
+                console.error('Authentication failed:', error);
+                document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'} (Testnet Mode)`;
+            } finally {
+                document.getElementById('auth-btn').classList.remove('authenticating');
+                document.querySelector('.loading-overlay').classList.remove('active');
+            }
+        }
+
+        // Logout user
+        function logoutUser() {
+            localStorage.removeItem('piUser');
+            accessToken = null;
+            document.getElementById('username').textContent = 'Guest';
+            document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
+            document.getElementById('auth-btn').style.display = 'block';
+            document.getElementById('logout-btn').style.display = 'none';
+            const profileIcon = document.querySelector('.icon[href="profile.html"] i');
+            if (profileIcon) {
+                profileIcon.classList.replace('fa-user-check', 'fa-user');
+                profileIcon.parentElement.classList.remove('authenticated');
+            }
+        }
+
+        // Verify token with backend
+        async function verifyToken(token) {
+            try {
+                const response = await $.ajax({
+                    url: '/auth/verify',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ accessToken: token })
+                });
+                if (!response.valid) {
+                    logoutUser();
+                }
+            } catch (error) {
+                console.error('Token verification failed:', error);
+                logoutUser();
+            }
+        }
+
+        // Payment function
+        async function initiatePayment(amount, memo) {
+            if (!accessToken) {
+                alert('Please sign in to make a payment (Testnet Mode)');
+                return;
+            }
+            try {
+                document.querySelector('.loading-overlay').classList.add('active');
+                const paymentData = {
+                    amount: amount,
+                    memo: memo,
+                    metadata: { purchase: memo }
+                };
+                const paymentCallbacks = {
+                    onReadyForServerApproval: (paymentId) => {
+                        $.post('/payment/approve', { paymentId, accessToken })
+                            .done(() => console.log('Payment approved'))
+                            .fail((err) => console.error('Approval error:', err));
+                    },
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        $.post('/payment/complete', { paymentId, txid, debug: 'complete' })
+                            .done(() => {
+                                addNotification(`Payment of ${amount} Pi completed! (Testnet Mode)`);
+                            })
+                            .fail((err) => console.error('Completion error:', err));
+                    },
+                    onCancel: (paymentId) => {
+                        $.post('/payment/complete', { paymentId, debug: 'cancel' })
+                            .done(() => console.log('Payment cancelled'))
+                            .fail((err) => console.error('Cancel error:', err));
+                    },
+                    onError: (error) => {
+                        console.error('Payment error:', error);
+                        addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
+                    }
+                };
+                await Pi.createPayment(paymentData, paymentCallbacks);
+            } catch (error) {
+                console.error('Payment initiation failed:', error);
+                addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
+            } finally {
+                document.querySelector('.loading-overlay').classList.remove('active');
+            }
+        }
+
+        // Modify addToCart to include payment
+        function addToCart(productId) {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (!userData) {
+                alert('Please sign in to add items to your cart (Testnet Mode).');
+                return;
+            }
+            const product = products.find(p => p.id === productId);
+            initiatePayment(product.basePrice, `Purchase: ${product.name} (Testnet Mode)`).then(() => {
+                cartCount++;
+                document.getElementById('cart-count').textContent = cartCount;
+                addNotification(`Added ${product.name} to cart! (Testnet Mode)`);
+            });
+        }
+
+        // Your existing JavaScript functions (products array, load functions, etc.)
+        // Keep all your existing functionality and just integrate the above authentication/payment logic
+    </script>
+</body>
+</html>
