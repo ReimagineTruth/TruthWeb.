@@ -1,0 +1,8 @@
+truthweb/
+├── static/
+│   └── css/
+│       └── styles.css (your existing CSS can stay in HTML or move here)
+├── templates/
+│   └── index.html
+├── app.py
+└── variables.py
