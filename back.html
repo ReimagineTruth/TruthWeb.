@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
+    <title>TruthWeb - Back (Testnet Mode)</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+      Pi.init({ 
+        version: "2.0", 
+        sandbox: true,
+        appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
+      });
+      const scopes = ['username', 'payments', 'wallet_address'];
+
+      function onIncompletePaymentFound(payment) {
+        console.log('Incomplete payment found:', payment);
+        const paymentId = payment.identifier;
+        const txid = payment.transaction?.txid;
+        return $.ajax({
+          url: 'http://localhost:3000/payment/complete',
+          method: 'POST',
+          data: { paymentId, txid, debug: 'cancel' },
+          error: (xhr, status, error) => console.error('Payment completion error:', error)
+        });
+      }
+
+      async function authenticateUser() {
+        try {
+          document.getElementById('auth-btn').classList.add('authenticating');
+          document.getElementById('auth-status').textContent = 'Authenticating...';
+          const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+          const userData = {
+            uid: auth.user.uid,
+            username: auth.user.username,
+            accessToken: auth.accessToken,
+            walletAddress: auth.user.wallet_address,
+            piBalance: Math.random() * 1000
+          };
+          localStorage.setItem('piUser', JSON.stringify(userData));
+          updateUIAfterAuth(userData);
+          addNotification(`Welcome back, ${userData.username}! (Testnet Mode)`);
+        } catch (error) {
+          console.error('Authentication failed:', error);
+          document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'} (Testnet Mode)`;
+        } finally {
+          document.getElementById('auth-btn').classList.remove('authenticating');
+        }
+      }
+
+      function updateUIAfterAuth(userData) {
+        document.getElementById('username').textContent = userData.username;
+        document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...) - Testnet Mode`;
+        document.getElementById('auth-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'inline-flex';
+      }
+
+      function logoutUser() {
+        localStorage.removeItem('piUser');
+        document.getElementById('username').textContent = 'Guest';
+        document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
+        document.getElementById('auth-btn').style.display = 'inline-flex';
+        document.getElementById('logout-btn').style.display = 'none';
+      }
+
+      function checkAuthStatus() {
+        const userData = JSON.parse(localStorage.getItem('piUser'));
+        if (userData && userData.username) {
+          updateUIAfterAuth(userData);
+        }
+      }
+
+      function addNotification(message) {
+        console.log('Notification:', message); // Placeholder for notifications
+      }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <style>
+      :root {
+        --primary-color: #000000;
+        --secondary-color: #FFFFFF;
+        --highlight-color: #CCCCCC;
+        --text-color: #FFFFFF;
+        --button-bg-color: #000000;
+        --button-text-color: #FFFFFF;
+        --button-hover-bg-color: #FFFFFF;
+        --button-hover-text-color: #000000;
+        --background-color: #FFFFFF;
+        --accent-color: #FFD700;
+        --testnet-badge: #FF4500;
+      }
+      body {
+        background: var(--background-color);
+        color: var(--primary-color);
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+      .sticky-header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 1000;
+        background: var(--secondary-color);
+        padding: 1rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      .logo-text { font-size: 1.5rem; font-weight: 700; }
+      .testnet-badge {
+        background: var(--testnet-badge);
+        color: #fff;
+        padding: 0.35rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-left: 0.75rem;
+        text-transform: uppercase;
+      }
+      main { margin-top: 80px; padding: 2rem; text-align: center; }
+      .btn {
+        background: var(--button-bg-color);
+        color: var(--button-text-color);
+        padding: 0.75rem 2rem;
+        border: 1px solid var(--highlight-color);
+        border-radius: 9999px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+      }
+      .btn:hover {
+        background: var(--button-hover-bg-color);
+        color: var(--button-hover-text-color);
+        transform: scale(1.05);
+      }
+      .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
+      .btn.accent:hover { background: #FFA500; }
+      footer {
+        background: #000000;
+        color: #E0E0E0;
+        padding: 4rem 1rem;
+        border-top: 1px solid var(--highlight-color);
+      }
+      .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2.5rem;
+      }
+      .footer-section h3 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        color: var(--accent-color);
+      }
+      .footer-section ul { list-style: none; padding: 0; }
+      .footer-section li { margin-bottom: 0.85rem; }
+      .footer-section a { color: #E0E0E0; text-decoration: none; }
+      .footer-section a:hover { color: var(--accent-color); }
+      .footer-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 2rem 0;
+      }
+      .footer-logo {
+        max-width: 150px;
+        height: auto;
+        transition: transform 0.3s ease;
+      }
+      .footer-logo:hover { transform: scale(1.1); }
+      .footer-bottom { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--highlight-color); }
+      .social-icons { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+      .social-icons a { color: #E0E0E0; font-size: 1.75rem; }
+      .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
+    </style>
+</head>
+<body onload="checkAuthStatus()">
+    <header class="sticky-header">
+        <div class="flex items-center">
+            <a href="home.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
+        </div>
+        <div class="flex items-center gap-4">
+            <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Sign In with Pi</button>
+            <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
+        </div>
+    </header>
+    <main>
+        <h1 class="text-3xl font-bold mb-4">Back to TruthWeb</h1>
+        <p class="text-lg mb-6">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
+        <p id="auth-status" class="text-sm mb-6">Not authenticated (Testnet Mode)</p>
+        <a href="home.html" class="btn accent">Return to Home</a>
+    </main>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>TruthWeb</h3>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="developers.html">Developers</a></li>
+                    <li><a href="future.html">Coming Soon</a></li>
+                    <li><a href="truwebbot.html">TruthWeb AI Bot</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Shop</h3>
+                <ul>
+                    <li><a href="marketplace.html">Marketplace</a></li>
+                    <li><a href="pi-powered-marketplace.html">Pi Payments</a></li>
+                    <li><a href="global-expansion.html">Global Marketplace</a></li>
+                    <li><a href="escrow-system.html">Escrow System</a></li>
+                    <li><a href="multi-category-listings.html">Multi-Category Listings</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Account</h3>
+                <ul>
+                    <li><a href="profile.html">Profile</a></li>
+                    <li><a href="wallet.html">Wallet</a></li>
+                    <li><a href="pitrade.html">Pi Trade</a></li>
+                    <li><a href="pitrack.html">Pi Track</a></li>
+                    <li><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="safety-guidelines.html">Safety Guidelines</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Stay Connected</h3>
+                <div class="footer-newsletter">
+                    <input type="email" placeholder="Enter your email" aria-label="Newsletter Email">
+                    <button onclick="alert('Newsletter subscription coming soon! (Testnet Mode)')">Subscribe</button>
+                </div>
+            </div>
+        </div>
+        <div class="footer-center">
+            <img src="https://i.ibb.co/ccB4s7ys/Untitled-design-removebg-preview.png" alt="TruthWeb Logo" class="footer-logo">
+        </div>
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community <span class="testnet-badge">Testnet Mode</span></p>
+        </div>
+    </footer>
+</body>
+</html>
