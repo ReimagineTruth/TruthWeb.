@@ -1,4 +1,4 @@
-// App.js - Node.js/Express Backend for TruthWeb (Testnet Mode)
+// App.js - Express App Configuration for TruthWeb (Testnet Mode)
 
 // Import required modules
 const express = require('express');
@@ -8,7 +8,6 @@ const path = require('path');
 
 // Initialize Express app
 const app = express();
-const port = 3000;
 
 // Middleware
 app.use(bodyParser.json()); // Parse JSON request bodies
@@ -18,12 +17,10 @@ app.use(express.static(path.join(__dirname, 'public'))); // Serve static files (
 // Simulated Pi Network API client (for Testnet)
 const piNetworkClient = {
     approvePayment: async (paymentId) => {
-        // In a real app, this would call the Pi Network API
         console.log(`Approving payment: ${paymentId}`);
         return { success: true };
     },
     completePayment: async (paymentId, txid) => {
-        // In a real app, this would verify the transaction
         console.log(`Completing payment: ${paymentId} with txid: ${txid}`);
         return { success: true };
     }
@@ -86,13 +83,12 @@ app.post('/payment/complete', async (req, res) => {
     }
 });
 
-// Authentication Verification Endpoint (optional, for Pi SDK token validation)
+// Authentication Verification Endpoint (optional)
 app.post('/auth/verify', (req, res) => {
     const { accessToken } = req.body;
     if (!accessToken) {
         return res.status(400).json({ error: 'Access token is required' });
     }
-    // In a real app, validate token with Pi Network API
     const isValid = true; // Simulated validation for Testnet
     if (isValid) {
         return res.status(200).json({ valid: true });
@@ -106,7 +102,5 @@ app.get('/back', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'back.html'));
 });
 
-// Start the server
-app.listen(port, () => {
-    console.log(`TruthWeb Testnet Server running on http://localhost:${port}`);
-});
+// Export the app for use in index.js
+module.exports = app;
