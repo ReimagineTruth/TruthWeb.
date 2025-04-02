@@ -8,6 +8,7 @@ const path = require('path');
 const app = express();
 const PI_API_KEY = process.env.PI_API_KEY;  // This will get the value from your .env file
 const PI_API_URL = 'https://api.minepi.com/v2';
+const PORT = process.env.PORT || 8080;  // Use PORT from .env, default to 8080 if not set
 
 // Enable CORS
 app.use(cors());
@@ -40,6 +41,6 @@ app.post('/payment/complete', async (req, res) => {
 });
 
 // Start the server
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
