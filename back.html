@@ -7,182 +7,317 @@
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script>
-      Pi.init({ 
-        version: "2.0", 
-        sandbox: true,
-        appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
-      });
-      const scopes = ['username', 'payments', 'wallet_address'];
+        let piInitialized = false;
+        const BACKEND_URL = 'http://172.21.128.1:8080'; // Updated to your preferred backend URL
+        const scopes = ['username', 'payments', 'wallet_address'];
 
-      function onIncompletePaymentFound(payment) {
-        console.log('Incomplete payment found:', payment);
-        const paymentId = payment.identifier;
-        const txid = payment.transaction?.txid;
-        return $.ajax({
-          url: 'http://localhost:3000/payment/complete',
-          method: 'POST',
-          data: { paymentId, txid, debug: 'cancel' },
-          error: (xhr, status, error) => console.error('Payment completion error:', error)
+        // Wait for Pi SDK to load
+        function waitForPiSDK() {
+            return new Promise((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof Pi !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    reject(new Error('Pi SDK failed to load'));
+                }, 5000);
+            });
+        }
+
+        // Initialize Pi SDK
+        async function initializePiSDK() {
+            try {
+                await waitForPiSDK();
+                await Pi.init({ 
+                    version: "2.0", 
+                    sandbox: true,
+                    appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
+                });
+                piInitialized = true;
+                console.log("Pi SDK Initialized");
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Pi SDK Initialization failed:", error);
+                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
+                piInitialized = false;
+            }
+        }
+
+        // Handle Incomplete Payments
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete payment found:', payment);
+            if (!piInitialized) {
+                console.error('Pi SDK not initialized');
+                return Promise.reject('Pi SDK not initialized');
+            }
+            
+            const paymentId = payment.identifier;
+            const txid = payment.transaction?.txid || null;
+            
+            return $.ajax({
+                url: `${BACKEND_URL}/payment/complete`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ 
+                    paymentId, 
+                    txid, 
+                    debug: 'cancel' 
+                }),
+                success: () => {
+                    console.log('Incomplete payment processed');
+                    addNotification('Processed incomplete payment (Testnet Mode)');
+                },
+                error: (xhr, status, error) => {
+                    console.error('Payment completion error:', error);
+                    addNotification('Failed to process incomplete payment (Testnet Mode)');
+                }
+            });
+        }
+
+        // Authenticate User
+        async function authenticateUser() {
+            if (!piInitialized) {
+                addNotification("Pi Network not available (Testnet Mode)");
+                return;
+            }
+
+            const authBtn = document.getElementById('auth-btn');
+            authBtn.classList.add('authenticating');
+            authBtn.textContent = 'Authenticating...';
+            authBtn.disabled = true;
+
+            try {
+                document.querySelector('.loading-overlay').classList.add('active');
+                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                
+                const verificationResponse = await $.ajax({
+                    url: `${BACKEND_URL}/auth/verify`,
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        accessToken: auth.accessToken,
+                        uid: auth.user.uid
+                    })
+                });
+
+                if (verificationResponse.success) {
+                    const userData = {
+                        uid: auth.user.uid,
+                        username: auth.user.username,
+                        accessToken: auth.accessToken,
+                        walletAddress: auth.user.wallet_address,
+                        piBalance: Math.random() * 1000 // Placeholder, replace with actual balance fetch if needed
+                    };
+                    localStorage.setItem('piUser', JSON.stringify(userData));
+                    updateUIAfterAuth(userData);
+                    addNotification(`Welcome back, ${userData.username}! (Testnet Mode)`);
+                } else {
+                    throw new Error('Backend verification failed');
+                }
+            } catch (error) {
+                console.error('Authentication failed:', error);
+                document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'} (Testnet Mode)`;
+                addNotification(`Authentication failed: ${error.message || 'Please try again'} (Testnet Mode)`);
+            } finally {
+                authBtn.classList.remove('authenticating');
+                authBtn.textContent = 'Sign In with Pi';
+                authBtn.disabled = false;
+                document.querySelector('.loading-overlay').classList.remove('active');
+            }
+        }
+
+        // Update UI After Authentication
+        function updateUIAfterAuth(userData) {
+            document.getElementById('username').textContent = userData.username;
+            document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...) - Testnet Mode`;
+            document.getElementById('auth-btn').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'inline-flex';
+        }
+
+        // Logout User
+        function logoutUser() {
+            localStorage.removeItem('piUser');
+            document.getElementById('username').textContent = 'Guest';
+            document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
+            document.getElementById('auth-btn').style.display = 'inline-flex';
+            document.getElementById('logout-btn').style.display = 'none';
+            addNotification('Logged out successfully (Testnet Mode)');
+            $.ajax({
+                url: `${BACKEND_URL}/auth/logout`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ timestamp: Date.now() })
+            });
+        }
+
+        // Check Authentication Status
+        function checkAuthStatus() {
+            const userData = JSON.parse(localStorage.getItem('piUser'));
+            if (userData && userData.username) {
+                updateUIAfterAuth(userData);
+            }
+        }
+
+        // Add Notification
+        function addNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePiSDK();
         });
-      }
-
-      async function authenticateUser() {
-        try {
-          document.getElementById('auth-btn').classList.add('authenticating');
-          document.getElementById('auth-status').textContent = 'Authenticating...';
-          const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-          const userData = {
-            uid: auth.user.uid,
-            username: auth.user.username,
-            accessToken: auth.accessToken,
-            walletAddress: auth.user.wallet_address,
-            piBalance: Math.random() * 1000
-          };
-          localStorage.setItem('piUser', JSON.stringify(userData));
-          updateUIAfterAuth(userData);
-          addNotification(`Welcome back, ${userData.username}! (Testnet Mode)`);
-        } catch (error) {
-          console.error('Authentication failed:', error);
-          document.getElementById('auth-status').textContent = `Authentication failed: ${error.message || 'Please try again'} (Testnet Mode)`;
-        } finally {
-          document.getElementById('auth-btn').classList.remove('authenticating');
-        }
-      }
-
-      function updateUIAfterAuth(userData) {
-        document.getElementById('username').textContent = userData.username;
-        document.getElementById('auth-status').textContent = `Authenticated as ${userData.username} (Wallet: ${userData.walletAddress.slice(0, 6)}...) - Testnet Mode`;
-        document.getElementById('auth-btn').style.display = 'none';
-        document.getElementById('logout-btn').style.display = 'inline-flex';
-      }
-
-      function logoutUser() {
-        localStorage.removeItem('piUser');
-        document.getElementById('username').textContent = 'Guest';
-        document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
-        document.getElementById('auth-btn').style.display = 'inline-flex';
-        document.getElementById('logout-btn').style.display = 'none';
-      }
-
-      function checkAuthStatus() {
-        const userData = JSON.parse(localStorage.getItem('piUser'));
-        if (userData && userData.username) {
-          updateUIAfterAuth(userData);
-        }
-      }
-
-      function addNotification(message) {
-        console.log('Notification:', message); // Placeholder for notifications
-      }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
     <style>
-      :root {
-        --primary-color: #000000;
-        --secondary-color: #FFFFFF;
-        --highlight-color: #CCCCCC;
-        --text-color: #FFFFFF;
-        --button-bg-color: #000000;
-        --button-text-color: #FFFFFF;
-        --button-hover-bg-color: #FFFFFF;
-        --button-hover-text-color: #000000;
-        --background-color: #FFFFFF;
-        --accent-color: #FFD700;
-        --testnet-badge: #FF4500;
-      }
-      body {
-        background: var(--background-color);
-        color: var(--primary-color);
-        font-family: 'Poppins', sans-serif;
-        margin: 0;
-        padding: 0;
-        line-height: 1.6;
-      }
-      .sticky-header {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        z-index: 1000;
-        background: var(--secondary-color);
-        padding: 1rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-      .logo-text { font-size: 1.5rem; font-weight: 700; }
-      .testnet-badge {
-        background: var(--testnet-badge);
-        color: #fff;
-        padding: 0.35rem 1rem;
-        border-radius: 9999px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        margin-left: 0.75rem;
-        text-transform: uppercase;
-      }
-      main { margin-top: 80px; padding: 2rem; text-align: center; }
-      .btn {
-        background: var(--button-bg-color);
-        color: var(--button-text-color);
-        padding: 0.75rem 2rem;
-        border: 1px solid var(--highlight-color);
-        border-radius: 9999px;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-      }
-      .btn:hover {
-        background: var(--button-hover-bg-color);
-        color: var(--button-hover-text-color);
-        transform: scale(1.05);
-      }
-      .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
-      .btn.accent:hover { background: #FFA500; }
-      footer {
-        background: #000000;
-        color: #E0E0E0;
-        padding: 4rem 1rem;
-        border-top: 1px solid var(--highlight-color);
-      }
-      .footer-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 2.5rem;
-      }
-      .footer-section h3 {
-        font-size: 1.75rem;
-        font-weight: 700;
-        margin-bottom: 1.25rem;
-        color: var(--accent-color);
-      }
-      .footer-section ul { list-style: none; padding: 0; }
-      .footer-section li { margin-bottom: 0.85rem; }
-      .footer-section a { color: #E0E0E0; text-decoration: none; }
-      .footer-section a:hover { color: var(--accent-color); }
-      .footer-center {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 2rem 0;
-      }
-      .footer-logo {
-        max-width: 150px;
-        height: auto;
-        transition: transform 0.3s ease;
-      }
-      .footer-logo:hover { transform: scale(1.1); }
-      .footer-bottom { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--highlight-color); }
-      .social-icons { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
-      .social-icons a { color: #E0E0E0; font-size: 1.75rem; }
-      .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #FFFFFF;
+            --highlight-color: #CCCCCC;
+            --text-color: #FFFFFF;
+            --button-bg-color: #000000;
+            --button-text-color: #FFFFFF;
+            --button-hover-bg-color: #FFFFFF;
+            --button-hover-text-color: #000000;
+            --background-color: #FFFFFF;
+            --accent-color: #FFD700;
+            --testnet-badge: #FF4500;
+        }
+        body {
+            background: var(--background-color);
+            color: var(--primary-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+        .sticky-header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: var(--secondary-color);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        .logo-text { font-size: 1.5rem; font-weight: 700; }
+        .testnet-badge {
+            background: var(--testnet-badge);
+            color: #fff;
+            padding: 0.35rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-left: 0.75rem;
+            text-transform: uppercase;
+        }
+        main { margin-top: 80px; padding: 2rem; text-align: center; }
+        .btn {
+            background: var(--button-bg-color);
+            color: var(--button-text-color);
+            padding: 0.75rem 2rem;
+            border: 1px solid var(--highlight-color);
+            border-radius: 9999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            background: var(--button-hover-bg-color);
+            color: var(--button-hover-text-color);
+            transform: scale(1.05);
+        }
+        .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
+        .btn.accent:hover { background: #FFA500; }
+        .btn.authenticating { opacity: 0.7; cursor: not-allowed; }
+        footer {
+            background: #000000;
+            color: #E0E0E0;
+            padding: 4rem 1rem;
+            border-top: 1px solid var(--highlight-color);
+        }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2.5rem;
+        }
+        .footer-section h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            color: var(--accent-color);
+        }
+        .footer-section ul { list-style: none; padding: 0; }
+        .footer-section li { margin-bottom: 0.85rem; }
+        .footer-section a { color: #E0E0E0; text-decoration: none; }
+        .footer-section a:hover { color: var(--accent-color); }
+        .footer-center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .footer-logo {
+            max-width: 150px;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+        .footer-logo:hover { transform: scale(1.1); }
+        .footer-bottom { text-align: center; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--highlight-color); }
+        .social-icons { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
+        .social-icons a { color: #E0E0E0; font-size: 1.75rem; }
+        .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--secondary-color);
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 300px;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        .loading-overlay.active { display: flex; }
+        .loader {
+            border: 4px solid var(--highlight-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body onload="checkAuthStatus()">
+    <div class="loading-overlay"><div class="loader"></div></div>
     <header class="sticky-header">
         <div class="flex items-center">
             <a href="home.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
