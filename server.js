@@ -6,7 +6,7 @@ const axios = require('axios');
 const path = require('path');
 
 const app = express();
-const PI_API_KEY = 'fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x'; // Your Pi app key
+const PI_API_KEY = process.env.PI_API_KEY;  // This will get the value from your .env file
 const PI_API_URL = 'https://api.minepi.com/v2';
 
 // Enable CORS
