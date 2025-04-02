@@ -36,6 +36,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FFD700">
     <style>
       :root {
         --primary-color: #000000;
@@ -249,34 +251,45 @@
       .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
       .burger-btn.open span:nth-child(2) { opacity: 0; transform: scale(0); }
       .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
-      .mobile-menu {
+      /* X-Style Sidebar */
+      #x-sidebar {
         position: fixed;
         top: 0;
-        left: -100%;
-        width: 85%;
-        max-width: 350px;
+        left: -300px;
+        width: 300px;
         height: 100vh;
         background: var(--nav-bg-light);
         color: var(--nav-text-light);
-        transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+        transition: left 0.3s ease;
         z-index: 999;
         padding: 1rem;
         overflow-y: auto;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
       }
-      body.dark .mobile-menu {
+      body.dark #x-sidebar {
         background: var(--nav-bg-dark);
         color: var(--nav-text-dark);
       }
-      .mobile-menu.open { left: 0; }
-      .mobile-menu-header {
+      #x-sidebar.open { left: 0; }
+      #x-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        display: none;
+      }
+      #x-overlay.active { display: block; }
+      .x-sidebar-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding-bottom: 1rem;
         border-bottom: 1px solid var(--highlight-color);
       }
-      .mobile-menu-close {
+      .x-sidebar-close {
         background: none;
         border: none;
         color: var(--nav-text-light);
@@ -284,53 +297,51 @@
         cursor: pointer;
         transition: transform 0.3s ease;
       }
-      body.dark .mobile-menu-close { color: var(--nav-text-dark); }
-      .mobile-menu-close:hover { transform: scale(1.2); }
-      .mobile-menu ul { list-style: none; padding: 0; }
-      .mobile-menu .menu-section { margin-bottom: 1rem; }
-      .mobile-menu .menu-section h3 {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        cursor: pointer;
+      body.dark .x-sidebar-close { color: var(--nav-text-dark); }
+      .x-sidebar-close:hover { transform: scale(1.2); }
+      .x-nav-item {
         display: flex;
-        justify-content: space-between;
         align-items: center;
-      }
-      .mobile-menu .menu-section h3::after {
-        content: '\f078';
-        font-family: 'Font Awesome 6 Free';
-        font-weight: 900;
-        font-size: 0.9rem;
-        transition: transform 0.3s ease;
-      }
-      .mobile-menu .menu-section.collapsed h3::after {
-        transform: rotate(180deg);
-      }
-      .mobile-menu .menu-section ul {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-      }
-      .mobile-menu .menu-section:not(.collapsed) ul {
-        max-height: 500px;
-      }
-      .mobile-menu .nav-item a {
-        display: block;
-        padding: 0.75rem;
+        padding: 1rem;
         color: var(--nav-text-light);
         font-size: 1.1rem;
         transition: all 0.3s ease;
+        border-radius: 10px;
       }
-      body.dark .mobile-menu .nav-item a {
-        color: var(--nav-text-dark);
-      }
-      .mobile-menu .nav-item a:hover {
+      body.dark .x-nav-item { color: var(--nav-text-dark); }
+      .x-nav-item:hover {
+        background: var(--highlight-color);
         color: var(--nav-hover-light);
-        transform: translateX(10px);
+        transform: translateX(5px);
       }
-      body.dark .mobile-menu .nav-item a:hover {
-        color: var(--nav-hover-dark);
+      body.dark .x-nav-item:hover { color: var(--nav-hover-dark); }
+      .x-nav-item i { margin-right: 0.75rem; font-size: 1.25rem; }
+      .x-notification-list {
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: 1rem;
+        border-top: 1px solid var(--highlight-color);
+      }
+      .x-notification-item {
+        padding: 0.75rem;
+        border-bottom: 1px solid var(--highlight-color);
+        color: var(--primary-color);
+        font-size: 0.9rem;
+      }
+      .x-notification-item:last-child { border-bottom: none; }
+      .x-notification-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--accent-color);
+        color: var(--primary-color);
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .search-container {
         position: relative;
@@ -873,6 +884,92 @@
         background: var(--secondary-color);
         color: var(--primary-color);
       }
+      .price-range {
+        min-width: 200px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      .price-range input[type="range"] { width: 100px; margin: 0 5px; }
+      #price-range-display { font-size: 0.9rem; color: var(--primary-color); }
+      .reviews-section { transition: all 0.3s ease; }
+      .reviews-section.hidden { display: none; }
+      .reviews-section textarea { min-height: 80px; resize: vertical; }
+      .reviews-section p { margin-bottom: 0.5rem; padding: 0.5rem; border-bottom: 1px solid var(--highlight-color); }
+      .points-count, .badges-count, .wishlist-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: var(--accent-color);
+        color: var(--primary-color);
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .social-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: var(--highlight-color);
+        color: var(--primary-color);
+        border-radius: 50%;
+        transition: all 0.3s ease;
+      }
+      .social-btn:hover { background: var(--accent-color); transform: scale(1.1); }
+      .social-btn i { font-size: 1.25rem; }
+      .chatbot-icon { transition: transform 0.3s ease; }
+      .chatbot-icon:hover { transform: scale(1.1); }
+      .chatbot-window {
+        transition: all 0.3s ease;
+      }
+      .chatbot-window.hidden { display: none; }
+      #chatbot-messages {
+        border: 1px solid var(--highlight-color);
+        padding: 1rem;
+        background: var(--background-color);
+      }
+      .chatbot-message { margin-bottom: 0.5rem; }
+      .chatbot-message.user { text-align: right; color: var(--accent-color); }
+      .chatbot-message.bot { text-align: left; color: var(--primary-color); }
+      .badge-item {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid var(--highlight-color);
+      }
+      .badge-item i {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+        color: var(--accent-color);
+      }
+      .challenge-progress {
+        width: 100%;
+        height: 10px;
+        background: var(--highlight-color);
+        border-radius: 5px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+      }
+      .challenge-progress div {
+        height: 100%;
+        background: var(--accent-color);
+        transition: width 0.3s ease;
+      }
+      .comparison-table { width: 100%; border-collapse: collapse; }
+      .comparison-table th, .comparison-table td {
+        border: 1px solid var(--highlight-color);
+        padding: 0.5rem;
+        text-align: center;
+      }
+      .comparison-table th { background: var(--highlight-color); }
+      .subscription-plan { margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--highlight-color); border-radius: 5px; }
+      .subscription-plan.active { border-color: var(--accent-color); background: rgba(255, 215, 0, 0.1); }
       .ads-section, .p2p-section, .seller-spotlight, .video-section, .faq-section, .testimonials-section {
         padding: 2rem 1rem;
         background: var(--secondary-color);
@@ -1040,6 +1137,92 @@
         align-items: center;
         justify-content: center;
       }
+      /* Auction Styles */
+      .auction-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        padding: 1rem;
+      }
+      .auction-card {
+        border: 1px solid var(--highlight-color);
+        border-radius: 10px;
+        padding: 1.5rem;
+        background: var(--secondary-color);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        min-height: 400px;
+        display: flex;
+        flex-direction: column;
+      }
+      .auction-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      }
+      .auction-card.live {
+        border: 2px solid var(--accent-color);
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+      }
+      .auction-image {
+        max-width: 100%;
+        height: 200px;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+      }
+      .auction-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+      .auction-bid {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        margin-bottom: 0.5rem;
+      }
+      .auction-timer {
+        font-size: 1rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+        font-weight: 600;
+      }
+      .auction-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        margin-top: auto;
+      }
+      .bid-btn {
+        background: var(--accent-color);
+        color: var(--primary-color);
+        border: none;
+        padding: 0.75rem;
+        font-size: 1rem;
+        border-radius: 9999px;
+        transition: all 0.3s ease;
+      }
+      .bid-btn:hover {
+        background: #FFA500;
+        transform: scale(1.05);
+      }
+      .bid-btn:disabled {
+        background: var(--highlight-color);
+        cursor: not-allowed;
+        transform: none;
+      }
+      .auction-ended {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: #FFFFFF;
+        padding: 1rem;
+        border-radius: 5px;
+        font-size: 1.25rem;
+        font-weight: 600;
+      }
       @media (min-width: 641px) { 
         .burger-btn { display: none; }
         .desktop-nav { display: flex; }
@@ -1055,12 +1238,13 @@
         .hero { padding: 1rem; }
         .hero-content { gap: 1rem; }
         .hero-text { padding: 1rem; }
-        .product-grid, .ads-grid, .p2p-grid, .seller-grid, .testimonials-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
+        .product-grid, .ads-grid, .p2p-grid, .seller-grid, .testimonials-grid, .auction-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
         .banner img { max-width: 150px; }
         .video-container { padding-bottom: 75%; }
         .mobile-footer-nav { display: flex; }
         body { padding-bottom: 80px; }
         .footer-logo { max-width: 100px; }
+        #x-sidebar { width: 260px; }
       }
     </style>
 </head>
@@ -1121,6 +1305,7 @@
                                 <a href="user-profiles-wallet.html">Manage Profile & Wallet</a>
                                 <a href="pitrack.html">Pi Track</a>
                                 <a href="pitrade.html">Pi Trade</a>
+                                <a href="#" onclick="showSubscriptionModal()">Manage Subscriptions</a>
                             </div>
                         </div>
                     </li>
@@ -1133,6 +1318,7 @@
                                 <h4>Business</h4>
                                 <a href="api-docs.html">Open-Source API</a>
                                 <a href="referral-program.html">Referral Program</a>
+                                <a href="#" onclick="showVendorAnalytics()">Analytics Dashboard</a>
                             </div>
                             <div class="mega-menu-column">
                                 <h4>Security</h4>
@@ -1170,103 +1356,56 @@
                     </li>
                 </ul>
             </nav>
-        <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
-            <i class="fas fa-shopping-cart text-lg"></i>
-            <span class="cart-count" id="cart-count">0</span>
-        </a>
-        <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
-            <i class="fas fa-bell text-lg"></i>
-            <span class="notification-count" id="notification-count">0</span>
-            <div class="notification-dropdown" id="notification-dropdown"></div>
+            <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
+                <i class="fas fa-shopping-cart text-lg"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </a>
+            <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="notification-count" id="notification-count">0</span>
+                <div class="notification-dropdown" id="notification-dropdown"></div>
+            </div>
+            <div class="icon wishlist-icon floating-effect relative" onclick="showWishlistModal()" aria-label="Wishlist">
+                <i class="fas fa-heart text-lg"></i>
+                <span class="wishlist-count" id="wishlist-count">0</span>
+            </div>
+            <div class="icon loyalty-points floating-effect relative" aria-label="Loyalty Points">
+                <i class="fas fa-star text-lg"></i>
+                <span class="points-count" id="points-count">0</span>
+            </div>
+            <div class="icon badges-icon floating-effect relative" onclick="showBadgesModal()" aria-label="Badges">
+                <i class="fas fa-trophy text-lg"></i>
+                <span class="badges-count" id="badges-count">0</span>
+            </div>
+            <button class="icon floating-effect relative" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon text-lg"></i>
+            </button>
+            <button class="burger-btn flex md:hidden" onclick="toggleXSidebar()" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
-        <button class="icon floating-effect relative" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
-            <i class="fas fa-moon text-lg"></i>
-        </button>
-        <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
-    </div>
-</header>
-    <nav class="mobile-menu">
-        <div class="mobile-menu-header">
+    </header>
+    <!-- X-Style Sidebar -->
+    <div id="x-sidebar">
+        <div class="x-sidebar-header">
             <span class="logo-text">TruthWeb</span>
-            <button class="mobile-menu-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
+            <button class="x-sidebar-close" onclick="toggleXSidebar()"><i class="fas fa-times"></i></button>
         </div>
-        <ul>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Main Navigation</h3>
-                <ul>
-                    <li class="nav-item"><a href="home.html">Home</a></li>
-                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
-                    <li class="nav-item"><a href="profile.html">Profile</a></li>
-                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
-                    <li class="nav-item"><a href="cart.html">Cart</a></li>
-                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">About TruthWeb</h3>
-                <ul>
-                    <li class="nav-item"><a href="about.html">About Us</a></li>
-                    <li class="nav-item"><a href="developers.html">Developers</a></li>
-                    <li class="nav-item"><a href="truwebbot.html">TruthWeb AI Bot</a></li>
-                    <li class="nav-item"><a href="future.html">Coming Soon</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Shop</h3>
-                <ul>
-                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
-                    <li class="nav-item"><a href="pi-powered-marketplace.html">Pi-Powered Marketplace</a></li>
-                    <li class="nav-item"><a href="multi-category-listings.html">Multi-Category Listings</a></li>
-                    <li class="nav-item"><a href="global-expansion.html">Global Marketplace</a></li>
-                    <li class="nav-item"><a href="escrow-system.html">Escrow System</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Account & Wallet</h3>
-                <ul>
-                    <li class="nav-item"><a href="profile.html">Your Profile</a></li>
-                    <li class="nav-item"><a href="wallet.html">Your Wallet</a></li>
-                    <li class="nav-item"><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
-                    <li class="nav-item"><a href="pitrack.html">Pi Track</a></li>
-                    <li class="nav-item"><a href="pitrade.html">Pi Trade</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Community & Social</h3>
-                <ul>
-                    <li class="nav-item"><a href="community.html">Community</a></li>
-                    <li class="nav-item"><a href="truthwebfeed.html">TruthWeb Feed</a></li>
-                    <li class="nav-item"><a href="stream.html">TruthWeb Stream</a></li>
-                    <li class="nav-item"><a href="pioneerverification.html">Pioneer Verification</a></li>
-                    <li class="nav-item"><a href="messagingchat.html">Messaging & Chat</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Business & Security</h3>
-                <ul>
-                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
-                    <li class="nav-item"><a href="api-docs.html">Open-Source API</a></li>
-                    <li class="nav-item"><a href="kycverification.html">KYC Verification</a></li>
-                    <li class="nav-item"><a href="fraud-detection.html">Fraud Detection</a></li>
-                    <li class="nav-item"><a href="referral-program.html">Referral Program</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Support</h3>
-                <ul>
-                    <li class="nav-item"><a href="contact.html">Contact Us</a></li>
-                    <li class="nav-item"><a href="faq.html">FAQ</a></li>
-                    <li class="nav-item"><a href="terms.html">Terms</a></li>
-                    <li class="nav-item"><a href="privacy.html">Privacy</a></li>
-                    <li class="nav-item"><a href="safety-guidelines.html">Safety Guidelines</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
+        <div class="x-nav-item" onclick="window.location.href='home.html'"><i class="fas fa-home"></i> Home</div>
+        <div class="x-nav-item" onclick="window.location.href='marketplace.html'"><i class="fas fa-store"></i> Marketplace</div>
+        <div class="x-nav-item" onclick="window.location.href='profile.html'"><i class="fas fa-user"></i> Profile</div>
+        <div class="x-nav-item" onclick="window.location.href='wallet.html'"><i class="fas fa-wallet"></i> Wallet</div>
+        <div class="x-nav-item" onclick="window.location.href='cart.html'"><i class="fas fa-shopping-cart"></i> Cart <span class="x-notification-count" id="x-cart-count">0</span></div>
+        <div class="x-nav-item" onclick="window.location.href='vendor.html'"><i class="fas fa-briefcase"></i> Sell on TruthWeb</div>
+        <div class="x-nav-item" onclick="window.location.href='about.html'"><i class="fas fa-info-circle"></i> About</div>
+        <div class="x-nav-item" onclick="window.location.href='support.html'"><i class="fas fa-headset"></i> Support</div>
+        <div class="x-notification-list" id="x-notification-list">
+            <div class="x-notification-item">Welcome to TruthWeb!</div>
+        </div>
+    </div>
+    <div id="x-overlay" onclick="toggleXSidebar()"></div>
     <main>
         <section class="hero">
             <div class="hero-content">
@@ -1305,7 +1444,7 @@
         <section id="storefront" class="py-16 px-4 max-w-6xl mx-auto">
             <div class="sort-filter">
                 <h2 class="section-title text-3xl font-bold">Featured Products (Testnet Mode)</h2>
-                <div class="flex gap-4">
+                <div class="flex gap-4 flex-wrap">
                     <select class="sort-select" onchange="sortProducts(this.value)">
                         <option value="default">Sort by: Featured</option>
                         <option value="price-low">Price: Low to High</option>
@@ -1317,30 +1456,51 @@
                         <option value="eco">Eco-Friendly</option>
                         <option value="below-50">Below 50 Pi</option>
                         <option value="above-100">Above 100 Pi</option>
+                        <option value="seller-4">Seller Rating: 4+ Stars</option>
+                        <option value="seller-5">Seller Rating: 5 Stars</option>
                     </select>
+                    <div class="price-range">
+                        <input type="range" min="0" max="200" value="0" id="price-min" oninput="updatePriceRange()">
+                        <input type="range" min="0" max="200" value="200" id="price-max" oninput="updatePriceRange()">
+                        <span id="price-range-display">0 - 200 Pi</span>
+                    </div>
                 </div>
             </div>
             <div class="product-grid" id="product-grid"></div>
             <div class="text-center mt-6">
                 <a href="marketplace.html" class="btn">See More Products</a>
+                <button class="btn accent" onclick="showComparisonModal()">Compare Selected Products</button>
             </div>
         </section>
+        <!-- Ads Section -->
         <section id="ads" class="ads-section max-w-6xl mx-auto">
             <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb Ads - Discover More (Testnet Mode)</h2>
             <div class="ads-grid" id="ads-grid"></div>
         </section>
+        <!-- P2P Section -->
         <section id="p2p" class="p2p-section max-w-6xl mx-auto">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Peer-to-Peer Listings (Testnet Mode)</h2>
             <div class="p2p-grid" id="p2p-grid"></div>
         </section>
+        <!-- Sellers Section -->
         <section id="sellers" class="seller-spotlight max-w-6xl mx-auto">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Pi Sellers (Testnet Mode)</h2>
             <div class="seller-grid" id="seller-grid"></div>
         </section>
+        <!-- Recommendations Section -->
         <section id="recommendations" class="py-16 px-4 max-w-6xl mx-auto">
             <h2 class="section-title text-3xl font-bold text-center mb-8">Recommended for You (Testnet Mode)</h2>
             <div class="product-grid" id="recommended-grid"></div>
         </section>
+        <!-- Live Auction Section -->
+        <section id="live-auction" class="py-16 px-4 max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Live Product Auction (Testnet Mode)</h2>
+            <div class="auction-grid" id="auction-grid"></div>
+            <div class="text-center mt-6">
+                <button class="btn accent" onclick="refreshAuctions()">Refresh Auctions</button>
+            </div>
+        </section>
+        <!-- Testimonials Section -->
         <section id="testimonials" class="testimonials-section max-w-6xl mx-auto">
             <h2 class="section-title text-3xl font-bold text-center mb-8">What Pioneers Say (Testnet Mode)</h2>
             <div class="testimonials-grid" id="testimonials-grid"></div>
@@ -1442,608 +1602,561 @@
             <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community <span class="testnet-badge">Testnet Mode</span></p>
         </div>
     </footer>
-    <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
-    <button class="live-chat-btn" onclick="openChat()"><i class="fas fa-comment"></i> Live Chat</button>
+    <!-- Mobile Footer Navigation -->
     <nav class="mobile-footer-nav">
-        <a href="home.html" class="mobile-nav-item" aria-label="Home">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace">
-            <i class="fas fa-store"></i>
-            <span>Marketplace</span>
-        </a>
-        <a href="profile.html" class="mobile-nav-item" aria-label="Profile">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </a>
-        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
-            <i class="fas fa-wallet"></i>
-            <span>Wallet</span>
-        </a>
-        <a href="cart.html" class="mobile-nav-item" aria-label="Cart">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Cart</span>
-            <span class="cart-count" id="mobile-cart-count">0</span>
-        </a>
+        <a href="home.html" class="mobile-nav-item"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="marketplace.html" class="mobile-nav-item"><i class="fas fa-store"></i><span>Shop</span></a>
+        <a href="cart.html" class="mobile-nav-item relative"><i class="fas fa-shopping-cart"></i><span>Cart</span><span class="cart-count" id="mobile-cart-count">0</span></a>
+        <a href="wallet.html" class="mobile-nav-item"><i class="fas fa-wallet"></i><span>Wallet</span></a>
+        <a href="profile.html" class="mobile-nav-item"><i class="fas fa-user"></i><span>Profile</span></a>
     </nav>
-
+    <!-- Go to Top Button -->
+    <button class="go-to-top" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <!-- Quick View Modal -->
+    <div id="quick-view-modal" class="modal">
+        <div class="modal-content">
+            <h2 id="quick-view-title" class="text-2xl font-bold mb-4"></h2>
+            <img id="quick-view-image" src="" alt="Product Image" class="w-full h-64 object-contain mb-4 rounded">
+            <p id="quick-view-price" class="text-xl font-semibold text-[var(--accent-color)] mb-2"></p>
+            <p id="quick-view-description" class="mb-4"></p>
+            <div class="flex justify-between">
+                <button class="btn accent" onclick="addToCartFromModal()">Add to Cart</button>
+                <button class="btn" onclick="closeModal('quick-view-modal')">Close</button>
+            </div>
+            <div class="social-share mt-4">
+                <a href="#" onclick="shareProduct('twitter')" aria-label="Share on Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" onclick="shareProduct('facebook')" aria-label="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" onclick="shareProduct('telegram')" aria-label="Share on Telegram"><i class="fab fa-telegram-plane"></i></a>
+            </div>
+        </div>
+    </div>
+    <!-- Comparison Modal -->
+    <div id="comparison-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Product Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Product 1</th>
+                        <th>Product 2</th>
+                    </tr>
+                </thead>
+                <tbody id="comparison-table-body"></tbody>
+            </table>
+            <button class="btn mt-4" onclick="closeModal('comparison-modal')">Close</button>
+        </div>
+    </div>
+    <!-- Wishlist Modal -->
+    <div id="wishlist-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Your Wishlist</h2>
+            <div id="wishlist-items"></div>
+            <button class="btn mt-4" onclick="closeModal('wishlist-modal')">Close</button>
+        </div>
+    </div>
+    <!-- Badges Modal -->
+    <div id="badges-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Your Badges</h2>
+            <div id="badges-list"></div>
+            <button class="btn mt-4" onclick="closeModal('badges-modal')">Close</button>
+        </div>
+    </div>
+    <!-- Subscription Modal -->
+    <div id="subscription-modal" class="modal">
+        <div class="modal-content">
+            <h2 class="text-2xl font-bold mb-4">Manage Subscriptions</h2>
+            <div id="subscription-plans"></div>
+            <button class="btn mt-4" onclick="closeModal('subscription-modal')">Close</button>
+        </div>
+    </div>
+    <!-- Live Chat Button -->
+    <button class="live-chat-btn" onclick="toggleChatbot()">
+        <i class="fas fa-comment chatbot-icon"></i>
+    </button>
+    <!-- Chatbot Window -->
+    <div id="chatbot-window" class="fixed bottom-20 right-20 w-80 bg-[var(--secondary-color)] shadow-lg rounded-lg p-4 hidden chatbot-window">
+        <h3 class="text-lg font-bold mb-2">TruthWeb Assistant</h3>
+        <div id="chatbot-messages" class="h-60 overflow-y-auto mb-2"></div>
+        <input type="text" id="chatbot-input" class="w-full p-2 border rounded" placeholder="Ask me anything..." onkeypress="if(event.key === 'Enter') sendChatbotMessage()">
+        <button class="btn accent w-full mt-2" onclick="sendChatbotMessage()">Send</button>
+    </div>
     <script>
-        const products = [
-            { id: 1, name: "Pi Smartwatch", basePrice: 150, discountPrice: 135, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true, description: "Smartwatch with Pi integration" },
-            { id: 2, name: "Pi T-Shirt", basePrice: 25, discountPrice: 20, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false, description: "Comfortable cotton Pi-themed shirt" },
-            { id: 3, name: "Pi Home Speaker", basePrice: 80, discountPrice: 72, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true, description: "High-quality audio with Pi connectivity" },
-            { id: 4, name: "Pi Headphones", basePrice: 60, discountPrice: 54, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false, description: "Noise-cancelling headphones" },
-            { id: 5, name: "Pi Sneakers", basePrice: 45, discountPrice: 40, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.6, reviews: 150, engagement: 0, isEco: true, description: "Eco-friendly stylish sneakers" },
-        ];
+      // Sample Data
+      const products = [
+          { id: 1, title: "Pi Phone", price: 100, image: "https://via.placeholder.com/300", rating: 4.5, eco: false },
+          { id: 2, title: "Eco Mug", price: 15, image: "https://via.placeholder.com/300", rating: 4.0, eco: true }
+      ];
+      const ads = [
+          { id: 1, title: "Pi Gadgets", price: 10, image: "https://via.placeholder.com/300" },
+          { id: 2, title: "Eco Deals", price: 5, image: "https://via.placeholder.com/300" }
+      ];
+      const p2pListings = [
+          { id: 1, title: "Used Laptop", price: 50, image: "https://via.placeholder.com/300" },
+          { id: 2, title: "Handmade Jewelry", price: 20, image: "https://via.placeholder.com/300" }
+      ];
+      const sellers = [
+          { id: 1, name: "PiSeller1", rating: 4.5, image: "https://via.placeholder.com/300" },
+          { id: 2, name: "EcoVendor", rating: 5.0, image: "https://via.placeholder.com/300" }
+      ];
+      const testimonials = [
+          { id: 1, text: "Amazing platform for Pi shopping!", author: "Pioneer123", image: "https://via.placeholder.com/300" },
+          { id: 2, text: "Fast and secure transactions!", author: "EcoFan", image: "https://via.placeholder.com/300" }
+      ];
+      const auctions = [
+          { id: 1, title: "Pi Smart Watch", currentBid: 50, image: "https://via.placeholder.com/300", endTime: new Date(Date.now() + 30 * 60 * 1000), startingBid: 40 },
+          { id: 2, title: "Eco-Friendly Backpack", currentBid: 20, image: "https://via.placeholder.com/300", endTime: new Date(Date.now() + 15 * 60 * 1000), startingBid: 15 }
+      ];
 
-        const ads = [
-            { id: 1, name: "Pi Smart TV", price: 300, image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "Pi Fashion Bundle", price: 75, image: "https://via.placeholder.com/300x200" },
-            { id: 3, name: "Pi Home Essentials", price: 120, image: "https://via.placeholder.com/300x200" },
-        ];
-
-        const p2pListings = [
-            { id: 1, name: "Handmade Pi Necklace", price: 15, image: "https://via.placeholder.com/300x200", seller: "Pioneer123" },
-            { id: 2, name: "Used Pi Laptop", price: 200, image: "https://via.placeholder.com/300x200", seller: "TechPioneer" },
-        ];
-
-        const featuredSellers = [
-            { id: 1, name: "EcoPi Store", sales: 500, image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "PiFashion Hub", sales: 300, image: "https://via.placeholder.com/300x200" },
-        ];
-
-        const sellers = [
-            { id: 1, name: "EcoPioneer", bio: "Sustainable goods with Pi!", image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "TechPioneer", bio: "Tech gadgets for Pioneers.", image: "https://via.placeholder.com/300x200" },
-            { id: 3, name: "FashionPioneer", bio: "Trendy styles with Pi payments.", image: "https://via.placeholder.com/300x200" }
-        ];
-
-        const testimonials = [
-            { id: 1, name: "Jane P.", text: "TruthWeb made selling with Pi so easy!", image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "Mark T.", text: "Fast and secure Pi transactions!", image: "https://via.placeholder.com/300x200" },
-            { id: 3, name: "Sara L.", text: "Love the eco-friendly options!", image: "https://via.placeholder.com/300x200" }
-        ];
-
-        let cartCount = 0;
-        let notificationCount = 0;
-        let lastScrollTop = 0;
-        let player;
-
-        async function initiatePayment(amount, memo, isEscrow = false) {
-            try {
-              document.querySelector('.loading-overlay').classList.add('active');
-              const paymentData = { amount, memo, metadata: { plan: memo, escrow: isEscrow } };
-              const payment = await Pi.createPayment(paymentData, {
-                onReadyForServerApproval: (paymentId) => {
-                  $.ajax({
-                    url: 'http://localhost:3000/payment/approve',
-                    method: 'POST',
-                    data: { paymentId, escrow: isEscrow },
-                    success: () => console.log('Payment approved'),
-                    error: (err) => console.error('Approval error:', err)
-                  });
-                },
-                onReadyForServerCompletion: (paymentId, txid) => {
-                  $.ajax({
-                    url: 'http://localhost:3000/payment/complete',
-                    method: 'POST',
-                    data: { paymentId, txid, escrow: isEscrow },
-                    success: () => console.log('Payment completed', isEscrow ? '(Escrow held)' : ''),
-                    error: (err) => console.error('Completion error:', err)
-                  });
-                },
-                onCancel: () => console.log('Payment cancelled'),
-                onError: (error) => {
-                  console.error('Payment error:', error);
-                  addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
-                }
-              });
-              return payment;
-            } catch (error) {
-              console.error('Payment initiation failed:', error);
-              addNotification(`Payment failed: ${error.message} (Testnet Mode)`);
-              throw error;
-            } finally {
-              document.querySelector('.loading-overlay').classList.remove('active');
-            }
-        }
-
-        async function subscribe(plan) {
-            const userData = JSON.parse(localStorage.getItem('piUser'));
-            if (!userData) {
-              alert('Please authenticate to subscribe (Testnet Mode)');
-              authenticateUser();
-              return;
-            }
-            const amounts = { basic: 10, pro: 25, enterprise: 50 };
-            const amount = amounts[plan.toLowerCase()] || 10;
-            try {
-              const payment = await initiatePayment(amount, `TruthWeb ${plan} Plan Subscription`, false);
-              console.log('Subscription payment initiated:', payment);
-              addNotification(`Subscribed to ${plan} Plan for ${amount} Pi! (Testnet Mode)`);
-            } catch (error) {
-              console.error('Subscription error:', error);
-            }
-        }
-
-        function checkAuthStatus() {
-            const userData = JSON.parse(localStorage.getItem('piUser'));
-            if (userData && userData.accessToken) {
-              verifyToken(userData.accessToken).then(isValid => {
-                if (isValid) {
-                  updateUIAfterAuth(userData);
-                } else {
-                  localStorage.removeItem('piUser');
-                  updateUIAfterAuth(null);
-                }
-              });
-            } else {
-              updateUIAfterAuth(null);
-            }
-        }
-
-        function updateUIAfterAuth(userData) {
-            const authBtn = document.getElementById('auth-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            const usernameEl = document.getElementById('username');
-            const authStatusEl = document.getElementById('auth-status');
-            const profileIcon = document.querySelector('.icon[href="profile.html"]');
-            if (userData) {
-              authBtn.style.display = 'none';
-              logoutBtn.style.display = 'inline-flex';
-              usernameEl.textContent = userData.username || 'Pioneer';
-              authStatusEl.textContent = 'Authenticated (Testnet Mode)';
-              authStatusEl.style.color = 'var(--accent-color)';
-              if (profileIcon) profileIcon.classList.add('authenticated');
-            } else {
-              authBtn.style.display = 'inline-flex';
-              logoutBtn.style.display = 'none';
-              usernameEl.textContent = 'Guest';
-              authStatusEl.textContent = 'Not authenticated (Testnet Mode)';
-              authStatusEl.style.color = '';
-              if (profileIcon) profileIcon.classList.remove('authenticated');
-            }
-        }
-
-        async function authenticateUser() {
-            const authBtn = document.getElementById('auth-btn');
-            authBtn.classList.add('authenticating');
-            authBtn.textContent = 'Authenticating...';
-            try {
+      // Authentication
+      let isAuthenticated = false;
+      async function authenticateUser() {
+          const authBtn = document.getElementById('auth-btn');
+          authBtn.classList.add('authenticating');
+          authBtn.textContent = 'Authenticating...';
+          try {
               const authResult = await Pi.authenticate(scopes, onIncompletePaymentFound);
-              localStorage.setItem('piUser', JSON.stringify(authResult));
-              updateUIAfterAuth(authResult);
-              addNotification(`Welcome, ${authResult.username}! (Testnet Mode)`);
-            } catch (err) {
-              console.error('Authentication error:', err);
-              addNotification(`Authentication failed: ${err.message} (Testnet Mode)`);
-            } finally {
+              isAuthenticated = true;
+              document.getElementById('username').textContent = authResult.user.username;
+              document.getElementById('auth-status').textContent = 'Authenticated with Pi (Testnet Mode)';
+              document.getElementById('auth-btn').style.display = 'none';
+              document.getElementById('logout-btn').style.display = 'inline-flex';
+              addNotification(`Welcome, ${authResult.user.username}!`);
+              updateIconsForAuth();
+          } catch (error) {
+              console.error('Authentication error:', error);
+              alert('Authentication failed! (Testnet Mode)');
+          } finally {
               authBtn.classList.remove('authenticating');
               authBtn.textContent = 'Sign In with Pi';
-            }
-        }
+          }
+      }
+      function logoutUser() {
+          isAuthenticated = false;
+          document.getElementById('username').textContent = 'Guest';
+          document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
+          document.getElementById('auth-btn').style.display = 'inline-flex';
+          document.getElementById('logout-btn').style.display = 'none';
+          addNotification('You have logged out.');
+          updateIconsForAuth();
+      }
+      function checkAuthStatus() {
+          if (!isAuthenticated) {
+              document.getElementById('auth-btn').style.display = 'inline-flex';
+              document.getElementById('logout-btn').style.display = 'none';
+          }
+      }
+      function updateIconsForAuth() {
+          const icons = document.querySelectorAll('.icon');
+          icons.forEach(icon => {
+              if (isAuthenticated) icon.classList.add('authenticated');
+              else icon.classList.remove('authenticated');
+          });
+      }
 
-        function logoutUser() {
-            localStorage.removeItem('piUser');
-            updateUIAfterAuth(null);
-            addNotification('Logged out successfully (Testnet Mode)');
-        }
+      // Progress Bar & Scroll Handling
+      window.onscroll = () => {
+          const progress = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+          document.querySelector('.progress-bar').style.width = `${progress}%`;
+          document.querySelector('.sticky-header').classList.toggle('scrolled', window.scrollY > 50);
+          document.querySelector('.go-to-top').classList.toggle('visible', window.scrollY > 200);
+          const mobileNav = document.querySelector('.mobile-footer-nav');
+          mobileNav.classList.toggle('hidden', window.scrollY > lastScrollY && window.scrollY > 200);
+          lastScrollY = window.scrollY;
+      };
+      let lastScrollY = 0;
+      function scrollToTop() {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
 
-        async function verifyToken(token) {
-            return new Promise((resolve) => {
-              setTimeout(() => resolve(true), 500);
-            });
-        }
+      // Dark Mode
+      function toggleDarkMode() {
+          document.body.classList.toggle('dark');
+          localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+      }
+      if (localStorage.getItem('darkMode') === 'true') document.body.classList.add('dark');
 
-        async function showInterstitialAd() {
-            if (!adNetworkSupported) {
-                addNotification("Ads not supported in this environment (Testnet Mode)");
-                return;
-            }
-            try {
-                const isAdReadyResponse = await Pi.Ads.isAdReady("interstitial");
-                if (isAdReadyResponse.ready) {
-                    const showAdResponse = await Pi.Ads.showAd("interstitial");
-                    if (showAdResponse.result === "AD_CLOSED") {
-                        addNotification("Interstitial ad viewed! (Testnet Mode)");
-                    }
-                }
-            } catch (error) {
-                console.error("Interstitial ad error:", error);
-                addNotification("Error showing interstitial ad (Testnet Mode)");
-            }
-        }
+      // X-Style Sidebar
+      function toggleXSidebar() {
+          const sidebar = document.getElementById('x-sidebar');
+          const overlay = document.getElementById('x-overlay');
+          const burger = document.querySelector('.burger-btn');
+          sidebar.classList.toggle('open');
+          overlay.classList.toggle('active');
+          burger.classList.toggle('open');
+      }
 
-        async function showRewardedAd(productId = null) {
-            if (!adNetworkSupported) {
-                addNotification("Ads not supported in this environment (Testnet Mode)");
-                return;
-            }
-            try {
-                const isAdReadyResponse = await Pi.Ads.isAdReady("rewarded");
-                if (isAdReadyResponse.ready) {
-                    const showAdResponse = await Pi.Ads.showAd("rewarded");
-                    if (showAdResponse.result === "AD_REWARDED") {
-                        const result = await rewardUserForWatchingRewardedAd(showAdResponse.adId, productId);
-                        if (result.rewarded) {
-                            showModal(`Congratulations! You've earned: ${result.reward} (Testnet Mode)`, "Reward Earned");
-                            if (productId) {
-                                const product = products.find(p => p.id === productId);
-                                if (product) product.discountPrice = Math.max(10, product.discountPrice - 10);
-                                renderProducts(products, 'product-grid');
-                            }
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error("Rewarded ad error:", error);
-                showModal("Error showing rewarded ad (Testnet Mode)", "Ad Error");
-            }
-        }
+      // Video Player
+      let player;
+      function onYouTubeIframeAPIReady() {
+          player = new YT.Player('video-player', {
+              height: '100%',
+              width: '100%',
+              videoId: 'WLihlM7KOoY',
+              events: {
+                  'onReady': onPlayerReady
+              }
+          });
+      }
+      function onPlayerReady(event) {
+          console.log('Video player is ready');
+      }
+      function togglePlayPause() {
+          const btn = document.getElementById('play-pause-btn');
+          if (player.getPlayerState() === 1) {
+              player.pauseVideo();
+              btn.innerHTML = '▶ Play';
+          } else {
+              player.playVideo();
+              btn.innerHTML = '❚❚ Pause';
+          }
+      }
+      function stopVideo() {
+          player.stopVideo();
+          document.getElementById('play-pause-btn').innerHTML = '▶ Play';
+      }
 
-        async function rewardUserForWatchingRewardedAd(adId, productId) {
-            return new Promise((resolve) => {
-                setTimeout(() => {
-                    resolve({ rewarded: true, reward: productId ? "10 Pi Discount" : "5 Pi Bonus", adId });
-                }, 1000);
-            });
-        }
+      // Product Functions
+      function loadProducts() {
+          const grid = document.getElementById('product-grid');
+          grid.innerHTML = products.map(product => `
+              <div class="product-card">
+                  <img src="${product.image}" alt="${product.title}" class="product-image">
+                  <h3 class="product-title">${product.title}</h3>
+                  <p class="product-price">${product.price} Pi</p>
+                  <p class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</p>
+                  ${product.eco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
+                  <div class="product-actions">
+                      <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                      <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
+                  </div>
+              </div>
+          `).join('');
+      }
+      function addToCart(productId) {
+          const product = products.find(p => p.id === productId);
+          const cartCount = document.getElementById('cart-count');
+          const mobileCartCount = document.getElementById('mobile-cart-count');
+          const xCartCount = document.getElementById('x-cart-count');
+          let count = parseInt(cartCount.textContent);
+          count++;
+          cartCount.textContent = count;
+          mobileCartCount.textContent = count;
+          xCartCount.textContent = count;
+          addNotification(`Added ${product.title} to cart!`);
+          alert(`Added ${product.title} to cart for ${product.price} Pi! (Testnet Mode)`);
+      }
+      function addToCartFromModal() {
+          const productTitle = document.getElementById('quick-view-title').textContent;
+          const product = products.find(p => p.title === productTitle);
+          if (product) addToCart(product.id);
+          closeModal('quick-view-modal');
+      }
+      function showQuickView(productId) {
+          const product = products.find(p => p.id === productId);
+          document.getElementById('quick-view-title').textContent = product.title;
+          document.getElementById('quick-view-image').src = product.image;
+          document.getElementById('quick-view-price').textContent = `${product.price} Pi`;
+          document.getElementById('quick-view-description').textContent = `Rating: ${product.rating} stars${product.eco ? ' | Eco-Friendly' : ''} (Testnet Mode)`;
+          document.getElementById('quick-view-modal').classList.add('active');
+      }
+      function shareProduct(platform) {
+          const title = document.getElementById('quick-view-title').textContent;
+          const url = window.location.href;
+          let shareUrl;
+          switch (platform) {
+              case 'twitter': shareUrl = `https://twitter.com/intent/tweet?text=Check out ${title} on TruthWeb!&url=${url}`; break;
+              case 'facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
+              case 'telegram': shareUrl = `https://t.me/share/url?url=${url}&text=Check out ${title} on TruthWeb!`; break;
+          }
+          window.open(shareUrl, '_blank');
+      }
+      function closeModal(modalId) {
+          document.getElementById(modalId).classList.remove('active');
+      }
+      function sortProducts(criteria) {
+          let sorted = [...products];
+          if (criteria === 'price-low') sorted.sort((a, b) => a.price - b.price);
+          else if (criteria === 'price-high') sorted.sort((a, b) => b.price - a.price);
+          else if (criteria === 'rating') sorted.sort((a, b) => b.rating - a.rating);
+          const grid = document.getElementById('product-grid');
+          grid.innerHTML = sorted.map(product => `
+              <div class="product-card">
+                  <img src="${product.image}" alt="${product.title}" class="product-image">
+                  <h3 class="product-title">${product.title}</h3>
+                  <p class="product-price">${product.price} Pi</p>
+                  <p class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</p>
+                  ${product.eco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
+                  <div class="product-actions">
+                      <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                      <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
+                  </div>
+              </div>
+          `).join('');
+      }
+      function filterProducts(criteria) {
+          let filtered = [...products];
+          if (criteria === 'eco') filtered = filtered.filter(p => p.eco);
+          else if (criteria === 'below-50') filtered = filtered.filter(p => p.price < 50);
+          else if (criteria === 'above-100') filtered = filtered.filter(p => p.price > 100);
+          const grid = document.getElementById('product-grid');
+          grid.innerHTML = filtered.map(product => `
+              <div class="product-card">
+                  <img src="${product.image}" alt="${product.title}" class="product-image">
+                  <h3 class="product-title">${product.title}</h3>
+                  <p class="product-price">${product.price} Pi</p>
+                  <p class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</p>
+                  ${product.eco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
+                  <div class="product-actions">
+                      <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                      <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
+                  </div>
+              </div>
+          `).join('');
+      }
+      function updatePriceRange() {
+          const min = document.getElementById('price-min').value;
+          const max = document.getElementById('price-max').value;
+          document.getElementById('price-range-display').textContent = `${min} - ${max} Pi`;
+          const filtered = products.filter(p => p.price >= min && p.price <= max);
+          const grid = document.getElementById('product-grid');
+          grid.innerHTML = filtered.map(product => `
+              <div class="product-card">
+                  <img src="${product.image}" alt="${product.title}" class="product-image">
+                  <h3 class="product-title">${product.title}</h3>
+                  <p class="product-price">${product.price} Pi</p>
+                  <p class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</p>
+                  ${product.eco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
+                  <div class="product-actions">
+                      <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                      <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
+                  </div>
+              </div>
+          `).join('');
+      }
+      function searchProducts(query) {
+          const results = products.filter(p => p.title.toLowerCase().includes(query.toLowerCase()));
+          const searchResults = document.getElementById('search-results');
+          searchResults.innerHTML = results.map(product => `
+              <div class="search-result-item" onclick="showQuickView(${product.id})">${product.title} - ${product.price} Pi</div>
+          `).join('');
+          searchResults.classList.toggle('active', query.length > 0);
+      }
+      function filterCategory(category) {
+          alert(`Filtering by ${category} (Testnet Mode)`);
+      }
 
-        function showModal(message, title, isSuccess = false) {
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3 class="text-xl font-bold mb-4">${title}</h3>
-                    <p class="mb-4">${message}</p>
-                    <button class="btn ${isSuccess ? 'accent' : ''}" onclick="this.closest('.modal').remove()">Close</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
+      // Additional Sections
+      function loadSections() {
+          const adsGrid = document.getElementById('ads-grid');
+          adsGrid.innerHTML = ads.map(ad => `
+              <div class="ad-card">
+                  <img src="${ad.image}" alt="${ad.title}">
+                  <h3 class="ad-title">${ad.title}</h3>
+                  <p class="ad-price">${ad.price} Pi</p>
+                  <p>Earn Pi by watching this ad!</p>
+                  <button class="btn accent mt-2" onclick="watchAd(${ad.id})">Watch Now</button>
+              </div>
+          `).join('');
+          const p2pGrid = document.getElementById('p2p-grid');
+          p2pGrid.innerHTML = p2pListings.map(listing => `
+              <div class="p2p-card">
+                  <img src="${listing.image}" alt="${listing.title}">
+                  <h3 class="p2p-title">${listing.title}</h3>
+                  <p class="p2p-price">${listing.price} Pi</p>
+                  <button class="btn accent mt-2" onclick="buyP2P(${listing.id})">Buy Now</button>
+              </div>
+          `).join('');
+          const sellerGrid = document.getElementById('seller-grid');
+          sellerGrid.innerHTML = sellers.map(seller => `
+              <div class="seller-card">
+                  <img src="${seller.image}" alt="${seller.name}">
+                  <h3 class="seller-title">${seller.name}</h3>
+                  <p class="seller-info">Rating: ${seller.rating} ★</p>
+                  <button class="btn accent mt-2" onclick="viewSeller(${seller.id})">View Shop</button>
+              </div>
+          `).join('');
+          const recommendedGrid = document.getElementById('recommended-grid');
+          recommendedGrid.innerHTML = products.map(product => `
+              <div class="product-card">
+                  <img src="${product.image}" alt="${product.title}" class="product-image">
+                  <h3 class="product-title">${product.title}</h3>
+                  <p class="product-price">${product.price} Pi</p>
+                  <p class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))}</p>
+                  ${product.eco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
+                  <div class="product-actions">
+                      <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                      <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
+                  </div>
+              </div>
+          `).join('');
+          const testimonialsGrid = document.getElementById('testimonials-grid');
+          testimonialsGrid.innerHTML = testimonials.map(testimonial => `
+              <div class="testimonial-card">
+                  <img src="${testimonial.image}" alt="${testimonial.author}">
+                  <h3 class="testimonial-title">${testimonial.author}</h3>
+                  <p class="testimonial-text">"${testimonial.text}"</p>
+              </div>
+          `).join('');
+          loadAuctions();
+      }
+      function watchAd(adId) {
+          const ad = ads.find(a => a.id === adId);
+          alert(`Watching ad for ${ad.title}! Earn ${ad.price} Pi (Testnet Mode)`);
+          addNotification(`Earned ${ad.price} Pi from watching ${ad.title} ad!`);
+      }
+      function buyP2P(listingId) {
+          const listing = p2pListings.find(l => l.id === listingId);
+          alert(`Purchased ${listing.title} for ${listing.price} Pi! (Testnet Mode)`);
+          addNotification(`Bought ${listing.title} for ${listing.price} Pi`);
+      }
+      function viewSeller(sellerId) {
+          const seller = sellers.find(s => s.id === sellerId);
+          alert(`Viewing shop for ${seller.name} (Testnet Mode)`);
+      }
 
-        function renderProducts(productList, containerId) {
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-            productList.forEach(product => {
-                const currentPrice = product.discountPrice || product.basePrice;
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}" class="product-image">
-                    <h3 class="product-title">${product.name}</h3>
-                    <p class="product-price">${currentPrice} Pi <span>(Original: ${product.basePrice} Pi)</span></p>
-                    <div class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))} (${product.reviews} reviews)</div>
-                    ${product.isEco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
-                    <div class="product-actions">
-                        <button class="btn btn-add-to-cart" onclick="addToCart(${product.id}, ${currentPrice})"><i class="fas fa-shopping-cart"></i> Add to Cart</button>
-                        <button class="btn quick-view-btn" onclick="showProductDetails(${product.id})"><i class="fas fa-eye"></i> Quick View</button>
-                        <button class="btn-watch-ad" onclick="showRewardedAd(${product.id})"><i class="fas fa-video"></i> Watch Ad for Discount</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
+      // Auction Functions
+      function loadAuctions() {
+          const auctionGrid = document.getElementById('auction-grid');
+          auctionGrid.innerHTML = auctions.map(auction => {
+              const timeLeft = getTimeLeft(auction.endTime);
+              const isEnded = timeLeft === "Ended";
+              return `
+                  <div class="auction-card ${!isEnded ? 'live' : ''}" data-auction-id="${auction.id}">
+                      <img src="${auction.image}" alt="${auction.title}" class="auction-image">
+                      <h3 class="auction-title">${auction.title}</h3>
+                      <p class="auction-bid">${auction.currentBid} Pi</p>
+                      <p class="auction-timer" data-end-time="${auction.endTime.toISOString()}">${timeLeft}</p>
+                      <div class="auction-actions">
+                          <button class="bid-btn" onclick="placeBid(${auction.id})" ${isEnded ? 'disabled' : ''}>Place Bid (+5 Pi)</button>
+                          <button class="quick-view-btn" onclick="showAuctionQuickView(${auction.id})">Quick View</button>
+                      </div>
+                      ${isEnded ? '<div class="auction-ended">Auction Ended</div>' : ''}
+                  </div>
+              `;
+          }).join('');
+          updateAuctionTimers();
+      }
+      function getTimeLeft(endTime) {
+          const now = new Date();
+          const timeDiff = endTime - now;
+          if (timeDiff <= 0) return "Ended";
+          const minutes = Math.floor(timeDiff / (1000 * 60));
+          const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
+          return `${minutes}m ${seconds}s`;
+      }
+      function updateAuctionTimers() {
+          const timers = document.querySelectorAll('.auction-timer');
+          timers.forEach(timer => {
+              const endTime = new Date(timer.getAttribute('data-end-time'));
+              const timeLeft = getTimeLeft(endTime);
+              timer.textContent = timeLeft;
+              const auctionCard = timer.closest('.auction-card');
+              if (timeLeft === "Ended" && !auctionCard.classList.contains('ended')) {
+                  auctionCard.classList.remove('live');
+                  auctionCard.querySelector('.bid-btn').disabled = true;
+                  auctionCard.innerHTML += '<div class="auction-ended">Auction Ended</div>';
+              }
+          });
+      }
+      function placeBid(auctionId) {
+          const auction = auctions.find(a => a.id === auctionId);
+          if (new Date() >= auction.endTime) {
+              alert("This auction has ended! (Testnet Mode)");
+              return;
+          }
+          auction.currentBid += 5;
+          alert(`Bid placed on ${auction.title} for ${auction.currentBid} Pi! (Testnet Mode)`);
+          loadAuctions();
+          addNotification(`You bid ${auction.currentBid} Pi on ${auction.title}`);
+      }
+      function showAuctionQuickView(auctionId) {
+          const auction = auctions.find(a => a.id === auctionId);
+          document.getElementById('quick-view-title').textContent = auction.title;
+          document.getElementById('quick-view-image').src = auction.image;
+          document.getElementById('quick-view-price').textContent = `Current Bid: ${auction.currentBid} Pi (Starting: ${auction.startingBid} Pi)`;
+          document.getElementById('quick-view-description').textContent = `Live auction for ${auction.title}. Ends: ${getTimeLeft(auction.endTime)} (Testnet Mode)`;
+          document.getElementById('quick-view-modal').classList.add('active');
+      }
+      function refreshAuctions() {
+          loadAuctions();
+          alert("Auctions refreshed! (Testnet Mode)");
+      }
 
-        function showProductDetails(productId) {
-            const product = products.find(p => p.id === productId);
-            const currentPrice = product.discountPrice || product.basePrice;
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3 class="text-xl font-bold mb-4">${product.name}</h3>
-                    <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover rounded mb-4">
-                    <p class="mb-2">${product.description}</p>
-                    <p class="product-price mb-2">${currentPrice} Pi <span>(Original: ${product.basePrice} Pi)</span></p>
-                    <div class="product-rating mb-4">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))} (${product.reviews} reviews)</div>
-                    <div class="flex gap-2">
-                        <button class="btn accent" onclick="addToCart(${product.id}, ${currentPrice});this.closest('.modal').remove()">Add to Cart</button>
-                        <button class="btn" onclick="this.closest('.modal').remove()">Close</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
+      // Notifications
+      function addNotification(message) {
+          const dropdown = document.getElementById('notification-dropdown');
+          const xNotificationList = document.getElementById('x-notification-list');
+          const count = document.getElementById('notification-count');
+          let notifications = Array.from(dropdown.children).map(item => item.textContent);
+          notifications.unshift(message);
+          count.textContent = notifications.length;
+          document.getElementById('x-cart-count').textContent = notifications.length;
+          dropdown.innerHTML = notifications.map(note => `<div class="notification-item">${note}</div>`).join('');
+          xNotificationList.innerHTML = notifications.map(note => `<div class="x-notification-item">${note}</div>`).join('');
+      }
+      function toggleNotifications() {
+          document.getElementById('notification-dropdown').classList.toggle('active');
+      }
+      function updateNotifications() {
+          addNotification('Welcome to TruthWeb!');
+      }
 
-        function addToCart(productId, price) {
-            cartCount++;
-            document.getElementById('cart-count').textContent = cartCount;
-            document.getElementById('mobile-cart-count').textContent = cartCount;
-            const product = products.find(p => p.id === productId);
-            addNotification(`Added ${product.name} to cart for ${price} Pi! (Testnet Mode)`);
-            if (cartCount % 3 === 0) {
-                showInterstitialAd();
-            }
-        }
+      // Chatbot
+      function toggleChatbot() {
+          const chatbot = document.getElementById('chatbot-window');
+          chatbot.classList.toggle('hidden');
+      }
+      function sendChatbotMessage() {
+          const input = document.getElementById('chatbot-input');
+          const messages = document.getElementById('chatbot-messages');
+          const message = input.value.trim();
+          if (!message) return;
+          messages.innerHTML += `<div class="chatbot-message user">${message}</div>`;
+          messages.scrollTop = messages.scrollHeight;
+          setTimeout(() => {
+              messages.innerHTML += `<div class="chatbot-message bot">I'm here to help! What do you want to talk about? (Testnet Mode)</div>`;
+              messages.scrollTop = messages.scrollHeight;
+          }, 500);
+          input.value = '';
+      }
 
-        function onYouTubeIframeAPIReady() {
-            player = new YT.Player('video-player', {
-                height: '100%',
-                width: '100%',
-                videoId: 'WLihlM7KOoY',
-                playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0 },
-                events: {
-                    'onReady': (event) => console.log('Video player ready'),
-                    'onStateChange': (event) => {
-                        const playPauseBtn = document.getElementById('play-pause-btn');
-                        if (event.data === YT.PlayerState.PLAYING) {
-                            playPauseBtn.textContent = '❚❚ Pause';
-                        } else {
-                            playPauseBtn.textContent = '▶ Play';
-                        }
-                    }
-                }
-            });
-        }
+      // FAQ
+      function toggleFAQ(element) {
+          const item = element.parentElement;
+          item.classList.toggle('active');
+      }
 
-        function togglePlayPause() {
-            if (player) {
-                const state = player.getPlayerState();
-                if (state === YT.PlayerState.PLAYING) {
-                    player.pauseVideo();
-                } else {
-                    player.playVideo();
-                }
-            }
-        }
+      // Additional Modals
+      function showComparisonModal() {
+          alert('Comparison feature coming soon! (Testnet Mode)');
+      }
+      function showWishlistModal() {
+          document.getElementById('wishlist-modal').classList.add('active');
+      }
+      function showBadgesModal() {
+          document.getElementById('badges-modal').classList.add('active');
+      }
+      function showSubscriptionModal() {
+          document.getElementById('subscription-modal').classList.add('active');
+      }
+      function showVendorAnalytics() {
+          alert('Vendor analytics coming soon! (Testnet Mode)');
+      }
 
-        function stopVideo() {
-            if (player) {
-                player.stopVideo();
-            }
-        }
-
-        function renderAds() {
-            const container = document.getElementById('ads-grid');
-            container.innerHTML = '';
-            ads.forEach(ad => {
-                const card = document.createElement('div');
-                card.className = 'ad-card';
-                card.innerHTML = `
-                    <img src="${ad.image}" alt="${ad.name}">
-                    <h3 class="ad-title">${ad.name}</h3>
-                    <p class="ad-price">${ad.price} Pi</p>
-                    <button class="btn" onclick="addNotification('Ad clicked: ${ad.name} (Testnet Mode)')">Learn More</button>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderP2P() {
-            const container = document.getElementById('p2p-grid');
-            container.innerHTML = '';
-            p2pListings.forEach(listing => {
-                const card = document.createElement('div');
-                card.className = 'p2p-card';
-                card.innerHTML = `
-                    <img src="${listing.image}" alt="${listing.name}">
-                    <h3 class="p2p-title">${listing.name}</h3>
-                    <p class="p2p-price">${listing.price} Pi</p>
-                    <p>Seller: ${listing.seller}</p>
-                    <button class="btn" onclick="initiatePayment(${listing.price}, 'P2P: ${listing.name}', true)">Buy Now</button>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderSellers() {
-            const container = document.getElementById('seller-grid');
-            container.innerHTML = '';
-            sellers.forEach(seller => {
-                const card = document.createElement('div');
-                card.className = 'seller-card';
-                card.innerHTML = `
-                    <img src="${seller.image}" alt="${seller.name}">
-                    <h3 class="seller-title">${seller.name}</h3>
-                    <p class="seller-info">${seller.bio}</p>
-                    <button class="btn" onclick="addNotification('Viewing ${seller.name}\'s store (Testnet Mode)')">Visit Store</button>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function renderTestimonials() {
-            const container = document.getElementById('testimonials-grid');
-            container.innerHTML = '';
-            testimonials.forEach(testimonial => {
-                const card = document.createElement('div');
-                card.className = 'testimonial-card';
-                card.innerHTML = `
-                    <img src="${testimonial.image}" alt="${testimonial.name}">
-                    <h3 class="testimonial-title">${testimonial.name}</h3>
-                    <p class="testimonial-text">"${testimonial.text}"</p>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function addNotification(message) {
-            notificationCount++;
-            const dropdown = document.getElementById('notification-dropdown');
-            const count = document.getElementById('notification-count');
-            const item = document.createElement('div');
-            item.className = 'notification-item';
-            item.textContent = message;
-            dropdown.insertBefore(item, dropdown.firstChild);
-            count.textContent = notificationCount;
-            setTimeout(() => {
-                item.remove();
-                notificationCount--;
-                count.textContent = notificationCount;
-                if (notificationCount === 0) dropdown.classList.remove('active');
-            }, 5000);
-        }
-
-        function toggleNotifications() {
-            const dropdown = document.getElementById('notification-dropdown');
-            dropdown.classList.toggle('active');
-        }
-
-        function searchProducts(query) {
-            const resultsContainer = document.getElementById('search-results');
-            if (!query.trim()) {
-                resultsContainer.classList.remove('active');
-                return;
-            }
-            const filteredProducts = products.filter(product => 
-                product.name.toLowerCase().includes(query.toLowerCase()) || 
-                product.category.toLowerCase().includes(query.toLowerCase())
-            );
-            resultsContainer.innerHTML = '';
-            filteredProducts.forEach(product => {
-                const item = document.createElement('div');
-                item.className = 'search-result-item';
-                item.innerHTML = `
-                    <strong>${product.name}</strong><br>
-                    ${product.basePrice} Pi - ${product.category}
-                `;
-                item.onclick = () => {
-                    addNotification(`Viewing ${product.name} (Testnet Mode)`);
-                    resultsContainer.classList.remove('active');
-                };
-                resultsContainer.appendChild(item);
-            });
-            resultsContainer.classList.add('active');
-        }
-
-        function sortProducts(criteria) {
-            let sortedProducts = [...products];
-            switch (criteria) {
-                case 'price-low':
-                    sortedProducts.sort((a, b) => (a.basePrice - b.basePrice));
-                    break;
-                case 'price-high':
-                    sortedProducts.sort((a, b) => (b.basePrice - a.basePrice));
-                    break;
-                case 'rating':
-                    sortedProducts.sort((a, b) => (b.rating - a.rating));
-                    break;
-                default:
-                    sortedProducts = [...products];
-            }
-            renderProducts(sortedProducts, 'product-grid');
-        }
-
-        function filterProducts(criteria) {
-            let filteredProducts = [...products];
-            switch (criteria) {
-                case 'eco':
-                    filteredProducts = filteredProducts.filter(p => p.isEco);
-                    break;
-                case 'below-50':
-                    filteredProducts = filteredProducts.filter(p => p.basePrice < 50);
-                    break;
-                case 'above-100':
-                    filteredProducts = filteredProducts.filter(p => p.basePrice > 100);
-                    break;
-                default:
-                    filteredProducts = [...products];
-            }
-            renderProducts(filteredProducts, 'product-grid');
-        }
-
-        function filterCategory(category) {
-            const filteredProducts = products.filter(p => p.category === category);
-            renderProducts(filteredProducts, 'product-grid');
-        }
-
-        function toggleMobileMenu() {
-            const menu = document.querySelector('.mobile-menu');
-            const burger = document.querySelector('.burger-btn');
-            menu.classList.toggle('open');
-            burger.classList.toggle('open');
-        }
-
-        function closeMobileMenu() {
-            const menu = document.querySelector('.mobile-menu');
-            const burger = document.querySelector('.burger-btn');
-            menu.classList.remove('open');
-            burger.classList.remove('open');
-        }
-
-        function toggleMenuSection(element) {
-            const section = element.parentElement;
-            section.classList.toggle('collapsed');
-        }
-
-        function toggleFAQ(element) {
-            const faqItem = element.parentElement;
-            faqItem.classList.toggle('active');
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            const icon = document.querySelector('.icon i');
-            const isDark = document.body.classList.contains('dark');
-            icon.classList.toggle('fa-moon', !isDark);
-            icon.classList.toggle('fa-sun', isDark);
-            localStorage.setItem('darkMode', isDark);
-        }
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function handleScroll() {
-            const scrollTop = window.scrollY;
-            const header = document.querySelector('.sticky-header');
-            const goToTop = document.querySelector('.go-to-top');
-            const mobileFooterNav = document.querySelector('.mobile-footer-nav');
-            const progressBar = document.querySelector('.progress-bar');
-            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-            const scrollPercent = (scrollTop / docHeight) * 100;
-
-            progressBar.style.width = `${scrollPercent}%`;
-
-            if (scrollTop > 50) {
-                header.classList.add('scrolled');
-                goToTop.classList.add('visible');
-            } else {
-                header.classList.remove('scrolled');
-                goToTop.classList.remove('visible');
-            }
-
-            if (scrollTop > lastScrollTop && scrollTop > 100) {
-                header.classList.add('hidden');
-                mobileFooterNav.classList.add('hidden');
-            } else {
-                header.classList.remove('hidden');
-                mobileFooterNav.classList.remove('hidden');
-            }
-            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-        }
-
-        function openChat() {
-            window.open('https://t.me/TruthWebSupport', '_blank');
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProducts(products, 'product-grid');
-            renderProducts(products.slice(0, 3), 'recommended-grid');
-            renderAds();
-            renderP2P();
-            renderSellers();
-            renderTestimonials();
-
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.body.classList.add('dark');
-                document.querySelector('.icon i').classList.replace('fa-moon', 'fa-sun');
-            }
-
-            window.addEventListener('scroll', handleScroll);
-            document.addEventListener('click', (e) => {
-                const searchResults = document.getElementById('search-results');
-                if (!e.target.closest('.search-container') && searchResults.classList.contains('active')) {
-                    searchResults.classList.remove('active');
-                }
-                const notificationDropdown = document.getElementById('notification-dropdown');
-                if (!e.target.closest('.notification-bell') && notificationDropdown.classList.contains('active')) {
-                    notificationDropdown.classList.remove('active');
-                }
-            });
-        });
+      // Page Load
+      window.onload = function () {
+          checkAuthStatus();
+          loadProducts();
+          loadSections();
+          updateNotifications();
+      };
+      document.addEventListener('DOMContentLoaded', () => {
+          setInterval(updateAuctionTimers, 1000);
+      });
     </script>
 </body>
 </html>
