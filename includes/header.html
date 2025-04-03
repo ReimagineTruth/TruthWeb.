@@ -1,1 +1,217 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
+    <title>TruthWeb - #1 Pi Network E-Commerce Hub (Testnet Mode)</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="assets/css/styles.css"/>
+</head>
+<body onload="checkAuthStatus()">
+    <div class="progress-bar"></div>
+    <div class="loading-overlay"><div class="loader"></div></div>
+    <header class="sticky-header">
+        <div class="flex items-center">
+            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search millions of products with Pi..." aria-label="Search Products" oninput="searchProducts(this.value)">
+            <i class="fas fa-search search-icon"></i>
+            <div class="search-results" id="search-results"></div>
+        </div>
+        <div class="flex items-center">
+            <nav class="desktop-nav hidden md:flex items-center">
+                <ul class="flex space-x-4">
+                    <li class="nav-item">
+                        <a href="home.html">Home</a>
+                        <div class="mega-menu">
+                            <div class="mega-menu-column">
+                                <h4>Social</h4>
+                                <a href="truthwebfeed.html">TruthWeb Feed</a>
+                                <a href="stream.html">Stream</a>
+                                <a href="messagingchat.html">Messaging & Chat</a>
+                            </div>
+                            <div class="mega-menu-column">
+                                <h4>Engage</h4>
+                                <a href="community.html">Community</a>
+                                <a href="pioneerverification.html">Pioneer Verification</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a href="marketplace.html">Marketplace</a>
+                        <div class="mega-menu">
+                            <div class="mega-menu-column">
+                                <h4>Categories</h4>
+                                <a href="#" onclick="filterCategory('electronics')">Electronics</a>
+                                <a href="#" onclick="filterCategory('fashion')">Fashion</a>
+                                <a href="#" onclick="filterCategory('home')">Home</a>
+                            </div>
+                            <div class="mega-menu-column">
+                                <h4>Shop Features</h4>
+                                <a href="pi-powered-marketplace.html">Pi Payments</a>
+                                <a href="multi-category-listings.html">Multi-Category Listings</a>
+                                <a href="global-expansion.html">Global Marketplace</a>
+                                <a href="escrow-system.html">Escrow System</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a href="profile.html">Profile</a>
+                        <div class="mega-menu">
+                            <div class="mega-menu-column">
+                                <h4>Account</h4>
+                                <a href="user-profiles-wallet.html">Manage Profile & Wallet</a>
+                                <a href="pitrack.html">Pi Track</a>
+                                <a href="pitrade.html">Pi Trade</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+                    <li class="nav-item"><a href="cart.html">Cart</a></li>
+                    <li class="nav-item">
+                        <a href="vendor.html">Sell on TruthWeb</a>
+                        <div class="mega-menu">
+                            <div class="mega-menu-column">
+                                <h4>Business</h4>
+                                <a href="api-docs.html">Open-Source API</a>
+                                <a href="referral-program.html">Referral Program</a>
+                            </div>
+                            <div class="mega-menu-column">
+                                <h4>Security</h4>
+                                <a href="kycverification.html">KYC Verification</a>
+                                <a href="fraud-detection.html">Fraud Detection</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a href="about.html">About</a>
+                        <div class="mega-menu">
+                            <div class="mega-menu-column">
+                                <h4>About TruthWeb</h4>
+                                <a href="developers.html">Developers</a>
+                                <a href="truwebbot.html">TruthWeb AI Bot</a>
+                                <a href="future.html">Coming Soon</a>
+                            </div>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a href="support.html">Support</a>
+                        <div class="mega-menu">
+                            <div class="mega-menu-column">
+                                <h4>Help</h4>
+                                <a href="contact.html">Contact Us</a>
+                                <a href="faq.html">FAQ</a>
+                                <a href="safety-guidelines.html">Safety Guidelines</a>
+                            </div>
+                            <div class="mega-menu-column">
+                                <h4>Policies</h4>
+                                <a href="terms.html">Terms</a>
+                                <a href="privacy.html">Privacy</a>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+            <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
+                <i class="fas fa-shopping-cart text-lg"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </a>
+            <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="notification-count" id="notification-count">0</span>
+                <div class="notification-dropdown" id="notification-dropdown"></div>
+            </div>
+            <button class="icon floating-effect relative" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
+                <i class="fas fa-moon text-lg"></i>
+            </button>
+            <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </header>
+    <nav class="mobile-menu">
+        <div class="mobile-menu-header">
+            <span class="logo-text">TruthWeb</span>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <ul>
+            <li class="menu-section">
+                <h3 onclick="toggleMenuSection(this)">Main Navigation</h3>
+                <ul>
+                    <li class="nav-item"><a href="index.html">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+                    <li class="nav-item"><a href="cart.html">Cart</a></li>
+                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
+                </ul>
+            </li>
+            <li class="menu-section">
+                <h3 onclick="toggleMenuSection(this)">About TruthWeb</h3>
+                <ul>
+                    <li class="nav-item"><a href="about.html">About Us</a></li>
+                    <li class="nav-item"><a href="developers.html">Developers</a></li>
+                    <li class="nav-item"><a href="truwebbot.html">TruthWeb AI Bot</a></li>
+                    <li class="nav-item"><a href="future.html">Coming Soon</a></li>
+                </ul>
+            </li>
+            <li class="menu-section">
+                <h3 onclick="toggleMenuSection(this)">Shop</h3>
+                <ul>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                    <li class="nav-item"><a href="pi-powered-marketplace.html">Pi-Powered Marketplace</a></li>
+                    <li class="nav-item"><a href="multi-category-listings.html">Multi-Category Listings</a></li>
+                    <li class="nav-item"><a href="global-expansion.html">Global Marketplace</a></li>
+                    <li class="nav-item"><a href="escrow-system.html">Escrow System</a></li>
+                </ul>
+            </li>
+            <li class="menu-section">
+                <h3 onclick="toggleMenuSection(this)">Account & Wallet</h3>
+                <ul>
+                    <li class="nav-item"><a href="profile.html">Your Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html">Your Wallet</a></li>
+                    <li class="nav-item"><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
+                    <li class="nav-item"><a href="pitrack.html">Pi Track</a></li>
+                    <li class="nav-item"><a href="pitrade.html">Pi Trade</a></li>
+                </ul>
+            </li>
+            <li class="menu-section">
+                <h3 onclick="toggleMenuSection(this)">Community & Social</h3>
+                <ul>
+                    <li class="nav-item"><a href="community.html">Community</a></li>
+                    <li class="nav-item"><a href="truthwebfeed.html">TruthWeb Feed</a></li>
+                    <li class="nav-item"><a href="stream.html">TruthWeb Stream</a></li>
+                    <li class="nav-item"><a href="pioneerverification.html">Pioneer Verification</a></li>
+                    <li class="nav-item"><a href="messagingchat.html">Messaging & Chat</a></li>
+                </ul>
+            </li>
+            <li class="menu-section">
+                <h3 onclick="toggleMenuSection(this)">Business & Security</h3>
+                <ul>
+                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
+                    <li class="nav-item"><a href="api-docs.html">Open-Source API</a></li>
+                    <li class="nav-item"><a href="kycverification.html">KYC Verification</a></li>
+                    <li class="nav-item"><a href="fraud-detection.html">Fraud Detection</a></li>
+                    <li class="nav-item"><a href="referral-program.html">Referral Program</a></li>
+                </ul>
+            </li>
+            <li class="menu-section">
+                <h3 onclick="toggleMenuSection(this)">Support</h3>
+                <ul>
+                    <li class="nav-item"><a href="contact.html">Contact Us</a></li>
+                    <li class="nav-item"><a href="faq.html">FAQ</a></li>
+                    <li class="nav-item"><a href="terms.html">Terms</a></li>
+                    <li class="nav-item"><a href="privacy.html">Privacy</a></li>
+                    <li class="nav-item"><a href="safety-guidelines.html">Safety Guidelines</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
