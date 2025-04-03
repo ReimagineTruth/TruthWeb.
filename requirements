@@ -1,0 +1,22 @@
+truthweb/
+├── index.html          # Main page
+├── home.html          # Community home page
+├── marketplace.html   # Marketplace page
+├── profile.html       # Profile page
+├── wallet.html        # Wallet page
+├── cart.html          # Cart page
+├── vendor.html        # Sell on TruthWeb page
+├── about.html         # About page
+├── support.html       # Support page
+├── assets/
+│   ├── css/
+│   │   └── styles.css  # Extracted CSS
+│   ├── js/
+│   │   └── scripts.js  # Extracted JavaScript
+│   └── images/
+│       └── logo.png    # Footer logo (example)
+├── includes/
+│   ├── header.html     # Reusable header
+│   ├── footer.html     # Reusable footer
+│   ├── mobile-nav.html # Reusable mobile footer nav
+│   └── scripts.html    # Reusable script includes
