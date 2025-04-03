@@ -1609,27 +1609,39 @@
         }
 
         function checkAuthStatus() {
-            if (!piInitialized) {
-                document.getElementById('auth-status').textContent = "Pi Network not initialized (Testnet Mode)";
-                return;
-            }
-            Pi.authenticate(scopes, onIncompletePaymentFound)
-                .then(auth => {
-                    console.log("Authentication successful:", auth);
-                    document.getElementById('username').textContent = auth.user.username || "Pioneer";
-                    document.getElementById('auth-status').textContent = "Authenticated (Testnet Mode)";
-                    document.getElementById('auth-btn').style.display = 'none';
-                    document.getElementById('logout-btn').style.display = 'inline-flex';
-                    document.querySelector('.icon[onclick="authenticateUser()"]').classList.add('authenticated');
-                    addNotification(`Welcome back, ${auth.user.username}! (Testnet Mode)`);
-                })
-                .catch(error => {
-                    console.error("Authentication failed:", error);
-                    document.getElementById('auth-status').textContent = "Not authenticated (Testnet Mode)";
-                    document.getElementById('auth-btn').style.display = 'inline-flex';
-                    document.getElementById('logout-btn').style.display = 'none';
-                });
+  if (!piInitialized) {
+    document.getElementById('auth-status').textContent = "Pi Network not initialized (Testnet Mode)";
+    return;
+  }
+  Pi.authenticate(scopes, onIncompletePaymentFound)
+    .then(auth => {
+      $.ajax({
+        url: `${BACKEND_URL}/auth/verify`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ accessToken: auth.accessToken }),
+        success: (response) => {
+          document.getElementById('username').textContent = response.user.username || "Pioneer";
+          document.getElementById('auth-status').textContent = "Authenticated (Testnet Mode)";
+          document.getElementById('auth-btn').style.display = 'none';
+          document.getElementById('logout-btn').style.display = 'inline-flex';
+          addNotification(`Welcome back, ${response.user.username}! (Testnet Mode)`);
+        },
+        error: (xhr, status, error) => {
+          console.error("Authentication failed:", error);
+          document.getElementById('auth-status').textContent = "Not authenticated (Testnet Mode)";
+          document.getElementById('auth-btn').style.display = 'inline-flex';
+          document.getElementById('logout-btn').style.display = 'none';
         }
+      });
+    })
+    .catch(error => {
+      console.error("Authentication failed:", error);
+      document.getElementById('auth-status').textContent = "Not authenticated (Testnet Mode)";
+      document.getElementById('auth-btn').style.display = 'inline-flex';
+      document.getElementById('logout-btn').style.display = 'none';
+    });
+}
 
         function authenticateUser() {
             if (!piInitialized) {
