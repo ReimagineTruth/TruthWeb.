@@ -1,0 +1,22 @@
+truthweb-backend/
+├── src/
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── payment.js
+│   │   └── pages.js
+│   ├── config/
+│   │   └── config.js
+│   └── server.js
+├── public/
+│   ├── index.html
+│   ├── home.html
+│   ├── marketplace.html
+│   ├── profile.html
+│   ├── wallet.html
+│   ├── cart.html
+│   ├── vendor.html
+│   ├── about.html
+│   ├── support.html
+│   └── (other HTML files referenced in index.html)
+├── package.json
+└── .env
