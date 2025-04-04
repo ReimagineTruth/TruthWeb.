@@ -19,7 +19,7 @@ To set up TruthWeb locally, follow these steps:
 
 ### Clone the Repository
 ```sh
- git clone https://github.com/yourusername/truthweb.git
+ git clone https://github.com/ReimagineTruth/truthweb.xyz.git
  cd truthweb
 ```
 
