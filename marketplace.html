@@ -3,10 +3,77 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
-    <title>Marketplace - TruthWeb</title>
+    <title>TruthWeb - Marketplace (Testnet Mode)</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
+    <script>
+        let adNetworkSupported = false;
+        let piInitialized = false;
+        const BACKEND_URL = 'http://172.21.128.1:8080';
+        const scopes = ['username', 'payments', 'wallet_address'];
+
+        function waitForPiSDK() {
+            return new Promise((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof Pi !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    reject(new Error('Pi SDK failed to load'));
+                }, 5000);
+            });
+        }
+
+        async function initializePiSDK() {
+            try {
+                await waitForPiSDK();
+                await Pi.init({ 
+                    version: "2.0", 
+                    sandbox: true,
+                    appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
+                });
+                piInitialized = true;
+                const nativeFeaturesList = await Pi.nativeFeaturesList();
+                adNetworkSupported = nativeFeaturesList.includes("ad_network");
+                console.log("Pi SDK Initialized - Ad Network Supported:", adNetworkSupported);
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Pi SDK Initialization failed:", error);
+                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
+                piInitialized = false;
+            }
+        }
+
+        function onIncompletePaymentFound(payment) {
+            console.log('Incomplete payment found:', payment);
+            if (!piInitialized) {
+                console.error('Pi SDK not initialized');
+                return Promise.reject('Pi SDK not initialized');
+            }
+            const paymentId = payment.identifier;
+            const txid = payment.transaction?.txid || null;
+            return $.ajax({
+                url: `${BACKEND_URL}/payment/complete`,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ paymentId, txid, debug: 'cancel' }),
+                success: () => addNotification('Processed incomplete payment (Testnet Mode)'),
+                error: (xhr, status, error) => {
+                    console.error('Payment completion error:', error);
+                    addNotification('Failed to process incomplete payment (Testnet Mode)');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePiSDK();
+            loadMarketplace();
+        });
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
@@ -482,42 +549,57 @@
         .btn.accent:hover { background: #FFA500; color: var(--primary-color); }
         .btn.authenticating { opacity: 0.7; cursor: not-allowed; pointer-events: none; }
         section { padding: 2rem 1rem; }
-        .card {
+        .marketplace-section {
             background: var(--secondary-color);
             border: 1px solid var(--highlight-color);
             border-radius: 10px;
             padding: 1.5rem;
+            margin-bottom: 1.5rem;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: slideInCard 0.5s ease-out forwards;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-between;
-            text-align: center;
-            min-height: 250px;
         }
-        .card:hover {
-            transform: translateY(-10px) rotate(2deg);
+        .marketplace-section:hover {
+            transform: translateY(-10px);
             box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
         }
-        .card i {
-            font-size: 2.5rem;
+        .marketplace-section h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
             margin-bottom: 1rem;
             color: var(--primary-color);
-            transition: transform 0.3s ease;
         }
-        .card:hover i { transform: scale(1.1); }
-        .card h3 {
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        .product-card {
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 10px;
+            padding: 1rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        .product-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .product-card h4 {
             font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
-        .card p {
+        .product-card p {
             font-size: 1rem;
-            margin-bottom: 1rem;
-            flex-grow: 1;
+            margin-bottom: 0.5rem;
         }
-        .card .btn { margin-top: auto; width: auto; padding: 0.5rem 1.5rem; }
         @keyframes slideInCard { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         footer {
             background: #000000;
@@ -597,170 +679,6 @@
             transition: transform 0.3s ease, color 0.3s ease;
         }
         .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
-        .product-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-            gap: 2rem; 
-            padding: 1rem; 
-        }
-        .product-card { 
-            border: 1px solid var(--highlight-color); 
-            border-radius: 10px; 
-            padding: 1.5rem; 
-            background: var(--secondary-color); 
-            transition: transform 0.3s ease, box-shadow 0.3s ease; 
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            min-height: 450px;
-        }
-        .product-card:hover { 
-            transform: translateY(-5px); 
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); 
-        }
-        .product-image { 
-            max-width: 100%; 
-            height: 200px; 
-            object-fit: contain; 
-            border-radius: 8px; 
-            margin-bottom: 1rem; 
-        }
-        .product-title { 
-            font-size: 1.25rem; 
-            font-weight: 600; 
-            margin-bottom: 0.5rem; 
-            line-height: 1.3; 
-        }
-        .product-price { 
-            font-size: 1.5rem; 
-            font-weight: 700; 
-            color: var(--accent-color); 
-            margin-bottom: 0.5rem; 
-        }
-        .product-price span { 
-            font-size: 0.9rem; 
-            color: var(--highlight-color); 
-            font-weight: 400; 
-        }
-        .product-rating { 
-            color: #FFA500; 
-            font-size: 1rem; 
-            margin-bottom: 0.5rem; 
-        }
-        .eco-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: var(--eco-color);
-            color: #FFFFFF;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .product-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            margin-top: auto;
-        }
-        .btn-add-to-cart {
-            background: #F7CA00;
-            color: #000000;
-            border: none;
-            padding: 0.75rem;
-            font-size: 1rem;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-        .btn-add-to-cart:hover {
-            background: #E0B000;
-            transform: scale(1.02);
-        }
-        .btn-watch-ad {
-            background: var(--eco-color);
-            color: #FFFFFF;
-            border: none;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            border-radius: 9999px;
-            transition: all 0.3s ease;
-        }
-        .btn-watch-ad:hover {
-            background: #218838;
-            transform: scale(1.05) translateY(-2px);
-        }
-        .quick-view-btn {
-            background: transparent;
-            color: var(--primary-color);
-            border: 1px solid var(--highlight-color);
-            padding: 0.5rem;
-            font-size: 0.9rem;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
-        .quick-view-btn:hover {
-            background: var(--highlight-color);
-            transform: scale(1.02);
-        }
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 2000;
-        }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: var(--secondary-color);
-            padding: 2rem;
-            border-radius: 10px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        .category-filter { 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 0.5rem; 
-            margin: 1rem 0; 
-        }
-        .category-btn { 
-            padding: 0.5rem 1rem; 
-            border-radius: 9999px; 
-            background: var(--button-bg-color); 
-            color: var(--button-text-color); 
-            transition: all 0.3s ease; 
-        }
-        .category-btn:hover { 
-            background: var(--button-hover-bg-color); 
-            color: var(--button-hover-text-color); 
-        }
-        .category-btn.active {
-            background: var(--accent-color);
-            color: var(--primary-color);
-        }
-        .cart-icon { position: relative; }
-        .cart-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--accent-color);
-            color: var(--primary-color);
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
         .notification-bell { position: relative; }
         .notification-count {
             position: absolute;
@@ -819,6 +737,19 @@
             animation: spin 1s linear infinite;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .live-chat-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 1rem;
+            border-radius: 9999px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+        .live-chat-btn:hover { transform: scale(1.1); }
         .mobile-footer-nav {
             display: none;
             position: fixed;
@@ -893,23 +824,20 @@
             .hero { padding: 1rem; }
             .hero-content { gap: 1rem; }
             .hero-text { padding: 1rem; }
-            .product-grid { grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); }
             .mobile-footer-nav { display: flex; }
             body { padding-bottom: 80px; }
             .footer-logo { max-width: 100px; }
+            .product-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+            .product-card img { height: 100px; }
         }
     </style>
 </head>
 <body onload="checkAuthStatus()">
     <div class="progress-bar"></div>
     <div class="loading-overlay"><div class="loader"></div></div>
-
     <header class="sticky-header">
         <div class="flex items-center">
-            <a href="index.html" class="text-inherit flex items-center">
-                <span class="logo-text ml-2">TruthWeb</span>
-                <span class="testnet-badge">Testnet</span>
-            </a>
+            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
         </div>
         <div class="search-container">
             <input type="text" class="search-input" placeholder="Search millions of products with Pi..." aria-label="Search Products" oninput="searchProducts(this.value)">
@@ -920,7 +848,7 @@
             <nav class="desktop-nav hidden md:flex items-center">
                 <ul class="flex space-x-4">
                     <li class="nav-item">
-                        <a href="home.html">Home</a>
+                        <a href="index.html">Home</a>
                         <div class="mega-menu">
                             <div class="mega-menu-column">
                                 <h4>Social</h4>
@@ -932,11 +860,12 @@
                                 <h4>Engage</h4>
                                 <a href="community.html">Community</a>
                                 <a href="pioneerverification.html">Pioneer Verification</a>
+                                <a href="notice.html">Notices</a>
                             </div>
                         </div>
                     </li>
                     <li class="nav-item">
-                        <a href="marketplace.html" class="active">Marketplace</a>
+                        <a href="marketplace.html">Marketplace</a>
                         <div class="mega-menu">
                             <div class="mega-menu-column">
                                 <h4>Categories</h4>
@@ -1029,7 +958,6 @@
             </button>
         </div>
     </header>
-
     <nav class="mobile-menu">
         <div class="mobile-menu-header">
             <span class="logo-text">TruthWeb</span>
@@ -1040,7 +968,7 @@
                 <h3 onclick="toggleMenuSection(this)">Main Navigation</h3>
                 <ul>
                     <li class="nav-item"><a href="index.html">Home</a></li>
-                    <li class="nav-item"><a href="marketplace.html" class="active">Marketplace</a></li>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
                     <li class="nav-item"><a href="profile.html">Profile</a></li>
                     <li class="nav-item"><a href="wallet.html">Wallet</a></li>
                     <li class="nav-item"><a href="cart.html">Cart</a></li>
@@ -1084,6 +1012,7 @@
                     <li class="nav-item"><a href="stream.html">TruthWeb Stream</a></li>
                     <li class="nav-item"><a href="pioneerverification.html">Pioneer Verification</a></li>
                     <li class="nav-item"><a href="messagingchat.html">Messaging & Chat</a></li>
+                    <li class="nav-item"><a href="notice.html">Notices</a></li>
                 </ul>
             </li>
             <li class="menu-section">
@@ -1108,73 +1037,32 @@
             </li>
         </ul>
     </nav>
-
     <main>
         <section class="hero">
             <div class="hero-content">
                 <div class="hero-text">
                     <h1 class="glow-text">Marketplace</h1>
-                    <p class="text-xl mt-2 md:text-2xl">Shop with Pi on TruthWeb</p>
-                    <p class="text-lg mt-4">Browse millions of products from Pioneers worldwide (Testnet Mode)</p>
+                    <p class="text-xl mt-2 md:text-2xl">Shop with Pi</p>
+                    <p class="text-lg mt-2">Discover Products (Testnet Mode)</p>
+                    <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
+                    <p id="auth-status" class="text-sm mt-2">Not authenticated (Testnet Mode)</p>
                 </div>
                 <div class="hero-actions">
-                    <a href="#products" class="btn accent">Browse Products</a>
+                    <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Sign In with Pi</button>
+                    <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
+                    <a href="index.html" class="btn">Back to Home</a>
+                    <a href="cart.html" class="btn">View Cart</a>
                 </div>
             </div>
         </section>
-
-        <section id="categories" class="py-16 px-4">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Shop by Category (Testnet Mode)</h2>
-            <div class="category-filter max-w-6xl mx-auto">
-                <button class="category-btn active" onclick="filterCategory('all')">All</button>
-                <button class="category-btn" onclick="filterCategory('electronics')">Electronics</button>
-                <button class="category-btn" onclick="filterCategory('clothing')">Clothing</button>
-                <button class="category-btn" onclick="filterCategory('nfts')">NFTs</button>
-                <button class="category-btn" onclick="filterCategory('services')">Services</button>
-                <button class="category-btn" onclick="filterCategory('home')">Home Goods</button>
-            </div>
-        </section>
-
-        <section id="products" class="py-16 px-4">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">TruthWeb Marketplace (Testnet Mode)</h2>
-            <div class="product-grid max-w-6xl mx-auto" id="product-list">
-                <div class="product-card" data-category="electronics">
-                    <img src="https://placehold.co/200x200" alt="Pi Smart Watch" class="product-image">
-                    <h3 class="product-title">Pi Smart Watch</h3>
-                    <p class="text-sm text-gray-600">Seller: PioneerA</p>
-                    <p class="product-price">25 Pi</p>
-                    <div class="product-actions">
-                        <button class="btn-add-to-cart" onclick="addToCart(1)">Add to Cart</button>
-                        <button class="btn-watch-ad" onclick="buyNow('Pi Smart Watch', 25)">Buy Now</button>
-                        <a href="product-view-pi-smartwatch.html" class="quick-view-btn">View</a>
-                    </div>
-                </div>
-                <div class="product-card" data-category="clothing">
-                    <img src="https://placehold.co/200x200" alt="Pi T-Shirt" class="product-image">
-                    <h3 class="product-title">Pi T-Shirt</h3>
-                    <p class="text-sm text-gray-600">Seller: PioneerB</p>
-                    <p class="product-price">15 Pi</p>
-                    <div class="product-actions">
-                        <button class="btn-add-to-cart" onclick="addToCart(2)">Add to Cart</button>
-                        <button class="btn-watch-ad" onclick="buyNow('Pi T-Shirt', 15)">Buy Now</button>
-                        <a href="product-view-marketplace-pi-tshirt.html" class="quick-view-btn">View</a>
-                    </div>
-                </div>
-                <div class="product-card" data-category="nfts">
-                    <img src="https://placehold.co/200x200" alt="Pi NFT Art" class="product-image">
-                    <h3 class="product-title">Pi NFT Art</h3>
-                    <p class="text-sm text-gray-600">Seller: PioneerC</p>
-                    <p class="product-price">50 Pi</p>
-                    <div class="product-actions">
-                        <button class="btn-add-to-cart" onclick="addToCart(3)">Add to Cart</button>
-                        <button class="btn-watch-ad" onclick="buyNow('Pi NFT Art', 50)">Buy Now</button>
-                        <a href="product-view-pi-nft.html" class="quick-view-btn">View</a>
-                    </div>
-                </div>
+        <section id="marketplace" class="py-16 px-4 max-w-6xl mx-auto">
+            <h2 class="section-title text-3xl font-bold text-center mb-8">Featured Products (Testnet Mode)</h2>
+            <div class="marketplace-section">
+                <h3>Browse All Products</h3>
+                <div class="product-grid" id="product-grid"></div>
             </div>
         </section>
     </main>
-
     <footer>
         <div class="footer-content">
             <div class="footer-section">
@@ -1236,11 +1124,11 @@
                 <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
             </div>
-            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community <span class="testnet-badge">Testnet Mode</span></p>
+            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community</p>
         </div>
     </footer>
-
     <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
+    <button class="live-chat-btn" onclick="openChat()"><i class="fas fa-comment"></i> Live Chat</button>
     <nav class="mobile-footer-nav">
         <a href="index.html" class="mobile-nav-item" aria-label="Home">
             <i class="fas fa-home"></i>
@@ -1266,95 +1154,63 @@
     </nav>
 
     <script>
-        let adNetworkSupported = false;
-        let piInitialized = false;
-        const BACKEND_URL = 'http://172.21.128.1:8080';
-        const scopes = ['username', 'payments', 'wallet_address'];
         let cart = [];
         let notifications = [];
         let isAuthenticated = false;
 
-        const products = [
-            { id: 1, name: "Pi Smart Watch", price: 25, category: "electronics", image: "https://placehold.co/200x200", seller: "PioneerA" },
-            { id: 2, name: "Pi T-Shirt", price: 15, category: "clothing", image: "https://placehold.co/200x200", seller: "PioneerB" },
-            { id: 3, name: "Pi NFT Art", price: 50, category: "nfts", image: "https://placehold.co/200x200", seller: "PioneerC" },
+        const dummyProducts = [
+            { id: 1, name: "Pi Smartwatch", price: "50", seller: "TechPioneer", image: "https://via.placeholder.com/250x150?text=Smartwatch", category: "electronics" },
+            { id: 2, name: "Pi T-Shirt", price: "20", seller: "FashionHub", image: "https://via.placeholder.com/250x150?text=T-Shirt", category: "fashion" },
+            { id: 3, name: "Pi Home Speaker", price: "75", seller: "SoundMaster", image: "https://via.placeholder.com/250x150?text=Speaker", category: "home" },
+            { id: 4, name: "Pi Headphones", price: "30", seller: "AudioZone", image: "https://via.placeholder.com/250x150?text=Headphones", category: "electronics" }
         ];
-
-        function waitForPiSDK() {
-            return new Promise((resolve, reject) => {
-                const checkInterval = setInterval(() => {
-                    if (typeof Pi !== 'undefined') {
-                        clearInterval(checkInterval);
-                        resolve(true);
-                    }
-                }, 100);
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    reject(new Error('Pi SDK failed to load'));
-                }, 5000);
-            });
-        }
-
-        async function initializePiSDK() {
-            try {
-                await waitForPiSDK();
-                await Pi.init({ 
-                    version: "2.0", 
-                    sandbox: true,
-                    appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
-                });
-                piInitialized = true;
-                const nativeFeaturesList = await Pi.nativeFeaturesList();
-                adNetworkSupported = nativeFeaturesList.includes("ad_network");
-                console.log("Pi SDK Initialized - Ad Network Supported:", adNetworkSupported);
-                checkAuthStatus();
-            } catch (error) {
-                console.error("Pi SDK Initialization failed:", error);
-                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
-                piInitialized = false;
-            }
-        }
-
-        function onIncompletePaymentFound(payment) {
-            console.log('Incomplete payment found:', payment);
-            if (!piInitialized) {
-                console.error('Pi SDK not initialized');
-                return Promise.reject('Pi SDK not initialized');
-            }
-            const paymentId = payment.identifier;
-            const txid = payment.transaction?.txid || null;
-            return $.ajax({
-                url: `${BACKEND_URL}/payment/complete`,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ paymentId, txid, debug: 'cancel' }),
-                success: () => addNotification('Processed incomplete payment (Testnet Mode)'),
-                error: (xhr, status, error) => {
-                    console.error('Payment completion error:', error);
-                    addNotification('Failed to process incomplete payment (Testnet Mode)');
-                }
-            });
-        }
 
         function checkAuthStatus() {
             if (!piInitialized) {
                 console.log("Pi SDK not ready yet");
-                setTimeout(() => document.querySelector('.loading-overlay').classList.add('active'), 0);
-                setTimeout(() => document.querySelector('.loading-overlay').classList.remove('active'), 1000);
                 return;
             }
             Pi.authenticate(scopes, onIncompletePaymentFound)
                 .then(auth => {
                     isAuthenticated = true;
+                    document.getElementById('username').textContent = auth.user.username;
+                    document.getElementById('auth-status').textContent = 'Authenticated (Testnet Mode)';
+                    document.getElementById('auth-btn').style.display = 'none';
+                    document.getElementById('logout-btn').style.display = 'inline-flex';
+                    document.querySelector('.icon[onclick="authenticateUser()"]')?.classList.add('authenticated');
                     addNotification(`Welcome back, ${auth.user.username}! (Testnet Mode)`);
                 })
                 .catch(error => {
                     console.error('Authentication failed:', error);
                     isAuthenticated = false;
-                })
-                .finally(() => {
-                    setTimeout(() => document.querySelector('.loading-overlay').classList.remove('active'), 1000);
+                    document.getElementById('auth-btn').style.display = 'inline-flex';
+                    document.getElementById('logout-btn').style.display = 'none';
                 });
+        }
+
+        function authenticateUser() {
+            if (!piInitialized) {
+                addNotification('Pi Network connection not ready. Please wait...');
+                return;
+            }
+            const authBtn = document.getElementById('auth-btn');
+            authBtn.classList.add('authenticating');
+            authBtn.textContent = 'Authenticating...';
+            checkAuthStatus();
+            setTimeout(() => {
+                authBtn.classList.remove('authenticating');
+                authBtn.textContent = 'Sign In with Pi';
+            }, 2000);
+        }
+
+        function logoutUser() {
+            isAuthenticated = false;
+            document.getElementById('username').textContent = 'Guest';
+            document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
+            document.getElementById('auth-btn').style.display = 'inline-flex';
+            document.getElementById('logout-btn').style.display = 'none';
+            document.querySelector('.icon[onclick="authenticateUser()"]')?.classList.remove('authenticated');
+            addNotification('Logged out successfully (Testnet Mode)');
         }
 
         function toggleDarkMode() {
@@ -1432,45 +1288,20 @@
                 searchResults.classList.remove('active');
                 return;
             }
-            const filteredProducts = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
-            filteredProducts.forEach(product => {
+            const filteredResults = dummyProducts.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+            filteredResults.forEach(product => {
                 const div = document.createElement('div');
                 div.className = 'search-result-item';
                 div.innerHTML = `${product.name} - ${product.price} Pi`;
-                div.onclick = () => window.location.href = `product.html?id=${product.id}`;
+                div.onclick = () => renderProducts([product]);
                 searchResults.appendChild(div);
             });
             searchResults.classList.add('active');
         }
 
-        function addToCart(productId) {
-            if (!isAuthenticated) {
-                addNotification('Please sign in with Pi to add items to your cart (Testnet Mode)');
-                return;
-            }
-            const product = products.find(p => p.id === productId);
-            cart.push(product);
-            updateCartCount();
-            addNotification(`${product.name} added to cart (Testnet Mode)`);
-            window.location.href = 'addtocart.html';
-        }
-
-        function buyNow(productName, price) {
-            if (!isAuthenticated) {
-                addNotification('Please sign in with Pi to buy items (Testnet Mode)');
-                return;
-            }
-            window.location.href = `payment.html?product=${encodeURIComponent(productName)}&price=${price}`;
-            document.querySelectorAll('.product-card').forEach(card => {
-                if (card.querySelector('.product-title').textContent === productName) {
-                    card.classList.add('animate-pulse');
-                    setTimeout(() => card.classList.remove('animate-pulse'), 1000);
-                }
-            });
-        }
-
         function updateCartCount() {
             const cartCountElements = document.querySelectorAll('.cart-count');
+            cart = JSON.parse(localStorage.getItem('cart')) || [];
             cartCountElements.forEach(el => el.textContent = cart.length);
         }
 
@@ -1507,23 +1338,59 @@
             dropdown.classList.toggle('active');
         }
 
-        function filterCategory(category) {
-            const products = document.querySelectorAll('.product-card');
-            const categoryButtons = document.querySelectorAll('.category-btn');
-            categoryButtons.forEach(btn => btn.classList.remove('active'));
-            const activeBtn = Array.from(categoryButtons).find(btn => btn.textContent.toLowerCase() === category.toLowerCase());
-            if (activeBtn) activeBtn.classList.add('active');
+        function showLoading() {
+            document.querySelector('.loading-overlay').classList.add('active');
+        }
 
+        function hideLoading() {
+            document.querySelector('.loading-overlay').classList.remove('active');
+        }
+
+        function openChat() {
+            addNotification('Live Chat coming soon! (Testnet Mode)');
+        }
+
+        function loadMarketplace() {
+            updateCartCount();
+            renderProducts(dummyProducts);
+        }
+
+        function renderProducts(products) {
+            const productGrid = document.getElementById('product-grid');
+            productGrid.innerHTML = '';
             products.forEach(product => {
-                product.style.display = (category === 'all' || product.getAttribute('data-category') === category) ? 'block' : 'none';
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <h4>${product.name}</h4>
+                    <p>${product.price} Pi</p>
+                    <p>Seller: ${product.seller}</p>
+                    <button class="btn accent" onclick="addToCart(${product.id})"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+                `;
+                productGrid.appendChild(card);
             });
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            initializePiSDK();
-            updateCartCount();
-            filterCategory('all');
-        });
+        function addToCart(productId) {
+            showLoading();
+            const product = dummyProducts.find(p => p.id === productId);
+            if (!product) return;
+            cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.push(product);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            setTimeout(() => {
+                updateCartCount();
+                addNotification(`${product.name} added to cart! (Testnet Mode)`);
+                hideLoading();
+            }, 500);
+        }
+
+        function filterCategory(category) {
+            const filteredProducts = dummyProducts.filter(p => p.category === category);
+            renderProducts(filteredProducts);
+            addNotification(`Filtered to ${category} category (Testnet Mode)`);
+        }
     </script>
 </body>
 </html>
