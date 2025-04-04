@@ -130,7 +130,7 @@
         }
         .progress-bar {
             position: fixed;
-            top: 0;
+            top: 48px; /* Adjusted for announcement banner */
             left: 0;
             width: 0;
             height: 4px;
@@ -138,6 +138,44 @@
             z-index: 1001;
             transition: width 0.3s ease;
             box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+        .announcement-banner {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.75rem 1rem;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1002;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .announcement-banner p {
+            margin: 0;
+            display: inline;
+        }
+        .announcement-banner .banner-link {
+            color: var(--primary-color);
+            text-decoration: underline;
+            margin-left: 0.5rem;
+            transition: color 0.3s ease;
+        }
+        .announcement-banner .banner-link:hover {
+            color: var(--button-hover-bg-color);
+        }
+        body.dark .announcement-banner {
+            background: #FFA500;
+            color: #000000;
+        }
+        body.dark .announcement-banner .banner-link {
+            color: #000000;
+        }
+        body.dark .announcement-banner .banner-link:hover {
+            color: var(--nav-hover-dark);
         }
         .go-to-top {
             position: fixed;
@@ -165,7 +203,7 @@
         .go-to-top:active { transform: scale(0.95); }
         .sticky-header {
             position: fixed;
-            top: 0;
+            top: 48px; /* Adjusted for announcement banner */
             width: 100%;
             z-index: 1000;
             background: var(--nav-bg-light);
@@ -459,7 +497,7 @@
         .icon.authenticated { color: var(--accent-color); }
         .floating-effect { transition: transform 0.3s ease; }
         .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
-        main { margin-top: 64px; }
+        main { margin-top: 112px; /* Adjusted for banner (48px) + header (64px) */ }
         .hero {
             min-height: 70vh;
             display: flex;
@@ -998,7 +1036,7 @@
         }
         .social-share a:hover {
             color: var(--accent-color);
-            transform compute: scale(1.2);
+            transform: scale(1.2);
         }
         .faq-item {
             margin-bottom: 1rem;
@@ -1119,7 +1157,9 @@
             .burger-btn { display: flex; }
             .desktop-nav { display: none; }
             .search-container { max-width: 150px; margin: 0 0.5rem; }
-            .sticky-header { padding: 0 0.5rem; }
+            .sticky-header { padding: 0 0.5rem; top: 40px; }
+            .progress-bar { top: 40px; }
+            .announcement-banner { font-size: 0.85rem; padding: 0.5rem; }
             .logo-text { font-size: 1.25rem; }
             .icon { font-size: 1.1rem; margin-left: 0.5rem; }
             .glow-text { font-size: 2rem; }
@@ -1132,6 +1172,7 @@
             .mobile-footer-nav { display: flex; }
             body { padding-bottom: 80px; }
             .footer-logo { max-width: 100px; }
+            main { margin-top: 96px; }
         }
     </style>
 </head>
@@ -1226,7 +1267,7 @@
                     <li class="nav-item">
                         <a href="support.html">Support</a>
                         <div class="mega-menu">
-                            <div class=" Suche nach: class="mega-menu-column">
+                            <div class="mega-menu-column">
                                 <h4>Help</h4>
                                 <a href="contact.html">Contact Us</a>
                                 <a href="faq.html">FAQ</a>
@@ -1520,11 +1561,11 @@
         <div class="footer-bottom">
             <div class="social-icons">
                 <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></ Deng>
                 <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
-                        </div>
+            </div>
             <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community</p>
         </div>
     </footer>
@@ -1554,542 +1595,448 @@
         </a>
     </nav>
 
-    <script>
-        const products = [
-            { id: 1, name: "Pi Smartwatch", basePrice: 150, discountPrice: 135, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true, description: "Smartwatch with Pi integration" },
-            { id: 2, name: "Pi T-Shirt", basePrice: 25, discountPrice: 20, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false, description: "Comfortable cotton Pi-themed shirt" },
-            { id: 3, name: "Pi Home Speaker", basePrice: 80, discountPrice: 72, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true, description: "High-quality audio with Pi connectivity" },
-            { id: 4, name: "Pi Headphones", basePrice: 60, discountPrice: 54, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false, description: "Noise-cancelling headphones" },
-            { id: 5, name: "Pi Sneakers", basePrice: 45, discountPrice: 40, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.6, reviews: 150, engagement: 0, isEco: true, description: "Eco-friendly stylish sneakers" },
-        ];
+   <script>
+    const products = [
+        { id: 1, name: "Pi Smartwatch", basePrice: 150, discountPrice: 135, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true, description: "Smartwatch with Pi integration" },
+        { id: 2, name: "Pi T-Shirt", basePrice: 25, discountPrice: 20, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false, description: "Comfortable cotton Pi-branded shirt" },
+        { id: 3, name: "Eco Lamp", basePrice: 45, discountPrice: 40, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true, description: "Energy-efficient LED lamp" },
+        { id: 4, name: "Pi Headphones", basePrice: 80, discountPrice: 70, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false, description: "Wireless headphones with Pi sync" }
+    ];
 
-        const ads = [
-            { id: 1, name: "Pi Smart TV", price: 300, image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "Pi Fashion Bundle", price: 75, image: "https://via.placeholder.com/300x200" },
-            { id: 3, name: "Pi Home Essentials", price: 120, image: "https://via.placeholder.com/300x200" },
-        ];
+    const ads = [
+        { id: 1, title: "Pi Deals", price: "Up to 50% Off", image: "https://via.placeholder.com/300x200", link: "deals.html" },
+        { id: 2, title: "Sell on TruthWeb", price: "Free Listing", image: "https://via.placeholder.com/300x200", link: "vendor.html" }
+    ];
 
-        const p2pListings = [
-                        { id: 1, name: "Used Pi Laptop", price: 200, image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "Pi Art Print", price: 15, image: "https://via.placeholder.com/300x200" },
-            { id: 3, name: "Pi Bike", price: 100, image: "https://via.placeholder.com/300x200" },
-        ];
+    const p2pListings = [
+        { id: 1, title: "Used Pi Phone", price: "50 Pi", image: "https://via.placeholder.com/300x200", seller: "Pioneer123" },
+        { id: 2, title: "Handmade Pi Art", price: "20 Pi", image: "https://via.placeholder.com/300x200", seller: "ArtPioneer" }
+    ];
 
-        const sellers = [
-            { id: 1, name: "PiEcoMart", info: "Eco-friendly products", image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "FashionPi", info: "Trendy Pi apparel", image: "https://via.placeholder.com/300x200" },
-            { id: 3, name: "TechPi", info: "Innovative gadgets", image: "https://via.placeholder.com/300x200" },
-        ];
+    const sellers = [
+        { id: 1, name: "EcoPioneer", info: "Sustainable goods", image: "https://via.placeholder.com/300x200" },
+        { id: 2, name: "TechPioneer", info: "Innovative tech", image: "https://via.placeholder.com/300x200" }
+    ];
 
-        const testimonials = [
-            { id: 1, name: "Jane P.", text: "TruthWeb made shopping with Pi so easy!", image: "https://via.placeholder.com/300x200" },
-            { id: 2, name: "Mark T.", text: "Selling on TruthWeb boosted my business!", image: "https://via.placeholder.com/300x200" },
-            { id: 3, name: "Lisa K.", text: "The community here is amazing!", image: "https://via.placeholder.com/300x200" },
-        ];
+    const testimonials = [
+        { id: 1, name: "Jane P.", text: "TruthWeb made shopping with Pi so easy!", image: "https://via.placeholder.com/150" },
+        { id: 2, name: "Mark T.", text: "Selling on TruthWeb boosted my business!", image: "https://via.placeholder.com/150" }
+    ];
 
-        let cart = [];
-        let notifications = [];
-        let isAuthenticated = false;
+    const videoPlaylist = [
+        { id: "WLihlM7KOoY", title: "Experience The Power Of TruthWeb In The Pi Network Ecosystem!", description: "Are you ready to explore the hidden potential of TruthWeb?" },
+        { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
+        { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
+        { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
+    ];
 
-        function checkAuthStatus() {
-            if (!piInitialized) {
-                console.log("Pi SDK not ready yet");
-                return;
+    let player;
+    let currentVideoIndex = 0;
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('main-video', {
+            height: '100%',
+            width: '100%',
+            videoId: videoPlaylist[currentVideoIndex].id,
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
             }
-            Pi.authenticate(scopes, onIncompletePaymentFound)
-                .then(auth => {
-                    isAuthenticated = true;
-                    document.getElementById('username').textContent = auth.user.username;
-                    document.getElementById('auth-status').textContent = 'Authenticated (Testnet Mode)';
-                    document.getElementById('auth-btn').style.display = 'none';
-                    document.getElementById('logout-btn').style.display = 'inline-flex';
-                    document.querySelector('.icon[onclick="authenticateUser()"]').classList.add('authenticated');
-                    addNotification(`Welcome back, ${auth.user.username}! (Testnet Mode)`);
-                })
-                .catch(error => {
-                    console.error('Authentication failed:', error);
-                    isAuthenticated = false;
-                    document.getElementById('auth-btn').style.display = 'inline-flex';
-                    document.getElementById('logout-btn').style.display = 'none';
-                });
-        }
+        });
+        updateVideoDetails();
+    }
 
-        function authenticateUser() {
-            if (!piInitialized) {
-                addNotification('Pi Network connection not ready. Please wait...');
-                return;
+    function onPlayerReady(event) {
+        document.getElementById('play-pause-btn').innerHTML = '▶ Play';
+    }
+
+    function onPlayerStateChange(event) {
+        if (event.data === YT.PlayerState.PLAYING) {
+            document.getElementById('play-pause-btn').innerHTML = '⏸ Pause';
+        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+            document.getElementById('play-pause-btn').innerHTML = '▶ Play';
+        }
+    }
+
+    function togglePlayPause() {
+        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+            player.pauseVideo();
+        } else {
+            player.playVideo();
+        }
+    }
+
+    function nextVideo() {
+        currentVideoIndex = (currentVideoIndex + 1) % videoPlaylist.length;
+        player.loadVideoById(videoPlaylist[currentVideoIndex].id);
+        updateVideoDetails();
+    }
+
+    function prevVideo() {
+        currentVideoIndex = (currentVideoIndex - 1 + videoPlaylist.length) % videoPlaylist.length;
+        player.loadVideoById(videoPlaylist[currentVideoIndex].id);
+        updateVideoDetails();
+    }
+
+    function stopVideo() {
+        player.stopVideo();
+    }
+
+    function updateVideoDetails() {
+        document.getElementById('video-title').textContent = videoPlaylist[currentVideoIndex].title;
+        document.getElementById('video-description').textContent = videoPlaylist[currentVideoIndex].description;
+    }
+
+    function shareVideo(platform) {
+        const url = `https://www.youtube.com/watch?v=${videoPlaylist[currentVideoIndex].id}`;
+        const text = `Check out "${videoPlaylist[currentVideoIndex].title}" on TruthWeb!`;
+        if (platform === 'twitter') {
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        } else if (platform === 'telegram') {
+            window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
+        }
+    }
+
+    function toggleLike(button) {
+        button.classList.toggle('active');
+        const countSpan = document.getElementById('like-count');
+        let count = parseInt(countSpan.textContent);
+        count = button.classList.contains('active') ? count + 1 : count - 1;
+        countSpan.textContent = count;
+    }
+
+    function checkAuthStatus() {
+        if (!piInitialized) {
+            document.getElementById('auth-status').textContent = "Pi SDK not initialized (Testnet Mode)";
+            return;
+        }
+        Pi.getAuth().then(auth => {
+            if (auth && auth.uid) {
+                document.getElementById('username').textContent = auth.username || "Pioneer";
+                document.getElementById('auth-status').textContent = "Authenticated (Testnet Mode)";
+                document.getElementById('auth-btn').style.display = 'none';
+                document.getElementById('logout-btn').style.display = 'inline-flex';
+                document.querySelector('.icon[aria-label="Cart"]').classList.add('authenticated');
+            } else {
+                document.getElementById('auth-status').textContent = "Not authenticated (Testnet Mode)";
+                document.getElementById('auth-btn').style.display = 'inline-flex';
+                document.getElementById('logout-btn').style.display = 'none';
             }
-            const authBtn = document.getElementById('auth-btn');
-            authBtn.classList.add('authenticating');
-            authBtn.textContent = 'Authenticating...';
-            checkAuthStatus();
-            setTimeout(() => {
-                authBtn.classList.remove('authenticating');
-                authBtn.textContent = 'Sign In with Pi';
-            }, 2000);
-        }
+        }).catch(error => {
+            console.error("Auth check failed:", error);
+            addNotification("Failed to check authentication status (Testnet Mode)");
+        });
+    }
 
-        function logoutUser() {
-            isAuthenticated = false;
-            document.getElementById('username').textContent = 'Guest';
-            document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
+    function authenticateUser() {
+        if (!piInitialized) {
+            addNotification("Pi SDK not initialized. Please try again later.");
+            return;
+        }
+        document.getElementById('auth-btn').classList.add('authenticating');
+        Pi.authenticate(scopes, onIncompletePaymentFound).then(auth => {
+            document.getElementById('username').textContent = auth.username || "Pioneer";
+            document.getElementById('auth-status').textContent = "Authenticated (Testnet Mode)";
+            document.getElementById('auth-btn').style.display = 'none';
+            document.getElementById('logout-btn').style.display = 'inline-flex';
+            document.querySelector('.icon[aria-label="Cart"]').classList.add('authenticated');
+            addNotification("Successfully signed in with Pi (Testnet Mode)");
+        }).catch(error => {
+            console.error("Authentication failed:", error);
+            addNotification("Authentication failed (Testnet Mode)");
+        }).finally(() => {
+            document.getElementById('auth-btn').classList.remove('authenticating');
+        });
+    }
+
+    function logoutUser() {
+        if (!piInitialized) {
+            addNotification("Pi SDK not initialized. Cannot logout.");
+            return;
+        }
+        Pi.logout().then(() => {
+            document.getElementById('username').textContent = "Guest";
+            document.getElementById('auth-status').textContent = "Not authenticated (Testnet Mode)";
             document.getElementById('auth-btn').style.display = 'inline-flex';
             document.getElementById('logout-btn').style.display = 'none';
-            document.querySelector('.icon[onclick="authenticateUser()"]').classList.remove('authenticated');
-            addNotification('Logged out successfully (Testnet Mode)');
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-            const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
-            moonIcon.classList.toggle('fa-moon');
-            moonIcon.classList.toggle('fa-sun');
-        }
-
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
-            moonIcon.classList.remove('fa-moon');
-            moonIcon.classList.add('fa-sun');
-        }
-
-        function toggleMobileMenu() {
-            const mobileMenu = document.querySelector('.mobile-menu');
-            const burgerBtn = document.querySelector('.burger-btn');
-            mobileMenu.classList.toggle('open');
-            burgerBtn.classList.toggle('open');
-        }
-
-        function closeMobileMenu() {
-            const mobileMenu = document.querySelector('.mobile-menu');
-            const burgerBtn = document.querySelector('.burger-btn');
-            mobileMenu.classList.remove('open');
-            burgerBtn.classList.remove('open');
-        }
-
-        function toggleMenuSection(element) {
-            const section = element.parentElement;
-            section.classList.toggle('collapsed');
-        }
-
-        let lastScrollTop = 0;
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('.sticky-header');
-            const mobileFooter = document.querySelector('.mobile-footer-nav');
-            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-            const progressBar = document.querySelector('.progress-bar');
-            const goToTopBtn = document.querySelector('.go-to-top');
-            const totalHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrollPercentage = (currentScroll / totalHeight) * 100;
-
-            progressBar.style.width = `${scrollPercentage}%`;
-
-            if (currentScroll > 100) {
-                header.classList.add('scrolled');
-                goToTopBtn.classList.add('visible');
-            } else {
-                header.classList.remove('scrolled');
-                goToTopBtn.classList.remove('visible');
-            }
-
-            if (currentScroll > lastScrollTop && currentScroll > 100) {
-                header.classList.add('hidden');
-                mobileFooter.classList.add('hidden');
-            } else {
-                header.classList.remove('hidden');
-                mobileFooter.classList.remove('hidden');
-            }
-            lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
+            document.querySelector('.icon[aria-label="Cart"]').classList.remove('authenticated');
+            addNotification("Logged out successfully (Testnet Mode)");
+        }).catch(error => {
+            console.error("Logout failed:", error);
+            addNotification("Logout failed (Testnet Mode)");
         });
+    }
 
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    function addNotification(message) {
+        const dropdown = document.getElementById('notification-dropdown');
+        const countSpan = document.getElementById('notification-count');
+        let count = parseInt(countSpan.textContent);
+        count++;
+        countSpan.textContent = count;
+        const item = document.createElement('div');
+        item.className = 'notification-item';
+        item.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
+        dropdown.insertBefore(item, dropdown.firstChild);
+        if (dropdown.classList.contains('active')) {
+            dropdown.scrollTop = 0;
         }
+    }
 
-        function searchProducts(query) {
-            const searchResults = document.getElementById('search-results');
-            searchResults.innerHTML = '';
-            if (query.length < 2) {
-                searchResults.classList.remove('active');
-                return;
-            }
-            const filteredProducts = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
-            filteredProducts.forEach(product => {
-                const div = document.createElement('div');
-                div.className = 'search-result-item';
-                div.innerHTML = `${product.name} - ${product.discountPrice} Pi`;
-                div.onclick = () => window.location.href = `product.html?id=${product.id}`;
-                searchResults.appendChild(div);
-            });
-            searchResults.classList.add('active');
+    function toggleNotifications() {
+        const dropdown = document.getElementById('notification-dropdown');
+        dropdown.classList.toggle('active');
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+    }
+
+    function toggleMobileMenu() {
+        const menu = document.querySelector('.mobile-menu');
+        const burger = document.querySelector('.burger-btn');
+        menu.classList.toggle('open');
+        burger.classList.toggle('open');
+        document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+    }
+
+    function closeMobileMenu() {
+        const menu = document.querySelector('.mobile-menu');
+        const burger = document.querySelector('.burger-btn');
+        menu.classList.remove('open');
+        burger.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function toggleMenuSection(element) {
+        const section = element.parentElement;
+        section.classList.toggle('collapsed');
+    }
+
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateProgressBar() {
+        const scrollTop = window.scrollY;
+        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const progress = (scrollTop / scrollHeight) * 100;
+        document.querySelector('.progress-bar').style.width = `${progress}%`;
+    }
+
+    function toggleGoToTop() {
+        const button = document.querySelector('.go-to-top');
+        button.classList.toggle('visible', window.scrollY > 300);
+    }
+
+    let lastScrollTop = 0;
+    function handleHeaderScroll() {
+        const header = document.querySelector('.sticky-header');
+        const mobileNav = document.querySelector('.mobile-footer-nav');
+        const scrollTop = window.scrollY;
+        header.classList.toggle('scrolled', scrollTop > 50);
+        if (scrollTop > lastScrollTop && scrollTop > 100) {
+            header.classList.add('hidden');
+            mobileNav.classList.add('hidden');
+        } else {
+            header.classList.remove('hidden');
+            mobileNav.classList.remove('hidden');
         }
+        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    }
 
-        function addToCart(productId) {
-            if (!isAuthenticated) {
-                addNotification('Please sign in with Pi to add items to your cart (Testnet Mode)');
-                return;
-            }
-            const product = products.find(p => p.id === productId);
-            cart.push(product);
-            updateCartCount();
-            addNotification(`${product.name} added to cart (Testnet Mode)`);
+    function searchProducts(query) {
+        const results = document.getElementById('search-results');
+        results.innerHTML = '';
+        if (query.length < 2) {
+            results.classList.remove('active');
+            return;
         }
+        const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+        filtered.forEach(product => {
+            const item = document.createElement('div');
+            item.className = 'search-result-item';
+            item.textContent = `${product.name} - ${product.discountPrice} Pi`;
+            item.onclick = () => window.location.href = `product.html?id=${product.id}`;
+            results.appendChild(item);
+        });
+        results.classList.add('active');
+    }
 
-        function watchAd(productId) {
-            if (!adNetworkSupported || !isAuthenticated) {
-                addNotification('Ad network not supported or not authenticated (Testnet Mode)');
-                return;
-            }
-            const product = products.find(p => p.id === productId);
-            showLoading();
-            Pi.createAdSession({
-                onAdCompleted: () => {
-                    hideLoading();
-                    product.engagement += 1;
-                    addNotification(`Ad watched! ${product.name} engagement increased (Testnet Mode)`);
-                },
-                onError: (error) => {
-                    hideLoading();
-                    addNotification(`Failed to load ad: ${error.message} (Testnet Mode)`);
-                }
-            });
-        }
-
-        function updateCartCount() {
-            const cartCountElements = document.querySelectorAll('.cart-count');
-            cartCountElements.forEach(el => el.textContent = cart.length);
-        }
-
-        function addNotification(message) {
-            notifications.push({ id: Date.now(), message });
-            updateNotifications();
-        }
-
-        function updateNotifications() {
-            const dropdown = document.getElementById('notification-dropdown');
-            const count = document.getElementById('notification-count');
-            dropdown.innerHTML = '';
-            count.textContent = notifications.length;
-            notifications.forEach(n => {
-                const div = document.createElement('div');
-                div.className = 'notification-item';
-                div.innerHTML = `${n.message} <button onclick="removeNotification(${n.id})" style="float:right;">✕</button>`;
-                dropdown.appendChild(div);
-            });
-            if (notifications.length > 0) {
-                dropdown.classList.add('active');
-            } else {
-                dropdown.classList.remove('active');
-            }
-        }
-
-        function removeNotification(id) {
-            notifications = notifications.filter(n => n.id !== id);
-            updateNotifications();
-        }
-
-        function toggleNotifications() {
-            const dropdown = document.getElementById('notification-dropdown');
-            dropdown.classList.toggle('active');
-        }
-
-        function showLoading() {
-            document.querySelector('.loading-overlay').classList.add('active');
-        }
-
-        function hideLoading() {
-            document.querySelector('.loading-overlay').classList.remove('active');
-        }
-
-        function renderProducts(gridId, productList) {
-            const grid = document.getElementById(gridId);
-            grid.innerHTML = '';
-            productList.forEach(product => {
-                const card = document.createElement('div');
-                card.className = 'product-card';
-                card.innerHTML = `
-                    ${product.isEco ? '<span class="eco-badge">Eco-Friendly</span>' : ''}
-                    <img src="${product.image}" alt="${product.name}" class="product-image">
-                    <h3 class="product-title">${product.name}</h3>
-                    <p class="product-price">${product.discountPrice} Pi <span>(Was ${product.basePrice} Pi)</span></p>
-                    <div class="product-rating">${'★'.repeat(Math.floor(product.rating))}${'☆'.repeat(5 - Math.floor(product.rating))} (${product.reviews})</div>
-                    <div class="product-actions">
-                        <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
-                        <button class="btn-watch-ad" onclick="watchAd(${product.id})">Watch Ad to Boost</button>
-                        <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function showQuickView(productId) {
-            const product = products.find(p => p.id === productId);
-            const modal = document.createElement('div');
-            modal.className = 'modal active';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3>${product.name}</h3>
-                    <img src="${product.image}" alt="${product.name}" style="max-width:100%;border-radius:8px;">
-                    <p>${product.description}</p>
-                    <p>Price: ${product.discountPrice} Pi (Was ${product.basePrice} Pi)</p>
-                    <button class="btn" onclick="this.parentElement.parentElement.remove()">Close</button>
+    function renderProducts(gridId, productList) {
+        const grid = document.getElementById(gridId);
+        grid.innerHTML = '';
+        productList.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.innerHTML = `
+                ${product.isEco ? '<span class="eco-badge">Eco</span>' : ''}
+                <img src="${product.image}" alt="${product.name}" class="product-image">
+                <h3 class="product-title">${product.name}</h3>
+                <p class="product-price">${product.discountPrice} Pi <span>(Was ${product.basePrice} Pi)</span></p>
+                <div class="product-rating">${'★'.repeat(Math.floor(product.rating))} (${product.reviews} reviews)</div>
+                <div class="product-actions">
+                    <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                    ${adNetworkSupported ? `<button class="btn-watch-ad" onclick="watchAd(${product.id})">Watch Ad to Save</button>` : ''}
+                    <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
                 </div>
             `;
-            document.body.appendChild(modal);
-        }
-
-        function sortProducts(criteria) {
-            let sortedProducts = [...products];
-            if (criteria === 'price-low') {
-                sortedProducts.sort((a, b) => a.discountPrice - b.discountPrice);
-            } else if (criteria === 'price-high') {
-                sortedProducts.sort((a, b) => b.discountPrice - a.discountPrice);
-            } else if (criteria === 'rating') {
-                sortedProducts.sort((a, b) => b.rating - a.rating);
-            }
-            renderProducts('product-grid', sortedProducts);
-            renderProducts('recommended-grid', sortedProducts.slice(0, 3));
-        }
-
-        function filterProducts(criteria) {
-            let filteredProducts = [...products];
-            if (criteria === 'eco') {
-                filteredProducts = filteredProducts.filter(p => p.isEco);
-            } else if (criteria === 'below-50') {
-                filteredProducts = filteredProducts.filter(p => p.discountPrice < 50);
-            } else if (criteria === 'above-100') {
-                filteredProducts = filteredProducts.filter(p => p.discountPrice > 100);
-            }
-            renderProducts('product-grid', filteredProducts);
-            renderProducts('recommended-grid', filteredProducts.slice(0, 3));
-        }
-
-        function filterCategory(category) {
-            const filteredProducts = products.filter(p => p.category === category);
-            renderProducts('product-grid', filteredProducts);
-            renderProducts('recommended-grid', filteredProducts.slice(0, 3));
-        }
-
-        function renderAds() {
-            const grid = document.getElementById('ads-grid');
-            grid.innerHTML = '';
-            ads.forEach(ad => {
-                const card = document.createElement('div');
-                card.className = 'ad-card';
-                card.innerHTML = `
-                    <img src="${ad.image}" alt="${ad.name}">
-                    <h3 class="ad-title">${ad.name}</h3>
-                    <p class="ad-price">${ad.price} Pi</p>
-                    <button class="btn" onclick="addNotification('Ad clicked: ${ad.name} (Testnet Mode)')">Learn More</button>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderP2P() {
-            const grid = document.getElementById('p2p-grid');
-            grid.innerHTML = '';
-            p2pListings.forEach(listing => {
-                const card = document.createElement('div');
-                card.className = 'p2p-card';
-                card.innerHTML = `
-                    <img src="${listing.image}" alt="${listing.name}">
-                    <h3 class="p2p-title">${listing.name}</h3>
-                    <p class="p2p-price">${listing.price} Pi</p>
-                    <button class="btn" onclick="addNotification('P2P listing viewed: ${listing.name} (Testnet Mode)')">Contact Seller</button>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderSellers() {
-            const grid = document.getElementById('seller-grid');
-            grid.innerHTML = '';
-            sellers.forEach(seller => {
-                const card = document.createElement('div');
-                card.className = 'seller-card';
-                card.innerHTML = `
-                    <img src="${seller.image}" alt="${seller.name}">
-                    <h3 class="seller-title">${seller.name}</h3>
-                    <p class="seller-info">${seller.info}</p>
-                    <button class="btn" onclick="addNotification('Seller visited: ${seller.name} (Testnet Mode)')">Visit Store</button>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function renderTestimonials() {
-            const grid = document.getElementById('testimonials-grid');
-            grid.innerHTML = '';
-            testimonials.forEach(testimonial => {
-                const card = document.createElement('div');
-                card.className = 'testimonial-card';
-                card.innerHTML = `
-                    <img src="${testimonial.image}" alt="${testimonial.name}">
-                    <h3 class="testimonial-title">${testimonial.name}</h3>
-                    <p class="testimonial-text">"${testimonial.text}"</p>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function toggleFAQ(element) {
-            const faqItem = element.parentElement;
-            faqItem.classList.toggle('active');
-        }
-
-        function openChat() {
-            addNotification('Live Chat coming soon! (Testnet Mode)');
-        }
-
-        let player;
-        const videoPlaylist = [
-            { id: "WLihlM7KOoY", title: "Experience The Power Of TruthWeb In The Pi Network Ecosystem!", description: "Are you ready to explore the hidden potential of TruthWeb?" },
-            { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
-            { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
-            { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
-        ];
-        let currentVideoIndex = 0;
-        let likeCounts = {};
-
-        function onYouTubeIframeAPIReady() {
-            try {
-                player = new YT.Player('main-video', {
-                    height: '100%',
-                    width: '100%',
-                    videoId: videoPlaylist[currentVideoIndex].id,
-                    playerVars: {
-                        'autoplay': 0,
-                        'controls': 0,
-                        'rel': 0,
-                        'showinfo': 0,
-                        'modestbranding': 1
-                    },
-                    events: {
-                        'onReady': onPlayerReady,
-                        'onStateChange': onPlayerStateChange,
-                        'onError': onPlayerError
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to initialize YouTube player:', error);
-                addNotification('Error loading video player. Please refresh the page.');
-            }
-        }
-
-        function onPlayerReady(event) {
-            updateVideoUI();
-            document.getElementById('play-pause-btn').innerHTML = '<i class="fas fa-play"></i> Play';
-        }
-
-        function onPlayerStateChange(event) {
-            const playPauseBtn = document.getElementById('play-pause-btn');
-            if (event.data === YT.PlayerState.PLAYING) {
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i> Pause';
-            } else {
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i> Play';
-            }
-        }
-
-        function onPlayerError(event) {
-            console.error('YouTube Player Error:', event.data);
-            addNotification('Error playing video. Skipping to next...');
-            nextVideo();
-        }
-
-        function togglePlayPause() {
-            if (!player) {
-                console.error('Player not initialized');
-                addNotification('Video player not ready. Please wait...');
-                return;
-            }
-            const state = player.getPlayerState();
-            if (state === YT.PlayerState.PLAYING) {
-                player.pauseVideo();
-            } else {
-                player.playVideo();
-            }
-        }
-
-        function nextVideo() {
-            currentVideoIndex = (currentVideoIndex + 1) % videoPlaylist.length;
-            updateVideo();
-        }
-
-        function prevVideo() {
-            currentVideoIndex = (currentVideoIndex - 1 + videoPlaylist.length) % videoPlaylist.length;
-            updateVideo();
-        }
-
-        function stopVideo() {
-            if (player) {
-                player.stopVideo();
-            }
-        }
-
-        function updateVideo() {
-            if (!player) {
-                console.error('Player not initialized');
-                return;
-            }
-            const video = videoPlaylist[currentVideoIndex];
-            player.loadVideoById(video.id);
-            updateVideoUI();
-        }
-
-        function updateVideoUI() {
-            const video = videoPlaylist[currentVideoIndex];
-            document.getElementById('video-title').textContent = video.title;
-            document.getElementById('video-description').textContent = video.description;
-            const likeCount = document.getElementById('like-count');
-            likeCount.textContent = likeCounts[video.id] || 0;
-            const likeBtn = document.querySelector('.interaction-btn[data-action="like"]');
-            likeBtn.classList.toggle('active', !!likeCounts[video.id]);
-        }
-
-        function toggleLike(button) {
-            if (!player) return;
-            const video = videoPlaylist[currentVideoIndex];
-            button.classList.toggle('active');
-            const likeCount = document.getElementById('like-count');
-            let count = parseInt(likeCount.textContent) || 0;
-            if (button.classList.contains('active')) {
-                likeCounts[video.id] = count + 1;
-            } else {
-                likeCounts[video.id] = Math.max(0, count - 1);
-            }
-            likeCount.textContent = likeCounts[video.id];
-            addNotification(`You ${button.classList.contains('active') ? 'liked' : 'unliked'} "${video.title}"!`);
-        }
-
-        function shareVideo(platform) {
-            const video = videoPlaylist[currentVideoIndex];
-            const url = `https://www.youtube.com/watch?v=${video.id}`;
-            let shareUrl;
-            switch (platform) {
-                case 'twitter':
-                    shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`Check out this video: ${video.title}`)}&url=${encodeURIComponent(url)}`;
-                    break;
-                case 'telegram':
-                    shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(video.title)}`;
-                    break;
-                default:
-                    return;
-            }
-            window.open(shareUrl, '_blank');
-            addNotification(`Shared "${video.title}" on ${platform}!`);
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            renderProducts('product-grid', products);
-            renderProducts('recommended-grid', products.slice(0, 3));
-            renderAds();
-            renderP2P();
-            renderSellers();
-            renderTestimonials();
+            grid.appendChild(card);
         });
-    </script>
-</body>
-</html>
+    }
+
+    function addToCart(productId) {
+        const product = products.find(p => p.id === productId);
+        const countSpan = document.getElementById('cart-count');
+        const mobileCountSpan = document.getElementById('mobile-cart-count');
+        let count = parseInt(countSpan.textContent);
+        count++;
+        countSpan.textContent = count;
+        mobileCountSpan.textContent = count;
+        addNotification(`Added ${product.name} to cart (Testnet Mode)`);
+    }
+
+    function watchAd(productId) {
+        if (!adNetworkSupported) return;
+        Pi.createAdSession({ adUnitId: 'test_ad_unit' }).then(session => {
+            session.show().then(() => {
+                addNotification(`Watched ad for product ${productId} - Discount applied (Testnet Mode)`);
+            }).catch(error => {
+                console.error("Ad error:", error);
+                addNotification("Failed to load ad (Testnet Mode)");
+            });
+        });
+    }
+
+    function showQuickView(productId) {
+        const product = products.find(p => p.id === productId);
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h2>${product.name}</h2>
+                <img src="${product.image}" alt="${product.name}" class="product-image">
+                <p>${product.description}</p>
+                <p class="product-price">${product.discountPrice} Pi</p>
+                <button class="btn" onclick="this.parentElement.parentElement.remove()">Close</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+    }
+
+    function sortProducts(criteria) {
+        let sorted = [...products];
+        if (criteria === 'price-low') {
+            sorted.sort((a, b) => a.discountPrice - b.discountPrice);
+        } else if (criteria === 'price-high') {
+            sorted.sort((a, b) => b.discountPrice - a.discountPrice);
+        } else if (criteria === 'rating') {
+            sorted.sort((a, b) => b.rating - a.rating);
+        }
+        renderProducts('product-grid', sorted);
+    }
+
+    function filterProducts(criteria) {
+        let filtered = [...products];
+        if (criteria === 'eco') {
+            filtered = filtered.filter(p => p.isEco);
+        } else if (criteria === 'below-50') {
+            filtered = filtered.filter(p => p.discountPrice < 50);
+        } else if (criteria === 'above-100') {
+            filtered = filtered.filter(p => p.discountPrice > 100);
+        }
+        renderProducts('product-grid', filtered);
+    }
+
+    function filterCategory(category) {
+        const filtered = products.filter(p => p.category === category);
+        renderProducts('product-grid', filtered);
+    }
+
+    function renderGrid(gridId, items, type) {
+        const grid = document.getElementById(gridId);
+        grid.innerHTML = '';
+        items.forEach(item => {
+            const card = document.createElement('div');
+            card.className = `${type}-card`;
+            if (type === 'ad') {
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.title}">
+                    <h3 class="ad-title">${item.title}</h3>
+                    <p class="ad-price">${item.price}</p>
+                    <a href="${item.link}" class="btn">Learn More</a>
+                `;
+            } else if (type === 'p2p') {
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.title}">
+                    <h3 class="p2p-title">${item.title}</h3>
+                    <p class="p2p-price">${item.price}</p>
+                    <p>Seller: ${item.seller}</p>
+                    <button class="btn">Contact Seller</button>
+                `;
+            } else if (type === 'seller') {
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}">
+                    <h3 class="seller-title">${item.name}</h3>
+                    <p class="seller-info">${item.info}</p>
+                    <button class="btn">Visit Store</button>
+                `;
+            } else if (type === 'testimonial') {
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.name}">
+                    <h3 class="testimonial-title">${item.name}</h3>
+                    <p class="testimonial-text">"${item.text}"</p>
+                `;
+            }
+            grid.appendChild(card);
+        });
+    }
+
+    function toggleFAQ(element) {
+        const item = element.parentElement;
+        item.classList.toggle('active');
+    }
+
+    function openChat() {
+        addNotification("Live chat coming soon! (Testnet Mode)");
+    }
+
+    // Add announcement banner dynamically
+    function addAnnouncementBanner() {
+        const banner = document.createElement('div');
+        banner.className = 'announcement-banner';
+        banner.innerHTML = `
+            <p>📢 Latest Updates: Stay informed with TruthWeb notices! <a href="notice.html" class="banner-link">View Notices</a></p>
+        `;
+        document.body.insertBefore(banner, document.body.children[0]);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        addAnnouncementBanner();
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark');
+        }
+        renderProducts('product-grid', products);
+        renderProducts('recommended-grid', products.slice(0, 3));
+        renderGrid('ads-grid', ads, 'ad');
+        renderGrid('p2p-grid', p2pListings, 'p2p');
+        renderGrid('seller-grid', sellers, 'seller');
+        renderGrid('testimonials-grid', testimonials, 'testimonial');
+        window.addEventListener('scroll', () => {
+            updateProgressBar();
+            toggleGoToTop();
+            handleHeaderScroll();
+        });
+        document.addEventListener('click', (e) => {
+            const results = document.getElementById('search-results');
+            if (!e.target.closest('.search-container')) {
+                results.classList.remove('active');
+            }
+            const dropdown = document.getElementById('notification-dropdown');
+            if (!e.target.closest('.notification-bell')) {
+                dropdown.classList.remove('active');
+            }
+        });
+    });
+</script>
