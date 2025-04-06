@@ -1,0 +1,12 @@
+truthweb-api/
+│
+├── app/
+│   ├── main.py
+│   ├── models/              # Pydantic + DB models
+│   ├── routes/              # Route modules
+│   ├── services/            # Business logic
+│   └── utils/               # JWT, validation, etc.
+│
+├── .env                     # Secrets
+├── requirements.txt
+└── gunicorn_conf.py         # For deployment
