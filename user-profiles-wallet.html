@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
-    <title>TruthWeb - Custom Profiles</title>
+    <title>TruthWeb - User Profiles & Wallet</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
@@ -457,7 +457,7 @@
         }
         .card:hover { transform: translateY(-5px); box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15); }
         .card i { color: var(--accent-color); }
-        .card h3, .card h4 { color: var(--primary-color); }
+        .card h3 { color: var(--primary-color); }
         .card p { color: #666; }
         body.dark .card p { color: #B0B0B0; }
         footer {
@@ -592,8 +592,8 @@
 <body onload="checkAuthStatus()">
     <div class="progress-bar"></div>
     <div class="announcement-banner">
-        <p>Custom Profiles - Connect with Pioneers Your Way (Testnet Mode)</p>
-        <a href="#custom-profiles" class="banner-link">Learn More</a>
+        <p>User Profiles & Wallet - Manage Your Pi Experience (Testnet Mode)</p>
+        <a href="#user-profiles-wallet" class="banner-link">Learn More</a>
     </div>
     <div class="loading-overlay"><div class="loader"></div></div>
     <header class="sticky-header">
@@ -648,7 +648,6 @@
                             <div class="mega-menu-column">
                                 <h4>Account</h4>
                                 <a href="user-profiles-wallet.html">Manage Profile & Wallet</a>
-                                <a href="customprofiles.html">Custom Profiles</a>
                                 <a href="pitrack.html">Pi Track</a>
                                 <a href="pitrade.html">Pi Trade</a>
                             </div>
@@ -764,95 +763,43 @@
         <section class="hero">
             <div class="hero-content">
                 <div class="hero-text">
-                    <h1 class="glow-text text-5xl md:text-7xl font-bold">Custom Profiles</h1>
-                    <p class="text-xl mt-4 md:text-2xl text-center">Connect with Pioneers Your Way</p>
+                    <h1 class="glow-text text-5xl md:text-7xl font-bold">User Profiles & Wallet</h1>
+                    <p class="text-xl mt-4 md:text-2xl text-center">Your TruthWeb Identity & Funds</p>
                     <p class="text-lg mt-4">Hello, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
                     <p id="auth-status" class="text-sm mt-2">Not authenticated (Testnet Mode)</p>
                 </div>
                 <div class="hero-actions">
                     <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Sign In with Pi</button>
                     <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
-                    <a href="#custom-profiles" class="btn">Get Started</a>
+                    <a href="#user-profiles-wallet" class="btn">Get Started</a>
                 </div>
             </div>
         </section>
-        <section id="custom-profiles" class="py-16 px-4">
-            <h2 class="text-3xl font-bold text-center mb-8">Personalize Your TruthWeb Presence</h2>
-            <div class="max-w-6xl mx-auto">
-                <!-- Overview -->
-                <div class="mb-12 text-center">
-                    <p class="text-lg mb-6 text-gray-600">
-                        TruthWeb’s Custom Profiles feature lets you create and personalize your profile to showcase your identity and connect with the Pioneer community. Build your presence, share your story, and engage with others in the Pi Network ecosystem.
-                    </p>
+        <section id="user-profiles-wallet" class="py-16 px-4">
+            <h2 class="text-3xl font-bold text-center mb-8">Manage Your Pi Experience</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="card">
+                    <i class="fas fa-user-check text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Custom Profiles</h3>
+                    <p class="mb-4 text-gray-600">Create and personalize your TruthWeb profile to connect with the Pioneer community.</p>
+                    <a href="customprofiles.html" class="btn">Set Up Profile</a>
                 </div>
-                <!-- How It Works -->
-                <div class="mb-12">
-                    <h3 class="text-2xl font-semibold mb-6 text-center">How It Works</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                        <div class="card">
-                            <i class="fas fa-user-plus text-4xl mb-4"></i>
-                            <h4 class="text-xl font-semibold mb-2">1. Create Profile</h4>
-                            <p class="text-gray-600">Sign up and set up your basic profile.</p>
-                        </div>
-                        <div class="card">
-                            <i class="fas fa-edit text-4xl mb-4"></i>
-                            <h4 class="text-xl font-semibold mb-2">2. Personalize</h4>
-                            <p class="text-gray-600">Add details, photos, and preferences.</p>
-                        </div>
-                        <div class="card">
-                            <i class="fas fa-users text-4xl mb-4"></i>
-                            <h4 class="text-xl font-semibold mb-2">3. Connect</h4>
-                            <p class="text-gray-600">Engage with the Pioneer community.</p>
-                        </div>
-                    </div>
+                <div class="card">
+                    <i class="fas fa-wallet text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Pi Wallet Integration</h3>
+                    <p class="mb-4 text-gray-600">Seamlessly link your Pi wallet to send, receive, and manage your Pi funds.</p>
+                    <a href="piwalletintegration.html" class="btn">Connect Wallet</a>
                 </div>
-                <!-- Benefits -->
-                <div class="mb-12">
-                    <h3 class="text-2xl font-semibold mb-6 text-center">Why Customize Your Profile?</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-8">
-                        <div class="card">
-                            <h4 class="text-lg font-semibold mb-2">Unique Identity</h4>
-                            <p class="text-gray-600">Stand out with a personalized profile.</p>
-                        </div>
-                        <div class="card">
-                            <h4 class="text-lg font-semibold mb-2">Community Engagement</h4>
-                            <p class="text-gray-600">Build connections with other Pioneers.</p>
-                        </div>
-                        <div class="card">
-                            <h4 class="text-lg font-semibold mb-2">Trust Building</h4>
-                            <p class="text-gray-600">Showcase your credibility in trades.</p>
-                        </div>
-                    </div>
+                <div class="card">
+                    <i class="fas fa-lock text-4xl mb-4"></i>
+                    <h3 class="text-xl font-semibold mb-2">Secure Access</h3>
+                    <p class="mb-4 text-gray-600">Protect your profile and wallet with KYC verification and 2FA for enhanced security.</p>
+                    <a href="404.html" class="btn">Verify Identity</a>
                 </div>
-                <!-- Example Profile -->
-                <div class="mb-12">
-                    <h3 class="text-2xl font-semibold mb-6 text-center">Profile in Action</h3>
-                    <div class="card p-6 mx-auto max-w-2xl">
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between">
-                                <p class="font-semibold">Username: <span id="example-username">PioneerX</span></p>
-                                <p class="text-gray-600">Joined: Mar 5, 2025</p>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <p class="font-semibold">Bio</p>
-                                <p class="text-gray-600">"Pi enthusiast and digital creator."</p>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <p class="font-semibold">Connections</p>
-                                <p class="text-green-600">50 Pioneers</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Call to Action -->
-                <div class="text-center">
-                    <h3 class="text-2xl font-semibold mb-4">Make It Yours</h3>
-                    <p class="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-                        Create and customize your TruthWeb profile to connect with the Pioneer community today.
-                    </p>
-                    <a href="profile.html" class="btn mr-4">Create Profile</a>
-                    <a href="community.html" class="btn">Join the Community</a>
-                </div>
+            </div>
+            <div class="text-center mt-8">
+                <p class="text-lg mb-4 text-gray-600">Your profile and wallet are your keys to TruthWeb. Get started today!</p>
+                <a href="index.html#core-features" class="btn">Explore Features</a>
             </div>
         </section>
     </main>
@@ -978,7 +925,6 @@
             if (!piInitialized) return;
             Pi.authenticate(scopes, onIncompletePaymentFound).then(auth => {
                 document.getElementById('username').textContent = auth.user.username;
-                document.getElementById('example-username').textContent = auth.user.username;
                 document.getElementById('auth-status').textContent = 'Authenticated (Testnet Mode)';
                 document.getElementById('auth-btn').style.display = 'none';
                 document.getElementById('logout-btn').style.display = 'inline-flex';
@@ -998,7 +944,6 @@
 
         function logoutUser() {
             document.getElementById('username').textContent = 'Guest';
-            document.getElementById('example-username').textContent = 'PioneerX';
             document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
             document.getElementById('auth-btn').style.display = 'inline-flex';
             document.getElementById('logout-btn').style.display = 'none';
@@ -1074,7 +1019,7 @@
             if (query) {
                 results.innerHTML = '';
                 cards.forEach(card => {
-                    const title = (card.querySelector('h3') || card.querySelector('h4')).textContent.toLowerCase();
+                    const title = card.querySelector('h3').textContent.toLowerCase();
                     const content = card.textContent.toLowerCase();
                     if (title.includes(query.toLowerCase()) || content.includes(query.toLowerCase())) {
                         const resultItem = document.createElement('div');
