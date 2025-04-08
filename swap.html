@@ -26,17 +26,12 @@
             --dark-secondary: #000000;
             --dark-text: #E0E0E0;
             --dark-highlight: #555555;
-            --banner-bg-light: #ECEFF1;
-            --banner-bg-dark: #2A2A2A;
-            --banner-border-light: #CFD8DC;
-            --banner-border-dark: #444444;
             --nav-bg-light: #FFFFFF;
             --nav-bg-dark: #1A1A1A;
             --nav-text-light: #000000;
             --nav-text-dark: #E0E0E0;
             --nav-hover-light: #FFD700;
             --nav-hover-dark: #FFD700;
-            --eco-color: #28A745;
             --testnet-badge: #FF0000;
         }
         html { scroll-behavior: smooth; }
@@ -197,6 +192,61 @@
         .icon.authenticated { color: var(--accent-color); }
         .floating-effect { transition: transform 0.3s ease; }
         .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
+        .notification-bell { position: relative; z-index: 1001; }
+        .notification-count { 
+            position: absolute; 
+            top: -5px; 
+            right: -5px; 
+            background: var(--accent-color); 
+            color: var(--primary-color); 
+            border-radius: 50%; 
+            width: 16px; 
+            height: 16px; 
+            font-size: 0.75rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 600; 
+        }
+        .notification-dropdown { 
+            position: absolute; 
+            top: 100%; 
+            right: 0; 
+            width: 300px; 
+            max-height: 400px; 
+            overflow-y: auto; 
+            background: var(--secondary-color); 
+            border: 1px solid var(--highlight-color); 
+            border-radius: 10px; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); 
+            z-index: 1002; 
+            display: none; 
+            padding: 0.5rem; 
+        }
+        .notification-dropdown.active { display: block; }
+        .notification-item { 
+            padding: 0.5rem; 
+            color: var(--primary-color); 
+            border-bottom: 1px solid var(--highlight-color); 
+            font-size: 0.9rem; 
+            transition: background 0.3s ease; 
+        }
+        .notification-item:last-child { border-bottom: none; }
+        .notification-item:hover { background: var(--highlight-color); }
+        .notification-clear { 
+            display: block; 
+            width: 100%; 
+            padding: 0.5rem; 
+            background: var(--accent-color); 
+            color: var(--primary-color); 
+            border: none; 
+            border-radius: 5px; 
+            text-align: center; 
+            cursor: pointer; 
+            margin-top: 0.5rem; 
+            transition: background 0.3s ease; 
+        }
+        .notification-clear:hover { background: #FFA500; }
         main { margin-top: 112px; }
         .swap-section { padding: 2rem 1rem; max-width: 6xl; margin: 0 auto; }
         .swap-container { max-width: 600px; margin: 0 auto; padding: 2rem; background: var(--secondary-color); border: 1px solid var(--highlight-color); border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
@@ -286,6 +336,7 @@
             main { margin-top: 96px; }
             #banxa-iframe { height: 500px; }
             .chat-window { width: 90%; right: 5%; bottom: 70px; }
+            .notification-dropdown { width: 90%; right: 5%; }
         }
     </style>
 </head>
@@ -303,95 +354,14 @@
         <div class="flex items-center">
             <nav class="desktop-nav hidden md:flex items-center">
                 <ul class="flex space-x-4">
-                    <li class="nav-item">
-                        <a href="home.html">Home</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Social</h4>
-                                <a href="truthwebfeed.html">TruthWeb Feed</a>
-                                <a href="stream.html">Stream</a>
-                                <a href="messagingchat.html">Messaging & Chat</a>
-                            </div>
-                            <div class="mega-menu-column">
-                                <h4>Engage</h4>
-                                <a href="community.html">Community</a>
-                                <a href="pioneerverification.html">Pioneer Verification</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="marketplace.html">Marketplace</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Categories</h4>
-                                <a href="#" onclick="filterCategory('electronics')">Electronics</a>
-                                <a href="#" onclick="filterCategory('fashion')">Fashion</a>
-                                <a href="#" onclick="filterCategory('home')">Home</a>
-                            </div>
-                            <div class="mega-menu-column">
-                                <h4>Shop Features</h4>
-                                <a href="pi-powered-marketplace.html">Pi Payments</a>
-                                <a href="multi-category-listings.html">Multi-Category Listings</a>
-                                <a href="global-expansion.html">Global Marketplace</a>
-                                <a href="escrow-system.html">Escrow System</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="profile.html">Profile</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Account</h4>
-                                <a href="user-profiles-wallet.html">Manage Profile & Wallet</a>
-                                <a href="pitrack.html">Pi Track</a>
-                                <a href="pitrade.html">Pi Trade</a>
-                            </div>
-                        </div>
-                    </li>
+                    <li class="nav-item"><a href="home.html">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html">Profile</a></li>
                     <li class="nav-item"><a href="wallet.html">Wallet</a></li>
                     <li class="nav-item"><a href="cart.html">Cart</a></li>
-                    <li class="nav-item">
-                        <a href="vendor.html">Sell on TruthWeb</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Business</h4>
-                                <a href="api-docs.html">Open-Source API</a>
-                                <a href="referral-program.html">Referral Program</a>
-                            </div>
-                            <div class="mega-menu-column">
-                                <h4>Security</h4>
-                                <a href="kycverification.html">KYC Verification</a>
-                                <a href="fraud-detection.html">Fraud Detection</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="about.html">About</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>About TruthWeb</h4>
-                                <a href="developers.html">Developers</a>
-                                <a href="truwebbot.html">TruthWeb AI Bot</a>
-                                <a href="future.html">Coming Soon</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="support.html">Support</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Help</h4>
-                                <a href="contact.html">Contact Us</a>
-                                <a href="faq.html">FAQ</a>
-                                <a href="safety-guidelines.html">Safety Guidelines</a>
-                            </div>
-                            <div class="mega-menu-column">
-                                <h4>Policies</h4>
-                                <a href="terms.html">Terms</a>
-                                <a href="privacy.html">Privacy</a>
-                            </div>
-                        </div>
-                    </li>
+                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
+                    <li class="nav-item"><a href="about.html">About</a></li>
+                    <li class="nav-item"><a href="support.html">Support</a></li>
                 </ul>
             </nav>
             <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
@@ -401,7 +371,9 @@
             <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
                 <i class="fas fa-bell text-lg"></i>
                 <span class="notification-count" id="notification-count">0</span>
-                <div class="notification-dropdown" id="notification-dropdown"></div>
+                <div class="notification-dropdown" id="notification-dropdown">
+                    <button class="notification-clear" onclick="clearNotifications()">Clear All</button>
+                </div>
             </div>
             <button class="icon floating-effect relative" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
                 <i class="fas fa-moon text-lg"></i>
@@ -439,56 +411,6 @@
                     <li class="nav-item"><a href="future.html">Coming Soon</a></li>
                 </ul>
             </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Shop</h3>
-                <ul>
-                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
-                    <li class="nav-item"><a href="pi-powered-marketplace.html">Pi-Powered Marketplace</a></li>
-                    <li class="nav-item"><a href="multi-category-listings.html">Multi-Category Listings</a></li>
-                    <li class="nav-item"><a href="global-expansion.html">Global Marketplace</a></li>
-                    <li class="nav-item"><a href="escrow-system.html">Escrow System</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Account & Wallet</h3>
-                <ul>
-                    <li class="nav-item"><a href="profile.html">Your Profile</a></li>
-                    <li class="nav-item"><a href="wallet.html">Your Wallet</a></li>
-                    <li class="nav-item"><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
-                    <li class="nav-item"><a href="pitrack.html">Pi Track</a></li>
-                    <li class="nav-item"><a href="pitrade.html">Pi Trade</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Community & Social</h3>
-                <ul>
-                    <li class="nav-item"><a href="community.html">Community</a></li>
-                    <li class="nav-item"><a href="truthwebfeed.html">TruthWeb Feed</a></li>
-                    <li class="nav-item"><a href="stream.html">TruthWeb Stream</a></li>
-                    <li class="nav-item"><a href="pioneerverification.html">Pioneer Verification</a></li>
-                    <li class="nav-item"><a href="messagingchat.html">Messaging & Chat</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Business & Security</h3>
-                <ul>
-                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
-                    <li class="nav-item"><a href="api-docs.html">Open-Source API</a></li>
-                    <li class="nav-item"><a href="kycverification.html">KYC Verification</a></li>
-                    <li class="nav-item"><a href="fraud-detection.html">Fraud Detection</a></li>
-                    <li class="nav-item"><a href="referral-program.html">Referral Program</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Support</h3>
-                <ul>
-                    <li class="nav-item"><a href="contact.html">Contact Us</a></li>
-                    <li class="nav-item"><a href="faq.html">FAQ</a></li>
-                    <li class="nav-item"><a href="terms.html">Terms</a></li>
-                    <li class="nav-item"><a href="privacy.html">Privacy</a></li>
-                    <li class="nav-item"><a href="safety-guidelines.html">Safety Guidelines</a></li>
-                </ul>
-            </li>
         </ul>
     </nav>
     <main>
@@ -502,17 +424,14 @@
                         <option value="EUR">EUR</option>
                         <option value="AUD">AUD</option>
                     </select>
-
                     <label for="amount">Amount:</label>
                     <input type="number" id="amount" name="amount" min="10" step="0.01" placeholder="Enter amount" required>
-
                     <label for="paymentMethod">Payment Method:</label>
                     <select id="paymentMethod" name="paymentMethod">
                         <option value="creditcard">Visa/Mastercard</option>
                         <option value="googlepay">Google Pay</option>
                         <option value="paypal">PayPal</option>
                     </select>
-
                     <div class="flex flex-wrap gap-4 justify-center mt-4">
                         <button type="submit" class="btn accent">Buy Pi Now</button>
                     </div>
@@ -521,7 +440,7 @@
                 <div id="swap-result"></div>
             </div>
         </section>
-    </main>
+        </main>
     <footer>
         <div class="footer-content">
             <div class="footer-section">
@@ -604,32 +523,15 @@
         </div>
     </div>
     <nav class="mobile-footer-nav">
-        <a href="index.html" class="mobile-nav-item" aria-label="Home">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
-        </a>
-        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace">
-            <i class="fas fa-store"></i>
-            <span>Marketplace</span>
-        </a>
-        <a href="profile.html" class="mobile-nav-item" aria-label="Profile">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
-        </a>
-        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
-            <i class="fas fa-wallet"></i>
-            <span>Wallet</span>
-        </a>
-        <a href="cart.html" class="mobile-nav-item" aria-label="Cart">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Cart</span>
-            <span class="cart-count" id="mobile-cart-count">0</span>
-        </a>
+        <a href="index.html" class="mobile-nav-item" aria-label="Home"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace"><i class="fas fa-store"></i><span>Marketplace</span></a>
+        <a href="profile.html" class="mobile-nav-item" aria-label="Profile"><i class="fas fa-user"></i><span>Profile</span></a>
+        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet"><i class="fas fa-wallet"></i><span>Wallet</span></a>
+        <a href="cart.html" class="mobile-nav-item" aria-label="Cart"><i class="fas fa-shopping-cart"></i><span>Cart</span><span class="cart-count" id="mobile-cart-count">0</span></a>
     </nav>
 
     <script>
         // Pi SDK Initialization
-        let adNetworkSupported = false;
         let piInitialized = false;
         const BACKEND_URL = 'http://172.21.128.1:8080';
         const scopes = ['username', 'payments', 'wallet_address'];
@@ -652,15 +554,9 @@
         async function initializePiSDK() {
             try {
                 await waitForPiSDK();
-                await Pi.init({ 
-                    version: "2.0", 
-                    sandbox: true,
-                    appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
-                });
+                await Pi.init({ version: "2.0", sandbox: true, appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x" });
                 piInitialized = true;
-                const nativeFeaturesList = await Pi.nativeFeaturesList();
-                adNetworkSupported = nativeFeaturesList.includes("ad_network");
-                console.log("Pi SDK Initialized - Ad Network Supported:", adNetworkSupported);
+                console.log("Pi SDK Initialized");
                 checkAuthStatus();
             } catch (error) {
                 console.error("Pi SDK Initialization failed:", error);
@@ -689,8 +585,8 @@
 
         // Banxa Integration
         const BANXA_CHECKOUT_URL = 'https://checkout.banxa.com';
-        const BANXA_API_KEY = 'your-banxa-api-key-here'; // Replace with your Banxa API key
-        const BANXA_PARTNER_ID = 'truthweb'; // Replace with your Banxa partner ID
+        const BANXA_API_KEY = 'your-banxa-api-key-here';
+        const BANXA_PARTNER_ID = 'truthweb';
 
         function loadBanxaCheckout(fiatCurrency, amount, paymentMethod) {
             const iframe = document.getElementById('banxa-iframe');
@@ -720,7 +616,6 @@
                 iframe.style.display = 'block';
                 resultDiv.textContent = 'Complete your purchase in the Banxa checkout below.';
                 addNotification(`Loading Banxa checkout for ${amount} ${fiatCurrency} to Pi via ${paymentMethod} (Testnet Mode)`);
-                console.log('Banxa iframe URL:', iframeUrl);
             } catch (error) {
                 resultDiv.textContent = 'Error loading Banxa checkout. Please try again.';
                 addNotification(`Banxa checkout failed: ${error.message} (Testnet Mode)`);
@@ -747,35 +642,48 @@
             loadBanxaCheckout(fiatCurrency, amount, paymentMethod);
         });
 
-        // Newsletter Subscription
-        document.getElementById('newsletterForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('newsletterEmail').value;
-            const resultDiv = document.getElementById('newsletterResult');
-            if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                resultDiv.textContent = 'Please enter a valid email address.';
-                addNotification('Invalid email for newsletter subscription (Testnet Mode)');
-                return;
-            }
-            // Simulate subscription in Testnet Mode
-            resultDiv.textContent = 'Thank you for subscribing! (Testnet Mode)';
-            addNotification(`Subscribed ${email} to newsletter (Testnet Mode)`);
-            document.getElementById('newsletterEmail').value = '';
-            setTimeout(() => resultDiv.textContent = '', 3000);
-        });
-
-        // Live Chat
-        function toggleChat() {
-            const chatWindow = document.getElementById('chatWindow');
-            chatWindow.classList.toggle('active');
-            if (chatWindow.classList.contains('active')) {
-                addNotification('Live chat opened (Testnet Mode)');
-            } else {
-                addNotification('Live chat closed (Testnet Mode)');
-            }
+        // Notification Functions
+        function addNotification(message) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const countSpan = document.getElementById('notification-count');
+            let notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+            const notification = { message, timestamp: new Date().toLocaleTimeString() };
+            notifications.unshift(notification);
+            if (notifications.length > 50) notifications.pop(); // Limit to 50 notifications
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+            countSpan.textContent = notifications.length;
+            renderNotifications();
         }
 
-        // Reused Functions
+        function renderNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            const clearButton = dropdown.querySelector('.notification-clear');
+            const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
+            dropdown.innerHTML = '';
+            notifications.forEach((notif) => {
+                const item = document.createElement('div');
+                item.className = 'notification-item';
+                item.textContent = `${notif.timestamp} - ${notif.message}`;
+                dropdown.appendChild(item);
+            });
+            dropdown.appendChild(clearButton);
+            document.getElementById('notification-count').textContent = notifications.length;
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function clearNotifications() {
+            localStorage.removeItem('notifications');
+            document.getElementById('notification-count').textContent = '0';
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.innerHTML = '<button class="notification-clear" onclick="clearNotifications()">Clear All</button>';
+            dropdown.classList.remove('active');
+        }
+
+        // Other Functions
         function checkAuthStatus() {
             if (!piInitialized) {
                 console.warn("Pi SDK not initialized yet.");
@@ -790,50 +698,6 @@
                 console.error("Auth check failed:", error);
                 addNotification("Failed to check authentication status (Testnet Mode)");
             });
-        }
-
-        function authenticateUser() {
-            if (!piInitialized) {
-                addNotification("Pi SDK not initialized.");
-                return;
-            }
-            Pi.authenticate(scopes, onIncompletePaymentFound).then(auth => {
-                console.log("Authentication successful:", auth);
-                addNotification("Successfully signed in with Pi (Testnet Mode)");
-            }).catch(error => {
-                console.error("Authentication failed:", error);
-                addNotification("Authentication failed (Testnet Mode)");
-            });
-        }
-
-        function logoutUser() {
-            if (!piInitialized) {
-                addNotification("Pi SDK not initialized.");
-                return;
-            }
-            Pi.logout().then(() => {
-                console.log("Logged out successfully");
-                addNotification("Logged out successfully (Testnet Mode)");
-            }).catch(error => {
-                console.error("Logout failed:", error);
-                addNotification("Logout failed (Testnet Mode)");
-            });
-        }
-
-        function addNotification(message) {
-            const dropdown = document.getElementById('notification-dropdown');
-            const countSpan = document.getElementById('notification-count');
-            let count = parseInt(countSpan.textContent) || 0;
-            count++;
-            countSpan.textContent = count;
-            const item = document.createElement('div');
-            item.className = 'notification-item';
-            item.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
-            dropdown.insertBefore(item, dropdown.firstChild);
-        }
-
-        function toggleNotifications() {
-            document.getElementById('notification-dropdown').classList.toggle('active');
         }
 
         function toggleDarkMode() {
@@ -910,6 +774,16 @@
             results.classList.add('active');
         }
 
+        function toggleChat() {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.classList.toggle('active');
+            if (chatWindow.classList.contains('active')) {
+                addNotification('Live chat opened (Testnet Mode)');
+            } else {
+                addNotification('Live chat closed (Testnet Mode)');
+            }
+        }
+
         function addAnnouncementBanner() {
             const banner = document.createElement('div');
             banner.className = 'announcement-banner';
@@ -924,6 +798,7 @@
             if (localStorage.getItem('darkMode') === 'true') {
                 document.body.classList.add('dark');
             }
+            renderNotifications();
             initializePiSDK();
             window.addEventListener('scroll', () => {
                 updateProgressBar();
@@ -934,11 +809,27 @@
                 const results = document.getElementById('search-results');
                 if (!e.target.closest('.search-container')) results.classList.remove('active');
                 const dropdown = document.getElementById('notification-dropdown');
-                if (!e.target.closest('.notification-bell')) dropdown.classList.remove('active');
+                if (!e.target.closest('.notification-bell') && dropdown.classList.contains('active')) {
+                    dropdown.classList.remove('active');
+                }
                 const chatWindow = document.getElementById('chatWindow');
-                if (!e.target.closest('.live-chat-btn') && !e.target.closest('.chat-window')) {
+                if (!e.target.closest('.live-chat-btn') && !e.target.closest('.chat-window') && chatWindow.classList.contains('active')) {
                     chatWindow.classList.remove('active');
                 }
+            });
+            document.getElementById('newsletterForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('newsletterEmail').value;
+                const resultDiv = document.getElementById('newsletterResult');
+                if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    resultDiv.textContent = 'Please enter a valid email address.';
+                    addNotification('Invalid email for newsletter subscription (Testnet Mode)');
+                    return;
+                }
+                resultDiv.textContent = 'Thank you for subscribing! (Testnet Mode)';
+                addNotification(`Subscribed ${email} to newsletter (Testnet Mode)`);
+                document.getElementById('newsletterEmail').value = '';
+                setTimeout(() => resultDiv.textContent = '', 3000);
             });
         });
     </script>
