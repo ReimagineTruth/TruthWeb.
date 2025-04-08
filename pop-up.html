@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop-up Announcement - TruthWeb Style</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #FFFFFF;
+            --highlight-color: #CCCCCC;
+            --text-color: #FFFFFF;
+            --button-bg-color: #000000;
+            --button-text-color: #FFFFFF;
+            --button-hover-bg-color: #FFFFFF;
+            --button-hover-text-color: #000000;
+            --background-color: #FFFFFF;
+            --accent-color: #FFD700;
+            --dark-primary: #FFFFFF;
+            --dark-secondary: #000000;
+            --dark-text: #E0E0E0;
+            --dark-highlight: #555555;
+            --testnet-badge: #FF0000;
+        }
+
+        body {
+            background: var(--background-color);
+            color: var(--primary-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: all 0.3s ease;
+        }
+
+        body.dark {
+            --primary-color: var(--dark-primary);
+            --secondary-color: var(--dark-secondary);
+            --text-color: var(--dark-text);
+            --background-color: #000000;
+            --highlight-color: var(--dark-highlight);
+            --button-bg-color: #333333;
+            --button-hover-bg-color: #FFD700;
+            --button-hover-text-color: #000000;
+        }
+
+        .popup-announcement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--secondary-color);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 2001;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            border: 2px solid var(--accent-color);
+            display: none;
+            animation: popupFadeIn 0.5s ease-in-out;
+        }
+
+        .popup-announcement.active {
+            display: block;
+        }
+
+        .popup-announcement h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px var(--accent-color);
+        }
+
+        .popup-announcement p {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .popup-announcement .btn-close {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .popup-announcement .btn-close:hover {
+            background: #FFA500;
+            transform: scale(1.05) translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .popup-announcement .btn-close:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes popupFadeIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pop-up Announcement -->
+    <div class="popup-announcement" id="popup-announcement">
+        <h2 class="flex items-center justify-center gap-2">
+            <i class="fas fa-bullhorn"></i> Important Announcement
+        </h2>
+        <p>Welcome to TruthWeb Testnet Mode! We're excited to announce our latest features launching April 2025. Stay tuned for Pi-powered shopping innovations!</p>
+        <button class="btn-close" onclick="closePopup()">Got It</button>
+    </div>
+
+    <script>
+        function showPopup() {
+            const popup = document.getElementById('popup-announcement');
+            if (!sessionStorage.getItem('popupShown')) {
+                popup.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('popup-announcement');
+            popup.classList.remove('active');
+            document.body.style.overflow = '';
+            sessionStorage.setItem('popupShown', 'true');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showPopup();
+        });
+    </script>
+</body>
+</html>
