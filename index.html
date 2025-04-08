@@ -7,72 +7,6 @@
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        let adNetworkSupported = false;
-        let piInitialized = false;
-        const BACKEND_URL = 'http://172.21.128.1:8080';
-        const scopes = ['username', 'payments', 'wallet_address'];
-
-        function waitForPiSDK() {
-            return new Promise((resolve, reject) => {
-                const checkInterval = setInterval(() => {
-                    if (typeof Pi !== 'undefined') {
-                        clearInterval(checkInterval);
-                        resolve(true);
-                    }
-                }, 100);
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    reject(new Error('Pi SDK failed to load'));
-                }, 5000);
-            });
-        }
-
-        async function initializePiSDK() {
-            try {
-                await waitForPiSDK();
-                await Pi.init({ 
-                    version: "2.0", 
-                    sandbox: true,
-                    appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
-                });
-                piInitialized = true;
-                const nativeFeaturesList = await Pi.nativeFeaturesList();
-                adNetworkSupported = nativeFeaturesList.includes("ad_network");
-                console.log("Pi SDK Initialized - Ad Network Supported:", adNetworkSupported);
-                checkAuthStatus();
-            } catch (error) {
-                console.error("Pi SDK Initialization failed:", error);
-                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
-                piInitialized = false;
-            }
-        }
-
-        function onIncompletePaymentFound(payment) {
-            console.log('Incomplete payment found:', payment);
-            if (!piInitialized) {
-                console.error('Pi SDK not initialized');
-                return Promise.reject('Pi SDK not initialized');
-            }
-            const paymentId = payment.identifier;
-            const txid = payment.transaction?.txid || null;
-            return $.ajax({
-                url: `${BACKEND_URL}/payment/complete`,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ paymentId, txid, debug: 'cancel' }),
-                success: () => addNotification('Processed incomplete payment (Testnet Mode)'),
-                error: (xhr, status, error) => {
-                    console.error('Payment completion error:', error);
-                    addNotification('Failed to process incomplete payment (Testnet Mode)');
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initializePiSDK();
-        });
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
@@ -130,7 +64,7 @@
         }
         .progress-bar {
             position: fixed;
-            top: 48px; /* Adjusted for announcement banner */
+            top: 48px;
             left: 0;
             width: 0;
             height: 4px;
@@ -203,7 +137,7 @@
         .go-to-top:active { transform: scale(0.95); }
         .sticky-header {
             position: fixed;
-            top: 48px; /* Adjusted for announcement banner */
+            top: 48px;
             width: 100%;
             z-index: 1000;
             background: var(--nav-bg-light);
@@ -497,7 +431,7 @@
         .icon.authenticated { color: var(--accent-color); }
         .floating-effect { transition: transform 0.3s ease; }
         .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
-        main { margin-top: 112px; /* Adjusted for banner (48px) + header (64px) */ }
+        main { margin-top: 112px; }
         .hero {
             min-height: 70vh;
             display: flex;
@@ -861,7 +795,10 @@
             align-items: center;
             justify-content: center;
         }
-        .notification-bell { position: relative; }
+        .notification-bell { 
+            position: relative; 
+            cursor: pointer; 
+        }
         .notification-count {
             position: absolute;
             top: -5px;
@@ -875,6 +812,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-weight: 600;
         }
         .notification-dropdown {
             position: absolute;
@@ -889,14 +827,42 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             z-index: 60;
             display: none;
+            padding: 0.5rem;
+            transition: opacity 0.2s ease-in-out;
         }
-        .notification-dropdown.active { display: block; }
+        .notification-dropdown.active { 
+            display: block; 
+            opacity: 1; 
+        }
         .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             padding: 0.75rem;
             border-bottom: 1px solid var(--highlight-color);
             color: var(--primary-color);
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
         }
-        .notification-item:last-child { border-bottom: none; }
+        .notification-item:hover {
+            background: var(--highlight-color);
+        }
+        .notification-item:last-child { 
+            border-bottom: none; 
+        }
+        .notification-item .dismiss-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0 0.5rem;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+        .notification-item .dismiss-btn:hover {
+            color: #FFA500;
+            transform: scale(1.1);
+        }
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -1149,6 +1115,64 @@
             align-items: center;
             justify-content: center;
         }
+        .popup-announcement {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #FFFFFF;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            z-index: 2001;
+            max-width: 90%;
+            width: 400px;
+            text-align: center;
+            animation: popupFadeIn 0.5s ease-in-out;
+            border: 2px solid #FFD700;
+            display: none;
+        }
+        .popup-announcement.active {
+            display: block;
+        }
+        .popup-announcement h2 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #000000;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 5px #FFD700;
+        }
+        .popup-announcement p {
+            font-size: 1.1rem;
+            color: #000000;
+            margin-bottom: 1.5rem;
+        }
+        .popup-announcement .btn-close {
+            background: #FFD700;
+            color: #000000;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 9999px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .popup-announcement .btn-close:hover {
+            background: #FFA500;
+            transform: scale(1.05);
+        }
+        @keyframes popupFadeIn {
+            from { opacity: 0; transform: translate(-50%, -60%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        body.dark .popup-announcement {
+            background: #1A1A1A;
+            color: #E0E0E0;
+        }
+        body.dark .popup-announcement h2,
+        body.dark .popup-announcement p {
+            color: #E0E0E0;
+        }
         @media (min-width: 641px) { 
             .burger-btn { display: none; }
             .desktop-nav { display: flex; }
@@ -1179,6 +1203,11 @@
 <body onload="checkAuthStatus()">
     <div class="progress-bar"></div>
     <div class="loading-overlay"><div class="loader"></div></div>
+    <div class="popup-announcement" id="popup-announcement">
+        <h2>📢 Important Announcement</h2>
+        <p>Welcome to TruthWeb Testnet Mode! We're excited to announce our latest features launching April 2025. Stay tuned for Pi-powered shopping innovations!</p>
+        <button class="btn-close" onclick="closePopup()">Got It</button>
+    </div>
     <header class="sticky-header">
         <div class="flex items-center">
             <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
@@ -1565,7 +1594,7 @@
         <div class="footer-bottom">
             <div class="social-icons">
                 <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></ Deng>
+                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
                 <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
                 <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
@@ -1588,7 +1617,7 @@
             <i class="fas fa-user"></i>
             <span>Profile</span>
         </a>
-        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
+                <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
             <i class="fas fa-wallet"></i>
             <span>Wallet</span>
         </a>
@@ -1599,448 +1628,484 @@
         </a>
     </nav>
 
-   <script>
-    const products = [
-        { id: 1, name: "Pi Smartwatch", basePrice: 150, discountPrice: 135, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.5, reviews: 120, engagement: 0, isEco: true, description: "Smartwatch with Pi integration" },
-        { id: 2, name: "Pi T-Shirt", basePrice: 25, discountPrice: 20, category: "fashion", image: "https://via.placeholder.com/150", rating: 4.0, reviews: 85, engagement: 0, isEco: false, description: "Comfortable cotton Pi-branded shirt" },
-        { id: 3, name: "Eco Lamp", basePrice: 45, discountPrice: 40, category: "home", image: "https://via.placeholder.com/150", rating: 4.8, reviews: 200, engagement: 0, isEco: true, description: "Energy-efficient LED lamp" },
-        { id: 4, name: "Pi Headphones", basePrice: 80, discountPrice: 70, category: "electronics", image: "https://via.placeholder.com/150", rating: 4.2, reviews: 95, engagement: 0, isEco: false, description: "Wireless headphones with Pi sync" }
-    ];
+    <script>
+        let adNetworkSupported = false;
+        let piInitialized = false;
+        const BACKEND_URL = 'http://172.21.128.1:8080';
+        const scopes = ['username', 'payments', 'wallet_address'];
 
-    const ads = [
-        { id: 1, title: "Pi Deals", price: "Up to 50% Off", image: "https://via.placeholder.com/300x200", link: "deals.html" },
-        { id: 2, title: "Sell on TruthWeb", price: "Free Listing", image: "https://via.placeholder.com/300x200", link: "vendor.html" }
-    ];
+        const products = [
+            { id: 1, title: "Eco-Friendly Laptop", price: 500, rating: 4.5, image: "https://via.placeholder.com/300", category: "electronics", eco: true },
+            { id: 2, title: "Fashion Sneakers", price: 45, rating: 4.0, image: "https://via.placeholder.com/300", category: "fashion" },
+            { id: 3, title: "Smart Home Hub", price: 120, rating: 4.8, image: "https://via.placeholder.com/300", category: "home", eco: true }
+        ];
 
-    const p2pListings = [
-        { id: 1, title: "Used Pi Phone", price: "50 Pi", image: "https://via.placeholder.com/300x200", seller: "Pioneer123" },
-        { id: 2, title: "Handmade Pi Art", price: "20 Pi", image: "https://via.placeholder.com/300x200", seller: "ArtPioneer" }
-    ];
+        const ads = [
+            { id: 1, title: "Pi Deals Ad", price: "50% Off", image: "https://via.placeholder.com/300" },
+            { id: 2, title: "Eco Products", price: "Save with Pi", image: "https://via.placeholder.com/300" }
+        ];
 
-    const sellers = [
-        { id: 1, name: "EcoPioneer", info: "Sustainable goods", image: "https://via.placeholder.com/300x200" },
-        { id: 2, name: "TechPioneer", info: "Innovative tech", image: "https://via.placeholder.com/300x200" }
-    ];
+        const p2pListings = [
+            { id: 1, title: "Used Smartphone", price: 80, image: "https://via.placeholder.com/300" },
+            { id: 2, title: "Handmade Jewelry", price: 25, image: "https://via.placeholder.com/300" }
+        ];
 
-    const testimonials = [
-        { id: 1, name: "Jane P.", text: "TruthWeb made shopping with Pi so easy!", image: "https://via.placeholder.com/150" },
-        { id: 2, name: "Mark T.", text: "Selling on TruthWeb boosted my business!", image: "https://via.placeholder.com/150" }
-    ];
+        const sellers = [
+            { id: 1, name: "GreenTech", info: "Eco-Friendly Tech", image: "https://via.placeholder.com/300" },
+            { id: 2, name: "StylePioneer", info: "Trendy Fashion", image: "https://via.placeholder.com/300" }
+        ];
 
-    const videoPlaylist = [
-        { id: "WLihlM7KOoY", title: "Experience The Power Of TruthWeb In The Pi Network Ecosystem!", description: "Are you ready to explore the hidden potential of TruthWeb?" },
+        const testimonials = [
+            { id: 1, name: "John P.", text: "Amazing platform for Pi users!", image: "https://via.placeholder.com/300" },
+            { id: 2, name: "Sarah K.", text: "Fast and secure shopping!", image: "https://via.placeholder.com/300" }
+        ];
+
+        const videos = [
+            { id: "WLihlM7KOoY", title: "Experience The Power Of TruthWeb In The Pi Network Ecosystem!", description: "Are you ready to explore the hidden potential of TruthWeb?" },
         { id: "MfOVBHbgDK8", title: "Happy Pi Day 2025!", description: "Happy Pi Day 2025, Pi Network’s 6th official anniversary!" },
         { id: "gacKcyPxbrA", title: "Pi's Open Network Launch", description: "Discover how TruthWeb integrates with Pi's Open Network launch." },
         { id: "MsOaC61cR3U", title: "The Story Of Pi", description: "Learn about the first digital currency you can mine on your phone." }
-    ];
+        ];
 
-    let player;
-    let currentVideoIndex = 0;
+        let currentVideoIndex = 0;
+        let player;
 
-    function onYouTubeIframeAPIReady() {
-        player = new YT.Player('main-video', {
-            height: '100%',
-            width: '100%',
-            videoId: videoPlaylist[currentVideoIndex].id,
-            events: {
-                'onReady': onPlayerReady,
-                'onStateChange': onPlayerStateChange
+        function waitForPiSDK() {
+            return new Promise((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof Pi !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    reject(new Error('Pi SDK failed to load'));
+                }, 5000);
+            });
+        }
+
+        async function initializePiSDK() {
+            try {
+                await waitForPiSDK();
+                await Pi.init({ 
+                    version: "2.0", 
+                    sandbox: true,
+                    appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
+                });
+                piInitialized = true;
+                const nativeFeaturesList = await Pi.nativeFeaturesList();
+                adNetworkSupported = nativeFeaturesList.includes("ad_network");
+                console.log("Pi SDK Initialized - Ad Network Supported:", adNetworkSupported);
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Pi SDK Initialization failed:", error);
+                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
+                piInitialized = false;
             }
-        });
-        updateVideoDetails();
-    }
-
-    function onPlayerReady(event) {
-        document.getElementById('play-pause-btn').innerHTML = '▶ Play';
-    }
-
-    function onPlayerStateChange(event) {
-        if (event.data === YT.PlayerState.PLAYING) {
-            document.getElementById('play-pause-btn').innerHTML = '⏸ Pause';
-        } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-            document.getElementById('play-pause-btn').innerHTML = '▶ Play';
         }
-    }
 
-    function togglePlayPause() {
-        if (player.getPlayerState() === YT.PlayerState.PLAYING) {
-            player.pauseVideo();
-        } else {
-            player.playVideo();
-        }
-    }
+        function checkAuthStatus() {
+            const authBtn = document.getElementById('auth-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const usernameSpan = document.getElementById('username');
+            const authStatus = document.getElementById('auth-status');
 
-    function nextVideo() {
-        currentVideoIndex = (currentVideoIndex + 1) % videoPlaylist.length;
-        player.loadVideoById(videoPlaylist[currentVideoIndex].id);
-        updateVideoDetails();
-    }
-
-    function prevVideo() {
-        currentVideoIndex = (currentVideoIndex - 1 + videoPlaylist.length) % videoPlaylist.length;
-        player.loadVideoById(videoPlaylist[currentVideoIndex].id);
-        updateVideoDetails();
-    }
-
-    function stopVideo() {
-        player.stopVideo();
-    }
-
-    function updateVideoDetails() {
-        document.getElementById('video-title').textContent = videoPlaylist[currentVideoIndex].title;
-        document.getElementById('video-description').textContent = videoPlaylist[currentVideoIndex].description;
-    }
-
-    function shareVideo(platform) {
-        const url = `https://www.youtube.com/watch?v=${videoPlaylist[currentVideoIndex].id}`;
-        const text = `Check out "${videoPlaylist[currentVideoIndex].title}" on TruthWeb!`;
-        if (platform === 'twitter') {
-            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
-        } else if (platform === 'telegram') {
-            window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank');
-        }
-    }
-
-    function toggleLike(button) {
-        button.classList.toggle('active');
-        const countSpan = document.getElementById('like-count');
-        let count = parseInt(countSpan.textContent);
-        count = button.classList.contains('active') ? count + 1 : count - 1;
-        countSpan.textContent = count;
-    }
-
-    function checkAuthStatus() {
-        if (!piInitialized) {
-            document.getElementById('auth-status').textContent = "Pi SDK not initialized (Testnet Mode)";
-            return;
-        }
-        Pi.getAuth().then(auth => {
-            if (auth && auth.uid) {
-                document.getElementById('username').textContent = auth.username || "Pioneer";
-                document.getElementById('auth-status').textContent = "Authenticated (Testnet Mode)";
-                document.getElementById('auth-btn').style.display = 'none';
-                document.getElementById('logout-btn').style.display = 'inline-flex';
-                document.querySelector('.icon[aria-label="Cart"]').classList.add('authenticated');
+            if (piInitialized && Pi.user()) {
+                const user = Pi.user();
+                usernameSpan.textContent = user.username;
+                authStatus.textContent = "Authenticated (Testnet Mode)";
+                authBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-flex';
             } else {
-                document.getElementById('auth-status').textContent = "Not authenticated (Testnet Mode)";
-                document.getElementById('auth-btn').style.display = 'inline-flex';
-                document.getElementById('logout-btn').style.display = 'none';
+                usernameSpan.textContent = "Guest";
+                authStatus.textContent = "Not authenticated (Testnet Mode)";
+                authBtn.style.display = 'inline-flex';
+                logoutBtn.style.display = 'none';
             }
-        }).catch(error => {
-            console.error("Auth check failed:", error);
-            addNotification("Failed to check authentication status (Testnet Mode)");
-        });
-    }
-
-    function authenticateUser() {
-        if (!piInitialized) {
-            addNotification("Pi SDK not initialized. Please try again later.");
-            return;
         }
-        document.getElementById('auth-btn').classList.add('authenticating');
-        Pi.authenticate(scopes, onIncompletePaymentFound).then(auth => {
-            document.getElementById('username').textContent = auth.username || "Pioneer";
-            document.getElementById('auth-status').textContent = "Authenticated (Testnet Mode)";
-            document.getElementById('auth-btn').style.display = 'none';
-            document.getElementById('logout-btn').style.display = 'inline-flex';
-            document.querySelector('.icon[aria-label="Cart"]').classList.add('authenticated');
-            addNotification("Successfully signed in with Pi (Testnet Mode)");
-        }).catch(error => {
-            console.error("Authentication failed:", error);
-            addNotification("Authentication failed (Testnet Mode)");
-        }).finally(() => {
-            document.getElementById('auth-btn').classList.remove('authenticating');
-        });
-    }
 
-    function logoutUser() {
-        if (!piInitialized) {
-            addNotification("Pi SDK not initialized. Cannot logout.");
-            return;
+        async function authenticateUser() {
+            if (!piInitialized) {
+                addNotification("Pi SDK not initialized yet. Please wait.");
+                return;
+            }
+            try {
+                const authBtn = document.getElementById('auth-btn');
+                authBtn.classList.add('authenticating');
+                authBtn.textContent = "Authenticating...";
+                const response = await Pi.authenticate(scopes, onIncompletePaymentFound);
+                console.log("Authentication successful:", response);
+                addNotification(`Welcome, ${response.user.username}! Successfully signed in.`);
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                addNotification("Authentication failed. Please try again.");
+            } finally {
+                authBtn.classList.remove('authenticating');
+                authBtn.textContent = "Sign In with Pi";
+            }
         }
-        Pi.logout().then(() => {
-            document.getElementById('username').textContent = "Guest";
-            document.getElementById('auth-status').textContent = "Not authenticated (Testnet Mode)";
-            document.getElementById('auth-btn').style.display = 'inline-flex';
-            document.getElementById('logout-btn').style.display = 'none';
-            document.querySelector('.icon[aria-label="Cart"]').classList.remove('authenticated');
-            addNotification("Logged out successfully (Testnet Mode)");
-        }).catch(error => {
-            console.error("Logout failed:", error);
-            addNotification("Logout failed (Testnet Mode)");
-        });
-    }
 
-    function addNotification(message) {
-        const dropdown = document.getElementById('notification-dropdown');
-        const countSpan = document.getElementById('notification-count');
-        let count = parseInt(countSpan.textContent);
-        count++;
-        countSpan.textContent = count;
-        const item = document.createElement('div');
-        item.className = 'notification-item';
-        item.textContent = `${new Date().toLocaleTimeString()} - ${message}`;
-        dropdown.insertBefore(item, dropdown.firstChild);
-        if (dropdown.classList.contains('active')) {
-            dropdown.scrollTop = 0;
+        function onIncompletePaymentFound(payment) {
+            console.log("Incomplete payment found:", payment);
+            addNotification("Found an incomplete payment. Please complete it in the Pi app.");
+            return { approved: false, txid: null };
         }
-    }
 
-    function toggleNotifications() {
-        const dropdown = document.getElementById('notification-dropdown');
-        dropdown.classList.toggle('active');
-    }
-
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark');
-        localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-    }
-
-    function toggleMobileMenu() {
-        const menu = document.querySelector('.mobile-menu');
-        const burger = document.querySelector('.burger-btn');
-        menu.classList.toggle('open');
-        burger.classList.toggle('open');
-        document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
-    }
-
-    function closeMobileMenu() {
-        const menu = document.querySelector('.mobile-menu');
-        const burger = document.querySelector('.burger-btn');
-        menu.classList.remove('open');
-        burger.classList.remove('open');
-        document.body.style.overflow = '';
-    }
-
-    function toggleMenuSection(element) {
-        const section = element.parentElement;
-        section.classList.toggle('collapsed');
-    }
-
-    function scrollToTop() {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function updateProgressBar() {
-        const scrollTop = window.scrollY;
-        const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
-        const progress = (scrollTop / scrollHeight) * 100;
-        document.querySelector('.progress-bar').style.width = `${progress}%`;
-    }
-
-    function toggleGoToTop() {
-        const button = document.querySelector('.go-to-top');
-        button.classList.toggle('visible', window.scrollY > 300);
-    }
-
-    let lastScrollTop = 0;
-    function handleHeaderScroll() {
-        const header = document.querySelector('.sticky-header');
-        const mobileNav = document.querySelector('.mobile-footer-nav');
-        const scrollTop = window.scrollY;
-        header.classList.toggle('scrolled', scrollTop > 50);
-        if (scrollTop > lastScrollTop && scrollTop > 100) {
-            header.classList.add('hidden');
-            mobileNav.classList.add('hidden');
-        } else {
-            header.classList.remove('hidden');
-            mobileNav.classList.remove('hidden');
+        function logoutUser() {
+            if (piInitialized) {
+                Pi.logout();
+                addNotification("Logged out successfully.");
+                checkAuthStatus();
+            }
         }
-        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-    }
 
-    function searchProducts(query) {
-        const results = document.getElementById('search-results');
-        results.innerHTML = '';
-        if (query.length < 2) {
-            results.classList.remove('active');
-            return;
-        }
-        const filtered = products.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
-        filtered.forEach(product => {
+        function addNotification(message) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count++;
+            countSpan.textContent = count;
+
             const item = document.createElement('div');
-            item.className = 'search-result-item';
-            item.textContent = `${product.name} - ${product.discountPrice} Pi`;
-            item.onclick = () => window.location.href = `product.html?id=${product.id}`;
-            results.appendChild(item);
-        });
-        results.classList.add('active');
-    }
+            item.className = 'notification-item';
+            item.innerHTML = `
+                <span>${new Date().toLocaleTimeString()} - ${message}</span>
+                <button class="dismiss-btn" onclick="dismissNotification(this)">✕</button>
+            `;
+            dropdown.insertBefore(item, dropdown.firstChild);
+            if (dropdown.classList.contains('active')) {
+                dropdown.scrollTop = 0;
+            }
+        }
 
-    function renderProducts(gridId, productList) {
-        const grid = document.getElementById(gridId);
-        grid.innerHTML = '';
-        productList.forEach(product => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-            card.innerHTML = `
-                ${product.isEco ? '<span class="eco-badge">Eco</span>' : ''}
-                <img src="${product.image}" alt="${product.name}" class="product-image">
-                <h3 class="product-title">${product.name}</h3>
-                <p class="product-price">${product.discountPrice} Pi <span>(Was ${product.basePrice} Pi)</span></p>
-                <div class="product-rating">${'★'.repeat(Math.floor(product.rating))} (${product.reviews} reviews)</div>
-                <div class="product-actions">
-                    <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
-                    ${adNetworkSupported ? `<button class="btn-watch-ad" onclick="watchAd(${product.id})">Watch Ad to Save</button>` : ''}
-                    <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
+        function dismissNotification(button) {
+            const item = button.parentElement;
+            item.remove();
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count = Math.max(0, count - 1);
+            countSpan.textContent = count;
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            addNotification("Dark mode " + (document.body.classList.contains('dark') ? "enabled" : "disabled"));
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const burger = document.querySelector('.burger-btn');
+            menu.classList.toggle('open');
+            burger.classList.toggle('open');
+        }
+
+        function closeMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const burger = document.querySelector('.burger-btn');
+            menu.classList.remove('open');
+            burger.classList.remove('open');
+        }
+
+        function toggleMenuSection(element) {
+            const section = element.parentElement;
+            section.classList.toggle('collapsed');
+        }
+
+        function searchProducts(query) {
+            const results = document.getElementById('search-results');
+            results.innerHTML = '';
+            if (query.length < 2) {
+                results.classList.remove('active');
+                return;
+            }
+            const filtered = products.filter(p => p.title.toLowerCase().includes(query.toLowerCase()));
+            filtered.forEach(product => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.textContent = `${product.title} - ${product.price} Pi`;
+                item.onclick = () => window.location.href = `product.html?id=${product.id}`;
+                results.appendChild(item);
+            });
+            results.classList.add('active');
+        }
+
+        function renderProducts(gridId, productList) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            productList.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    ${product.eco ? '<span class="eco-badge">Eco</span>' : ''}
+                    <img src="${product.image}" alt="${product.title}" class="product-image">
+                    <h3 class="product-title">${product.title}</h3>
+                    <p class="product-price">${product.price} <span>Pi</span></p>
+                    <div class="product-rating">${'★'.repeat(Math.floor(product.rating))} (${product.rating})</div>
+                    <div class="product-actions">
+                        <button class="btn-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                        ${adNetworkSupported ? `<button class="btn-watch-ad" onclick="watchAd(${product.id})">Watch Ad to Save</button>` : ''}
+                        <button class="quick-view-btn" onclick="showQuickView(${product.id})">Quick View</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderGrid(gridId, items, type) {
+            const grid = document.getElementById(gridId);
+            grid.innerHTML = '';
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = `${type}-card`;
+                card.innerHTML = `
+                    <img src="${item.image}" alt="${item.title || item.name}">
+                    <h3 class="${type}-title">${item.title || item.name}</h3>
+                    <p class="${type}-${type === 'seller' ? 'info' : 'price'}">${item.price || item.info || item.text}</p>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            let cartCount = parseInt(document.getElementById('cart-count').textContent);
+            cartCount++;
+            document.getElementById('cart-count').textContent = cartCount;
+            document.getElementById('mobile-cart-count').textContent = cartCount;
+            addNotification(`${product.title} added to cart!`);
+        }
+
+        function watchAd(productId) {
+            if (adNetworkSupported && piInitialized) {
+                Pi.createAd({
+                    onAdCompleted: (result) => {
+                        if (result.completed) {
+                            addNotification(`Ad watched! Saved on product #${productId}`);
+                        } else {
+                            addNotification("Ad not completed.");
+                        }
+                    }
+                });
+            } else {
+                addNotification("Ad network not supported in this environment.");
+            }
+        }
+
+        function showQuickView(productId) {
+            const product = products.find(p => p.id === productId);
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h2>${product.title}</h2>
+                    <img src="${product.image}" alt="${product.title}" style="max-width: 100%;">
+                    <p>${product.price} Pi - Rating: ${product.rating}</p>
+                    <button class="btn" onclick="this.parentElement.parentElement.remove()">Close</button>
                 </div>
             `;
-            grid.appendChild(card);
-        });
-    }
+            document.body.appendChild(modal);
+            modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+        }
 
-    function addToCart(productId) {
-        const product = products.find(p => p.id === productId);
-        const countSpan = document.getElementById('cart-count');
-        const mobileCountSpan = document.getElementById('mobile-cart-count');
-        let count = parseInt(countSpan.textContent);
-        count++;
-        countSpan.textContent = count;
-        mobileCountSpan.textContent = count;
-        addNotification(`Added ${product.name} to cart (Testnet Mode)`);
-    }
+        function filterCategory(category) {
+            const filtered = products.filter(p => p.category === category);
+            renderProducts('product-grid', filtered);
+            addNotification(`Filtered by ${category}`);
+        }
 
-    function watchAd(productId) {
-        if (!adNetworkSupported) return;
-        Pi.createAdSession({ adUnitId: 'test_ad_unit' }).then(session => {
-            session.show().then(() => {
-                addNotification(`Watched ad for product ${productId} - Discount applied (Testnet Mode)`);
-            }).catch(error => {
-                console.error("Ad error:", error);
-                addNotification("Failed to load ad (Testnet Mode)");
+        function sortProducts(criteria) {
+            let sorted = [...products];
+            if (criteria === 'price-low') sorted.sort((a, b) => a.price - b.price);
+            else if (criteria === 'price-high') sorted.sort((a, b) => b.price - a.price);
+            else if (criteria === 'rating') sorted.sort((a, b) => b.rating - a.rating);
+            renderProducts('product-grid', sorted);
+            addNotification(`Sorted by ${criteria.replace('-', ' ')}`);
+        }
+
+        function filterProducts(criteria) {
+            let filtered = [...products];
+            if (criteria === 'eco') filtered = filtered.filter(p => p.eco);
+            else if (criteria === 'below-50') filtered = filtered.filter(p => p.price < 50);
+            else if (criteria === 'above-100') filtered = filtered.filter(p => p.price > 100);
+            renderProducts('product-grid', filtered);
+            addNotification(`Filtered by ${criteria}`);
+        }
+
+        function updateProgressBar() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.querySelector('.progress-bar').style.width = scrollPercent + '%';
+        }
+
+        function toggleGoToTop() {
+            const goToTop = document.querySelector('.go-to-top');
+            goToTop.classList.toggle('visible', window.scrollY > 300);
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function handleHeaderScroll() {
+            const header = document.querySelector('.sticky-header');
+            const mobileNav = document.querySelector('.mobile-footer-nav');
+            const scrollY = window.scrollY;
+            header.classList.toggle('scrolled', scrollY > 50);
+            header.classList.toggle('hidden', scrollY > lastScrollY && scrollY > 112);
+            mobileNav.classList.toggle('hidden', scrollY > lastScrollY && scrollY > 112);
+            lastScrollY = scrollY;
+        }
+
+        let lastScrollY = 0;
+
+        function addAnnouncementBanner() {
+            const banner = document.createElement('div');
+            banner.className = 'announcement-banner';
+            banner.innerHTML = `
+                <p>Welcome to TruthWeb Testnet Mode! <a href="future.html" class="banner-link">Learn about our April 2025 launch</a></p>
+            `;
+            document.body.insertBefore(banner, document.body.firstChild);
+        }
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('main-video', {
+                height: '100%',
+                width: '100%',
+                videoId: videos[currentVideoIndex].id,
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+            updateVideoDetails();
+        }
+
+        function onPlayerReady(event) {
+            console.log("Player ready");
+        }
+
+        function onPlayerStateChange(event) {
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            if (event.data === YT.PlayerState.PLAYING) {
+                playPauseBtn.textContent = "⏸ Pause";
+            } else {
+                playPauseBtn.textContent = "▶ Play";
+            }
+        }
+
+        function togglePlayPause() {
+            if (player.getPlayerState() === YT.PlayerState.PLAYING) {
+                player.pauseVideo();
+            } else {
+                player.playVideo();
+            }
+        }
+
+        function stopVideo() {
+            player.stopVideo();
+        }
+
+        function nextVideo() {
+            currentVideoIndex = (currentVideoIndex + 1) % videos.length;
+            player.loadVideoById(videos[currentVideoIndex].id);
+            updateVideoDetails();
+        }
+
+        function prevVideo() {
+            currentVideoIndex = (currentVideoIndex - 1 + videos.length) % videos.length;
+            player.loadVideoById(videos[currentVideoIndex].id);
+            updateVideoDetails();
+        }
+
+        function updateVideoDetails() {
+            document.getElementById('video-title').textContent = videos[currentVideoIndex].title;
+            document.getElementById('video-description').textContent = videos[currentVideoIndex].description;
+        }
+
+        function toggleLike(button) {
+            button.classList.toggle('active');
+            const likeCount = document.getElementById('like-count');
+            let count = parseInt(likeCount.textContent);
+            count = button.classList.contains('active') ? count + 1 : count - 1;
+            likeCount.textContent = count;
+            addNotification(`Video ${button.classList.contains('active') ? 'liked' : 'unliked'}!`);
+        }
+
+        function shareVideo(platform) {
+            const url = `https://www.youtube.com/watch?v=${videos[currentVideoIndex].id}`;
+            const text = `Check out "${videos[currentVideoIndex].title}" on TruthWeb!`;
+            let shareUrl;
+            if (platform === 'twitter') {
+                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+            } else if (platform === 'telegram') {
+                shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+            }
+            window.open(shareUrl, '_blank');
+            addNotification(`Shared video on ${platform}!`);
+        }
+
+        function toggleFAQ(element) {
+            const item = element.parentElement;
+            item.classList.toggle('active');
+        }
+
+        function openChat() {
+            addNotification("Live chat coming soon! (Testnet Mode)");
+        }
+
+        function showPopup() {
+            const popup = document.getElementById('popup-announcement');
+            if (!sessionStorage.getItem('popupShown')) {
+                popup.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closePopup() {
+            const popup = document.getElementById('popup-announcement');
+            popup.classList.remove('active');
+            document.body.style.overflow = '';
+            sessionStorage.setItem('popupShown', 'true');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePiSDK();
+            addAnnouncementBanner();
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+            }
+            renderProducts('product-grid', products);
+            renderProducts('recommended-grid', products.slice(0, 3));
+            renderGrid('ads-grid', ads, 'ad');
+            renderGrid('p2p-grid', p2pListings, 'p2p');
+            renderGrid('seller-grid', sellers, 'seller');
+            renderGrid('testimonials-grid', testimonials, 'testimonial');
+            showPopup();
+            window.addEventListener('scroll', () => {
+                updateProgressBar();
+                toggleGoToTop();
+                handleHeaderScroll();
+            });
+            document.addEventListener('click', (e) => {
+                const results = document.getElementById('search-results');
+                if (!e.target.closest('.search-container')) {
+                    results.classList.remove('active');
+                }
+                const dropdown = document.getElementById('notification-dropdown');
+                if (!e.target.closest('.notification-bell') && !e.target.closest('.dismiss-btn')) {
+                    dropdown.classList.remove('active');
+                }
             });
         });
-    }
-
-    function showQuickView(productId) {
-        const product = products.find(p => p.id === productId);
-        const modal = document.createElement('div');
-        modal.className = 'modal active';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h2>${product.name}</h2>
-                <img src="${product.image}" alt="${product.name}" class="product-image">
-                <p>${product.description}</p>
-                <p class="product-price">${product.discountPrice} Pi</p>
-                <button class="btn" onclick="this.parentElement.parentElement.remove()">Close</button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-        modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
-    }
-
-    function sortProducts(criteria) {
-        let sorted = [...products];
-        if (criteria === 'price-low') {
-            sorted.sort((a, b) => a.discountPrice - b.discountPrice);
-        } else if (criteria === 'price-high') {
-            sorted.sort((a, b) => b.discountPrice - a.discountPrice);
-        } else if (criteria === 'rating') {
-            sorted.sort((a, b) => b.rating - a.rating);
-        }
-        renderProducts('product-grid', sorted);
-    }
-
-    function filterProducts(criteria) {
-        let filtered = [...products];
-        if (criteria === 'eco') {
-            filtered = filtered.filter(p => p.isEco);
-        } else if (criteria === 'below-50') {
-            filtered = filtered.filter(p => p.discountPrice < 50);
-        } else if (criteria === 'above-100') {
-            filtered = filtered.filter(p => p.discountPrice > 100);
-        }
-        renderProducts('product-grid', filtered);
-    }
-
-    function filterCategory(category) {
-        const filtered = products.filter(p => p.category === category);
-        renderProducts('product-grid', filtered);
-    }
-
-    function renderGrid(gridId, items, type) {
-        const grid = document.getElementById(gridId);
-        grid.innerHTML = '';
-        items.forEach(item => {
-            const card = document.createElement('div');
-            card.className = `${type}-card`;
-            if (type === 'ad') {
-                card.innerHTML = `
-                    <img src="${item.image}" alt="${item.title}">
-                    <h3 class="ad-title">${item.title}</h3>
-                    <p class="ad-price">${item.price}</p>
-                    <a href="${item.link}" class="btn">Learn More</a>
-                `;
-            } else if (type === 'p2p') {
-                card.innerHTML = `
-                    <img src="${item.image}" alt="${item.title}">
-                    <h3 class="p2p-title">${item.title}</h3>
-                    <p class="p2p-price">${item.price}</p>
-                    <p>Seller: ${item.seller}</p>
-                    <button class="btn">Contact Seller</button>
-                `;
-            } else if (type === 'seller') {
-                card.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}">
-                    <h3 class="seller-title">${item.name}</h3>
-                    <p class="seller-info">${item.info}</p>
-                    <button class="btn">Visit Store</button>
-                `;
-            } else if (type === 'testimonial') {
-                card.innerHTML = `
-                    <img src="${item.image}" alt="${item.name}">
-                    <h3 class="testimonial-title">${item.name}</h3>
-                    <p class="testimonial-text">"${item.text}"</p>
-                `;
-            }
-            grid.appendChild(card);
-        });
-    }
-
-    function toggleFAQ(element) {
-        const item = element.parentElement;
-        item.classList.toggle('active');
-    }
-
-    function openChat() {
-        addNotification("Live chat coming soon! (Testnet Mode)");
-     }
-
-    // Add announcement banner dynamically
-    function addAnnouncementBanner() {
-        const banner = document.createElement('div');
-        banner.className = 'announcement-banner';
-        banner.innerHTML = `
-            <p>📢 Latest Updates: Stay informed with TruthWeb notices! <a href="notice.html" class="banner-link">View Notices</a></p>
-        `;
-        document.body.insertBefore(banner, document.body.children[0]);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        addAnnouncementBanner();
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-        }
-        renderProducts('product-grid', products);
-        renderProducts('recommended-grid', products.slice(0, 3));
-        renderGrid('ads-grid', ads, 'ad');
-        renderGrid('p2p-grid', p2pListings, 'p2p');
-        renderGrid('seller-grid', sellers, 'seller');
-        renderGrid('testimonials-grid', testimonials, 'testimonial');
-        window.addEventListener('scroll', () => {
-            updateProgressBar();
-            toggleGoToTop();
-            handleHeaderScroll();
-        });
-        document.addEventListener('click', (e) => {
-            const results = document.getElementById('search-results');
-            if (!e.target.closest('.search-container')) {
-                results.classList.remove('active');
-            }
-            const dropdown = document.getElementById('notification-dropdown');
-            if (!e.target.closest('.notification-bell')) {
-                dropdown.classList.remove('active');
-            }
-        });
-    });
-</script>
+    </script>
+</body>
+</html>
