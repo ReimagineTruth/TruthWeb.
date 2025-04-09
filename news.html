@@ -49,7 +49,7 @@
         }
         html { scroll-behavior: smooth; }
         body {
-            background: var(--background-color);
+           -background: var(--background-color);
             color: var(--text-color);
             font-family: 'Poppins', sans-serif;
             margin: 0;
@@ -57,7 +57,7 @@
             overflow-x: hidden;
             line-height: 1.6;
             transition: all 0.3s ease;
-            padding-top: 112px;
+            padding-top: 100px; /* Adjusted for banner and header */
         }
         body.dark {
             --primary-color: var(--dark-primary);
@@ -72,7 +72,7 @@
         }
         .progress-bar {
             position: fixed;
-            top: 48px;
+            top: 36px;
             left: 0;
             width: 0;
             height: 4px;
@@ -84,9 +84,9 @@
         .announcement-banner {
             background: var(--accent-color);
             color: var(--primary-color);
-            padding: 0.75rem 1rem;
+            padding: 0.5rem 1rem;
             text-align: center;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 600;
             position: fixed;
             top: 0;
@@ -98,11 +98,11 @@
         body.dark .announcement-banner { background: #FFA500; color: #000000; }
         .sticky-header {
             position: fixed;
-            top: 48px;
+            top: 40px; /* Adjusted for banner height */
             width: 100%;
             z-index: 1000;
-            padding: 0 2rem;
-            height: 70px;
+            padding: 0 1rem;
+            height: 60px;
             background: var(--nav-bg-light);
             box-shadow: 0 3px 15px var(--shadow-light);
             display: flex;
@@ -160,22 +160,10 @@
         .desktop-nav .nav-item a:hover[data-tooltip]:after { opacity: 1; }
         .icon { padding: 0.75rem; margin-left: 0.5rem; cursor: pointer; }
         .floating-effect:hover { transform: translateY(-2px); transition: transform 0.3s ease; }
-        .burger-btn {
-            flex-direction: column;
-            justify-content: space-between;
-            width: 40px;
-            height: 30px;
-            cursor: pointer;
-        }
-        .burger-btn span { width: 100%; height: 3px; background: var(--nav-text-light); transition: all 0.3s ease; }
-        body.dark .burger-btn span { background: var(--nav-text-dark); }
-        .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-        .burger-btn.open span:nth-child(2) { opacity: 0; }
-        .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
         .mobile-menu {
             position: fixed;
             top: 0;
-            left: -100%; /* Slide from left like X */
+            left: -100%;
             width: 85%;
             max-width: 320px;
             height: 100%;
@@ -183,7 +171,7 @@
             color: var(--nav-text-light);
             padding: 2rem 1rem;
             z-index: 1001;
-            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth slide */
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 2px 0 15px var(--shadow-dark);
             overflow-y: auto;
             transform: translateX(0);
@@ -249,7 +237,7 @@
             background: var(--search-bg-light);
             padding: 1rem 2rem;
             position: sticky;
-            top: 118px;
+            top: 102px; /* Adjusted for banner + header */
             z-index: 999;
             transition: background 0.3s ease;
         }
@@ -510,15 +498,15 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            width: 70px;
-            height: 70px;
+            width: 60px;
+            height: 60px;
             color: var(--nav-text-light);
             font-size: 0.85rem;
             text-decoration: none;
             transition: color 0.3s ease, transform 0.2s ease;
         }
         body.dark .mobile-nav-item { color: var(--nav-text-dark); }
-        .mobile-nav-item i { font-size: 1.75rem; margin-bottom: 0.35rem; }
+        .mobile-nav-item i { font-size: 1.5rem; margin-bottom: 0.35rem; }
         .mobile-nav-item:hover, .mobile-nav-item.active { color: var(--accent-color); transform: scale(1.1); }
         .mobile-nav-item .cart-count { top: 0; right: 5px; width: 20px; height: 20px; font-size: 0.9rem; }
         .mobile-nav-item[data-tooltip]:after {
@@ -539,11 +527,14 @@
         }
         .mobile-nav-item:hover[data-tooltip]:after { opacity: 1; }
         @media (max-width: 768px) {
+            body { padding-top: 100px; }
+            .announcement-banner { padding: 0.5rem 1rem; font-size: 0.9rem; }
+            .progress-bar { top: 36px; }
+            .sticky-header { padding: 0 1rem; height: 60px; }
+            .search-section { top: 102px; padding: 1rem; }
             .news-grid { grid-template-columns: 1fr; }
             .news-card img { height: 180px; }
             .news-header h1 { font-size: 2rem; }
-            .sticky-header { padding: 0 1rem; height: 60px; }
-            .search-section { padding: 1rem; top: 108px; }
             .desktop-nav { display: none; }
             .mobile-footer-nav { display: flex; }
             .footer-newsletter form { flex-direction: column; }
@@ -568,34 +559,11 @@
             <a href="index.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
         </div>
         <div class="flex items-center">
-            <nav class="desktop-nav hidden md:flex items-center">
-                <ul class="flex space-x-2">
-                    <li class="nav-item"><a href="index.html" data-tooltip="Home">Home</a></li>
-                    <li class="nav-item"><a href="marketplace.html" data-tooltip="Marketplace">Marketplace</a></li>
-                    <li class="nav-item"><a href="profile.html" data-tooltip="Profile">Profile</a></li>
-                    <li class="nav-item"><a href="wallet.html" data-tooltip="Wallet">Wallet</a></li>
-                    <li class="nav-item"><a href="vendor.html" data-tooltip="Sell">Sell</a></li>
-                    <li class="nav-item"><a href="about.html" data-tooltip="About">About</a></li>
-                    <li class="nav-item"><a href="support.html" data-tooltip="Support">Support</a></li>
-                    <li class="nav-item">
-                        <label class="dark-mode-toggle" for="darkModeSwitchDesktop">
-                            <span>Dark Mode</span>
-                            <div class="switch">
-                                <input type="checkbox" id="darkModeSwitchDesktop" aria-label="Toggle Dark Mode">
-                                <span class="slider"></span>
-                            </div>
-                        </label>
-                    </li>
-                </ul>
-            </nav>
             <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
                 <i class="fas fa-bell text-lg"></i>
                 <span class="notification-count" id="notification-count">0</span>
                 <div class="notification-dropdown" id="notification-dropdown"></div>
             </div>
-            <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
-                <span></span><span></span><span></span>
-            </button>
         </div>
     </header>
     <section class="search-section">
@@ -805,9 +773,8 @@
         <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet" data-tooltip="Wallet">
             <i class="fas fa-wallet"></i><span>Wallet</span>
         </a>
-        <a href="cart.html" class="mobile-nav-item" aria-label="Cart" data-tooltip="Cart">
-            <i class="fas fa-shopping-cart"></i><span>Cart</span>
-            <span class="cart-count" id="mobile-cart-count">0</span>
+        <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()" aria-label="Menu" data-tooltip="Menu">
+            <i class="fas fa-bars"></i><span>Menu</span>
         </a>
     </nav>
 
@@ -937,17 +904,13 @@
 
         function toggleMobileMenu() {
             const menu = document.querySelector('.mobile-menu');
-            const burger = document.querySelector('.burger-btn');
             menu.classList.toggle('open');
-            burger.classList.toggle('open');
             document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
         }
 
         function closeMobileMenu() {
             const menu = document.querySelector('.mobile-menu');
-            const burger = document.querySelector('.burger-btn');
             menu.classList.remove('open');
-            burger.classList.remove('open');
             document.body.style.overflow = '';
         }
 
@@ -1056,7 +1019,7 @@
                     dropdown.classList.remove('active');
                 }
                 const menu = document.querySelector('.mobile-menu');
-                if (!e.target.closest('.mobile-menu') && !e.target.closest('.burger-btn') && menu.classList.contains('open')) {
+                if (!e.target.closest('.mobile-menu') && !e.target.closest('.mobile-nav-item') && menu.classList.contains('open')) {
                     closeMobileMenu();
                 }
             });
