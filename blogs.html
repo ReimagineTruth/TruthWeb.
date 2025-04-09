@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-adsense-account" content="ca-pub-2560904735244526">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
+    <title>TruthWeb Blogs - Insights & Community</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2560904735244526" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #FFFFFF;
+            --highlight-color: #CCCCCC;
+            --text-color: #FFFFFF;
+            --button-bg-color: #000000;
+            --button-text-color: #FFFFFF;
+            --button-hover-bg-color: #FFFFFF;
+            --button-hover-text-color: #000000;
+            --background-color: #F5F5F5;
+            --accent-color: #FFD700;
+            --progress-bar-color: var(--accent-color);
+            --dark-primary: #FFFFFF;
+            --dark-secondary: #1A1A1A;
+            --dark-text: #E0E0E0;
+            --dark-highlight: #555555;
+            --banner-bg-light: #ECEFF1;
+            --banner-bg-dark: #2A2A2A;
+            --banner-border-light: #CFD8DC;
+            --banner-border-dark: #444444;
+            --nav-bg-light: #FFFFFF;
+            --nav-bg-dark: #1A1A1A;
+            --nav-text-light: #000000;
+            --nav-text-dark: #E0E0E0;
+            --nav-hover-light: #FFD700;
+            --nav-hover-dark: #FFD700;
+            --eco-color: #28A745;
+            --testnet-badge: #FF0000;
+            --news-bg: #FFFFFF;
+            --shadow-light: rgba(0, 0, 0, 0.05);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--background-color);
+            color: var(--primary-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            padding-top: 112px;
+        }
+        body.dark {
+            --primary-color: var(--dark-primary);
+            --secondary-color: var(--dark-secondary);
+            --text-color: var(--dark-text);
+            --background-color: #121212;
+            --highlight-color: var(--dark-highlight);
+            --button-bg-color: #333333;
+            --button-hover-bg-color: #FFD700;
+            --button-hover-text-color: #000000;
+            --news-bg: #1E1E1E;
+        }
+        .progress-bar {
+            position: fixed;
+            top: 48px;
+            left: 0;
+            width: 0;
+            height: 4px;
+            background: var(--progress-bar-color);
+            z-index: 1001;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+        .announcement-banner {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.75rem 1rem;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1002;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+        body.dark .announcement-banner { background: #FFA500; color: #000000; }
+        .banner-link { color: var(--primary-color); text-decoration: underline; }
+        .banner-link:hover { color: #000000; }
+        .sticky-header {
+            position: fixed;
+            top: 48px;
+            width: 100%;
+            z-index: 1000;
+            background: var(--nav-bg-light);
+            color: var(--nav-text-light);
+            padding: 0 1.5rem;
+            height: 64px;
+            box-shadow: 0 2px 10px var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        body.dark .sticky-header { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
+        .sticky-header .logo-text { font-size: 1.5rem; font-weight: 700; }
+        .testnet-badge { background: var(--testnet-badge); color: #FFFFFF; padding: 0.25rem 0.75rem; font-size: 0.75rem; border-radius: 9999px; margin-left: 0.5rem; }
+        .desktop-nav .nav-item a { color: var(--nav-text-light); padding: 0.5rem 1rem; font-weight: 600; transition: color 0.3s ease; }
+        body.dark .desktop-nav .nav-item a { color: var(--nav-text-dark); }
+        .desktop-nav .nav-item a:hover { color: var(--nav-hover-light); }
+        body.dark .desktop-nav .nav-item a:hover { color: var(--nav-hover-dark); }
+        .icon { padding: 0.5rem; margin-left: 0.5rem; cursor: pointer; }
+        .floating-effect:hover { transform: translateY(-2px); transition: transform 0.3s ease; }
+        .burger-btn { flex-direction: column; justify-content: space-between; width: 30px; height: 20px; cursor: pointer; }
+        .burger-btn span { width: 100%; height: 3px; background: var(--nav-text-light); transition: all 0.3s ease; }
+        body.dark .burger-btn span { background: var(--nav-text-dark); }
+        .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .burger-btn.open span:nth-child(2) { opacity: 0; }
+        .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100%;
+            background: var(--nav-bg-light);
+            color: var(--nav-text-light);
+            padding: 1rem;
+            z-index: 1001;
+            transition: right 0.3s ease;
+            box-shadow: -2px 0 10px var(--shadow-dark);
+        }
+        body.dark .mobile-menu { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
+        .mobile-menu.open { right: 0; }
+        .mobile-menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .mobile-menu-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--nav-text-light); }
+        body.dark .mobile-menu-close { color: var(--nav-text-dark); }
+        .mobile-menu ul { list-style: none; padding: 0; }
+        .mobile-menu .nav-item a { display: block; padding: 0.75rem 1rem; color: var(--nav-text-light); }
+        body.dark .mobile-menu .nav-item a { color: var(--nav-text-dark); }
+        .mobile-menu .nav-item a:hover { background: var(--highlight-color); }
+        .search-container { flex-grow: 1; max-width: 500px; margin: 0 1rem; position: relative; }
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border: 1px solid var(--highlight-color);
+            border-radius: 9999px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(255, 215, 0, 0.3); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--nav-text-light); }
+        body.dark .search-icon { color: var(--nav-text-dark); }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            display: none;
+            z-index: 60;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .search-results.active { display: block; }
+        .search-result-item { padding: 0.75rem; cursor: pointer; }
+        .search-result-item:hover { background: var(--highlight-color); }
+        .btn {
+            background: var(--button-bg-color);
+            color: var(--button-text-color);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { background: var(--button-hover-bg-color); color: var(--button-hover-text-color); transform: scale(1.05); }
+        .btn.accent { background: var(--accent-color); color: var(--primary-color); }
+        .btn.accent:hover { background: #FFA500; }
+        .blogs-section { padding: 4rem 1rem; background: var(--background-color); }
+        .blogs-container { max-width: 1200px; margin: 0 auto; }
+        .blogs-header { text-align: center; margin-bottom: 3rem; }
+        .blogs-header h1 { font-size: 2.5rem; font-weight: 700; }
+        .blogs-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .blog-card { background: var(--news-bg); border-radius: 12px; box-shadow: 0 4px 12px var(--shadow-light); overflow: hidden; transition: transform 0.3s ease; }
+        .blog-card:hover { transform: translateY(-5px); }
+        .blog-card img { width: 100%; height: 200px; object-fit: cover; }
+        .blog-card-content { padding: 1.5rem; }
+        .blog-card h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
+        .blog-card-meta { font-size: 0.9rem; color: var(--highlight-color); margin-bottom: 1rem; }
+        .blog-card p { font-size: 1rem; color: var(--primary-color); margin-bottom: 1.5rem; }
+        .blog-card a { color: var(--accent-color); text-decoration: none; font-weight: 600; }
+        .blog-card a:hover { text-decoration: underline; }
+        .notification-bell { position: relative; }
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 300px;
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            display: none;
+            z-index: 100;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notification-dropdown.active { display: block; }
+        .notification-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--highlight-color); }
+        .notification-item:last-child { border-bottom: none; }
+        .dismiss-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; }
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        footer { background: #000000; color: #E0E0E0; padding: 4rem 1rem 2rem; position: relative; }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        .footer-section h3 { font-size: 1.5rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; }
+        .footer-section ul { list-style: none; padding: 0; }
+        .footer-section li { margin-bottom: 0.75rem; transition: transform 0.3s ease; }
+        .footer-section a { color: #E0E0E0; text-decoration: none; transition: color 0.3s ease; }
+        .footer-section li:hover { transform: translateX(5px); }
+        .footer-section a:hover { color: var(--accent-color); }
+        .footer-divider { max-width: 1200px; margin: 2rem auto; height: 1px; background: var(--highlight-color); opacity: 0.3; }
+        .footer-center {
+            text-align: center;
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer-logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .footer-tagline { font-size: 1rem; color: #E0E0E0; font-style: italic; }
+        .footer-bottom { text-align: center; font-size: 0.9rem; }
+        .social-icons { margin-bottom: 1rem; }
+        .social-icons a { color: #E0E0E0; margin: 0 0.75rem; font-size: 1.75rem; transition: color 0.3s ease, transform 0.3s ease; }
+        .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
+        .footer-newsletter { background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; }
+        .footer-newsletter p { font-size: 0.9rem; color: #E0E0E0; margin-bottom: 0.75rem; }
+        .footer-newsletter form { display: flex; gap: 0.5rem; }
+        .footer-newsletter input { flex: 1; padding: 0.75rem; border: 1px solid var(--highlight-color); border-radius: 4px; background: var(--secondary-color); color: var(--primary-color); }
+        .footer-newsletter button { background: var(--accent-color); color: var(--primary-color); padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s ease; }
+        .footer-newsletter button:hover { background: #FFA500; }
+        .go-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .go-to-top.visible { opacity: 1; }
+        .live-chat-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            transition: transform 0.3s ease;
+        }
+        .live-chat-btn:hover { transform: scale(1.1); }
+        .mobile-footer-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--nav-bg-light);
+            display: none;
+            justify-content: space-around;
+            padding: 0.5rem 0;
+            box-shadow: 0 -2px 10px var(--shadow-light);
+            z-index: 1000;
+        }
+        body.dark .mobile-footer-nav { background: var(--nav-bg-dark); }
+        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--nav-text-light); font-size: 0.75rem; }
+        body.dark .mobile-nav-item { color: var(--nav-text-dark); }
+        .mobile-nav-item i { font-size: 1.25rem; margin-bottom: 0.25rem; }
+        .cart-count { background: var(--accent-color); color: var(--primary-color); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; position: absolute; top: -5px; right: -5px; }
+        @media (max-width: 768px) {
+            .blogs-grid { grid-template-columns: 1fr; }
+            .blog-card img { height: 150px; }
+            .blogs-header h1 { font-size: 2rem; }
+            .sticky-header { padding: 0 0.5rem; }
+            .search-container { max-width: 200px; }
+            .desktop-nav { display: none; }
+            .mobile-footer-nav { display: flex; }
+            .footer-newsletter form { flex-direction: column; }
+        }
+        @media (min-width: 769px) {
+            .mobile-footer-nav { display: none; }
+        }
+    </style>
+</head>
+<body onload="checkAuthStatus()">
+    <div class="progress-bar"></div>
+    <div class="announcement-banner">
+        <p>Welcome to TruthWeb Blogs! <a href="news.html" class="banner-link">Go to News</a></p>
+    </div>
+    <header class="sticky-header">
+        <div class="flex items-center">
+            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search blogs..." aria-label="Search Blogs" oninput="searchBlogs(this.value)">
+            <i class="fas fa-search search-icon"></i>
+            <div class="search-results" id="search-results"></div>
+        </div>
+        <div class="flex items-center">
+            <nav class="desktop-nav hidden md:flex items-center">
+                <ul class="flex space-x-4">
+                    <li class="nav-item"><a href="index.html">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+                    <li class="nav-item"><a href="cart.html">Cart</a></li>
+                    <li class="nav-item"><a href="vendor.html">Sell</a></li>
+                    <li class="nav-item"><a href="about.html">About</a></li>
+                    <li class="nav-item"><a href="support.html">Support</a></li>
+                </ul>
+            </nav>
+            <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
+                <i class="fas fa-shopping-cart text-lg"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </a>
+            <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="notification-count" id="notification-count">0</span>
+                <div class="notification-dropdown" id="notification-dropdown"></div>
+            </div>
+            <button class="icon floating-effect" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"><i class="fas fa-moon text-lg"></i></button>
+            <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+    <nav class="mobile-menu">
+        <div class="mobile-menu-header">
+            <span class="logo-text">TruthWeb</span>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <ul>
+            <li class="nav-item"><a href="index.html">Home</a></li>
+            <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+            <li class="nav-item"><a href="profile.html">Profile</a></li>
+            <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+            <li class="nav-item"><a href="cart.html">Cart</a></li>
+            <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
+            <li class="nav-item"><a href="about.html">About</a></li>
+            <li class="nav-item"><a href="support.html">Support</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section class="blogs-section">
+            <div class="blogs-container">
+                <div class="blogs-header">
+                    <h1>TruthWeb Blogs</h1>
+                </div>
+                <div class="blogs-grid">
+                    <div class="blog-card">
+                        <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Network Beginners">
+                        <div class="blog-card-content">
+                            <h2>A Beginner’s Guide to Pi Network</h2>
+                            <p class="blog-card-meta">April 09, 2025 | Jane Doe</p>
+                            <p>New to Pi Network? Here’s everything you need to know to start mining and understanding this mobile-first crypto...</p>
+                            <a href="blog-post1.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="blog-card">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e5250?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Blockchain Future">
+                        <div class="blog-card-content">
+                            <h2>Why Blockchain is the Future of TruthWeb</h2>
+                            <p class="blog-card-meta">April 08, 2025 | John Smith</p>
+                            <p>Explore how TruthWeb leverages blockchain to empower its community and ensure transparency...</p>
+                            <a href="blog-post2.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="blog-card">
+                        <img src="https://images.unsplash.com/photo-1633113211821-4dbff3a1d6d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Crypto Tips">
+                        <div class="blog-card-content">
+                            <h2>Top 5 Tips for Crypto Newbies</h2>
+                            <p class="blog-card-meta">April 07, 2025 | Alice Brown</p>
+                            <p>From wallets to security, here are the top tips to navigate the crypto world as a beginner...</p>
+                            <a href="blog-post3.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="blog-card">
+                        <img src="https://images.unsplash.com/photo-1641936666143-4d5e50556e31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Mainnet Thoughts">
+                        <div class="blog-card-content">
+                            <h2>My Thoughts on Pi Network’s Mainnet Delay</h2>
+                            <p class="blog-card-meta">April 06, 2025 | Mark Taylor</p>
+                            <p>An opinion piece on why the Pi Network mainnet delay might be a blessing in disguise...</p>
+                            <a href="blog-post4.html">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>TruthWeb</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="blogs.html">Blogs</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="developers.html">Developers</a></li>
+                    <li><a href="future.html">Coming Soon</a></li>
+                    <li><a href="swap.html">Swap</a></li>
+                    <li><a href="truwebbot.html">TruthWeb AI Bot</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Shop</h3>
+                <ul>
+                    <li><a href="marketplace.html">Marketplace</a></li>
+                    <li><a href="pi-powered-marketplace.html">Pi Payments</a></li>
+                    <li><a href="global-expansion.html">Global Marketplace</a></li>
+                    <li><a href="escrow-system.html">Escrow System</a></li>
+                    <li><a href="multi-category-listings.html">Multi-Category Listings</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Account</h3>
+                <ul>
+                    <li><a href="profile.html">Profile</a></li>
+                    <li><a href="wallet.html">Wallet</a></li>
+                    <li><a href="pitrade.html">Pi Trade</a></li>
+                    <li><a href="pitrack.html">Pi Track</a></li>
+                    <li><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="security.html">Security Policy</a></li>
+                    <li><a href="license.html">PiOS License</a></li>
+                    <li><a href="code-of-conduct.html">Code of Conduct</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Stay Connected</h3>
+                <div class="footer-newsletter">
+                    <p>Get the latest Pi Network updates and TruthWeb blogs.</p>
+                    <form onsubmit="subscribeNewsletter(event)">
+                        <input type="email" id="newsletter-email" placeholder="Enter your email" aria-label="Newsletter Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="footer-divider"></div>
+        <div class="footer-center">
+            <img src="https://i.ibb.co/ccB4s7ys/Untitled-design-removebg-preview.png" alt="TruthWeb Logo" class="footer-logo">
+            <p class="footer-tagline">"Empowering the Pi Network Community with Truth and Innovation"</p>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community | <a href="https://minepi.com" target="_blank">Pi Network</a> | <a href="https://pinetwork-official.github.io" target="_blank">Pi Docs</a></p>
+        </div>
+    </footer>
+    <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
+    <button class="live-chat-btn" onclick="openChat()" aria-label="Live Chat"><i class="fas fa-comment"></i></button>
+    <nav class="mobile-footer-nav">
+        <a href="index.html" class="mobile-nav-item" aria-label="Home">
+            <i class="fas fa-home"></i><span>Home</span>
+        </a>
+        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace">
+            <i class="fas fa-store"></i><span>Marketplace</span>
+        </a>
+        <a href="profile.html" class="mobile-nav-item" aria-label="Profile">
+            <i class="fas fa-user"></i><span>Profile</span>
+        </a>
+        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
+            <i class="fas fa-wallet"></i><span>Wallet</span>
+        </a>
+        <a href="cart.html" class="mobile-nav-item" aria-label="Cart">
+            <i class="fas fa-shopping-cart"></i><span>Cart</span>
+            <span class="cart-count" id="mobile-cart-count">0</span>
+        </a>
+    </nav>
+
+    <script>
+        let adNetworkSupported = false;
+        let piInitialized = false;
+        const BACKEND_URL = 'http://172.21.128.1:8080';
+        const scopes = ['username', 'payments', 'wallet_address'];
+
+        const blogPosts = [
+            { id: 1, title: "A Beginner’s Guide to Pi Network", date: "April 09, 2025", author: "Jane Doe", excerpt: "New to Pi Network? Here’s everything you need...", url: "blog-post1.html" },
+            { id: 2, title: "Why Blockchain is the Future of TruthWeb", date: "April 08, 2025", author: "John Smith", excerpt: "Explore how TruthWeb leverages blockchain...", url: "blog-post2.html" },
+            { id: 3, title: "Top 5 Tips for Crypto Newbies", date: "April 07, 2025", author: "Alice Brown", excerpt: "From wallets to security, here are the top tips...", url: "blog-post3.html" },
+            { id: 4, title: "My Thoughts on Pi Network’s Mainnet Delay", date: "April 06, 2025", author: "Mark Taylor", excerpt: "An opinion piece on why the Pi Network mainnet delay...", url: "blog-post4.html" }
+        ];
+
+        function waitForPiSDK() {
+            return new Promise((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof Pi !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    reject(new Error('Pi SDK failed to load'));
+                }, 5000);
+            });
+        }
+
+        async function initializePiSDK() {
+            try {
+                await waitForPiSDK();
+                await Pi.init({ version: "2.0", sandbox: true });
+                piInitialized = true;
+                const nativeFeaturesList = await Pi.nativeFeaturesList();
+                adNetworkSupported = nativeFeaturesList.includes("ad_network");
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Pi SDK Initialization failed:", error);
+                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
+            }
+        }
+
+        function checkAuthStatus() {
+            if (piInitialized && Pi.user()) {
+                const user = Pi.user();
+                addNotification(`Welcome back, ${user.username}!`);
+            }
+        }
+
+        async function authenticateUser() {
+            if (!piInitialized) return addNotification("Pi SDK not initialized.");
+            try {
+                const response = await Pi.authenticate(scopes);
+                addNotification(`Welcome, ${response.user.username}!`);
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                addNotification("Authentication failed.");
+            }
+        }
+
+        function logoutUser() {
+            if (piInitialized) {
+                Pi.logout();
+                addNotification("Logged out successfully.");
+                checkAuthStatus();
+            }
+        }
+
+        function addNotification(message) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count++;
+            countSpan.textContent = count;
+
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.innerHTML = `
+                <span>${new Date().toLocaleTimeString()} - ${message}</span>
+                <button class="dismiss-btn" onclick="dismissNotification(this)">✕</button>
+            `;
+            dropdown.insertBefore(item, dropdown.firstChild);
+        }
+
+        function dismissNotification(button) {
+            const item = button.parentElement;
+            item.remove();
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count = Math.max(0, count - 1);
+            countSpan.textContent = count;
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            addNotification("Dark mode " + (document.body.classList.contains('dark') ? "enabled" : "disabled"));
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const burger = document.querySelector('.burger-btn');
+            menu.classList.toggle('open');
+            burger.classList.toggle('open');
+        }
+
+        function closeMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const burger = document.querySelector('.burger-btn');
+            menu.classList.remove('open');
+            burger.classList.remove('open');
+        }
+
+        function searchBlogs(query) {
+            const results = document.getElementById('search-results');
+            results.innerHTML = '';
+            if (query.length < 2) {
+                results.classList.remove('active');
+                return;
+            }
+            const filtered = blogPosts.filter(b => b.title.toLowerCase().includes(query.toLowerCase()));
+            filtered.forEach(post => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `<a href="${post.url}">${post.title}</a>`;
+                results.appendChild(item);
+            });
+            results.classList.add('active');
+        }
+
+        function updateProgressBar() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.querySelector('.progress-bar').style.width = scrollPercent + '%';
+        }
+
+        function toggleGoToTop() {
+            const goToTop = document.querySelector('.go-to-top');
+            goToTop.classList.toggle('visible', window.scrollY > 300);
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openChat() {
+            alert('Live chat feature coming soon! (Testnet Mode)');
+        }
+
+        function subscribeNewsletter(event) {
+            event.preventDefault();
+            const email = document.getElementById('newsletter-email').value;
+            if (!email || !/\S+@\S+\.\S+/.test(email)) {
+                addNotification("Please enter a valid email address.");
+                return;
+            }
+            addNotification("Thank you for subscribing! (Testnet Mode)");
+            document.getElementById('newsletter-email').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePiSDK();
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+            }
+            window.addEventListener('scroll', () => {
+                updateProgressBar();
+                toggleGoToTop();
+            });
+            document.addEventListener('click', (e) => {
+                const results = document.getElementById('search-results');
+                if (!e.target.closest('.search-container')) {
+                    results.classList.remove('active');
+                }
+                const dropdown = document.getElementById('notification-dropdown');
+                if (!e.target.closest('.notification-bell') && !e.target.closest('.dismiss-btn')) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
