@@ -17,7 +17,7 @@
             --primary-color: #000000;
             --secondary-color: #FFFFFF;
             --highlight-color: #CCCCCC;
-            --text-color: #FFFFFF;
+            --text-color: #333333;
             --button-bg-color: #000000;
             --button-text-color: #FFFFFF;
             --button-hover-bg-color: #FFFFFF;
@@ -44,11 +44,13 @@
             --news-bg: #FFFFFF;
             --shadow-light: rgba(0, 0, 0, 0.05);
             --shadow-dark: rgba(0, 0, 0, 0.3);
+            --search-bg-light: #F0F0F0;
+            --search-bg-dark: #2A2A2A;
         }
         html { scroll-behavior: smooth; }
         body {
             background: var(--background-color);
-            color: var(--primary-color);
+            color: var(--text-color);
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
@@ -94,33 +96,77 @@
             box-shadow: 0 2px 8px var(--shadow-light);
         }
         body.dark .announcement-banner { background: #FFA500; color: #000000; }
-        .banner-link { color: var(--primary-color); text-decoration: underline; }
-        .banner-link:hover { color: #000000; }
         .sticky-header {
             position: fixed;
             top: 48px;
             width: 100%;
             z-index: 1000;
+            padding: 0 2rem;
+            height: 70px;
             background: var(--nav-bg-light);
-            color: var(--nav-text-light);
-            padding: 0 1.5rem;
-            height: 64px;
-            box-shadow: 0 2px 10px var(--shadow-light);
+            box-shadow: 0 3px 15px var(--shadow-light);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease;
         }
-        body.dark .sticky-header { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
+        body.dark .sticky-header {
+            background: var(--nav-bg-dark);
+            box-shadow: 0 3px 15px var(--shadow-dark);
+        }
         .sticky-header .logo-text { font-size: 1.5rem; font-weight: 700; }
         .testnet-badge { background: var(--testnet-badge); color: #FFFFFF; padding: 0.25rem 0.75rem; font-size: 0.75rem; border-radius: 9999px; margin-left: 0.5rem; }
-        .desktop-nav .nav-item a { color: var(--nav-text-light); padding: 0.5rem 1rem; font-weight: 600; transition: color 0.3s ease; }
+        .desktop-nav .nav-item a {
+            position: relative;
+            padding: 0.75rem 1.25rem;
+            color: var(--nav-text-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.95rem;
+            transition: color 0.3s ease, transform 0.2s ease;
+            text-decoration: none;
+        }
         body.dark .desktop-nav .nav-item a { color: var(--nav-text-dark); }
-        .desktop-nav .nav-item a:hover { color: var(--nav-hover-light); }
+        .desktop-nav .nav-item a:hover { color: var(--nav-hover-light); transform: translateY(-2px); }
         body.dark .desktop-nav .nav-item a:hover { color: var(--nav-hover-dark); }
-        .icon { padding: 0.5rem; margin-left: 0.5rem; cursor: pointer; }
+        .desktop-nav .nav-item a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 3px;
+            bottom: 0.5rem;
+            left: 50%;
+            background: var(--accent-color);
+            transition: width 0.3s ease, left 0.3s ease;
+            box-shadow: 0 0 5px var(--accent-color);
+        }
+        .desktop-nav .nav-item a:hover:after { width: 80%; left: 10%; }
+        .desktop-nav .nav-item a[data-tooltip]:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .desktop-nav .nav-item a:hover[data-tooltip]:after { opacity: 1; }
+        .icon { padding: 0.75rem; margin-left: 0.5rem; cursor: pointer; }
         .floating-effect:hover { transform: translateY(-2px); transition: transform 0.3s ease; }
-        .burger-btn { flex-direction: column; justify-content: space-between; width: 30px; height: 20px; cursor: pointer; }
+        .burger-btn {
+            flex-direction: column;
+            justify-content: space-between;
+            width: 40px;
+            height: 30px;
+            cursor: pointer;
+        }
         .burger-btn span { width: 100%; height: 3px; background: var(--nav-text-light); transition: all 0.3s ease; }
         body.dark .burger-btn span { background: var(--nav-text-dark); }
         .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
@@ -139,6 +185,7 @@
             z-index: 1001;
             transition: right 0.3s ease;
             box-shadow: -2px 0 10px var(--shadow-dark);
+            overflow-y: auto;
         }
         body.dark .mobile-menu { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
         .mobile-menu.open { right: 0; }
@@ -146,24 +193,47 @@
         .mobile-menu-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--nav-text-light); }
         body.dark .mobile-menu-close { color: var(--nav-text-dark); }
         .mobile-menu ul { list-style: none; padding: 0; }
-        .mobile-menu .nav-item a { display: block; padding: 0.75rem 1rem; color: var(--nav-text-light); }
+        .mobile-menu .nav-item a { display: block; padding: 0.75rem 1rem; color: var(--nav-text-light); text-decoration: none; }
         body.dark .mobile-menu .nav-item a { color: var(--nav-text-dark); }
         .mobile-menu .nav-item a:hover { background: var(--highlight-color); }
-        .search-container { flex-grow: 1; max-width: 500px; margin: 0 1rem; position: relative; }
+        .search-section {
+            background: var(--search-bg-light);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 118px;
+            z-index: 999;
+            transition: background 0.3s ease;
+        }
+        body.dark .search-section { background: var(--search-bg-dark); }
+        .search-container { max-width: 800px; margin: 0 auto; position: relative; }
         .search-input {
             width: 100%;
             padding: 0.75rem 2.5rem 0.75rem 1rem;
             border: 1px solid var(--highlight-color);
             border-radius: 9999px;
             background: var(--secondary-color);
-            color: var(--primary-color);
+            color: var(--text-color);
             font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
         }
-        .search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(255, 215, 0, 0.3); }
-        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--nav-text-light); }
+        .search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(255, 215, 0, 0.5); }
+        .search-icon { position: absolute; right: 35px; top: 50%; transform: translateY(-50%); color: var(--nav-text-light); }
         body.dark .search-icon { color: var(--nav-text-dark); }
+        .search-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1rem;
+            color: var(--nav-text-light);
+            cursor: pointer;
+            display: none;
+        }
+        body.dark .search-clear { color: var(--nav-text-dark); }
+        .search-clear.active { display: block; }
         .search-results {
             position: absolute;
             top: 100%;
@@ -179,8 +249,55 @@
             overflow-y: auto;
         }
         .search-results.active { display: block; }
-        .search-result-item { padding: 0.75rem; cursor: pointer; }
+        .search-result-item { padding: 0.75rem; cursor: pointer; color: var(--text-color); }
         .search-result-item:hover { background: var(--highlight-color); }
+        .notification-bell { padding: 0.75rem; cursor: pointer; position: relative; transition: transform 0.2s ease; }
+        .notification-bell:hover { transform: scale(1.1); }
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--background-color);
+        }
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            box-shadow: 0 6px 16px var(--shadow-dark);
+            display: none;
+            z-index: 100;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+            overflow: hidden;
+        }
+        .notification-dropdown.active { display: block; }
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--highlight-color);
+            transition: background 0.2s ease, opacity 0.3s ease;
+        }
+        .notification-item:hover { background: var(--highlight-color); }
+        .notification-item span { font-size: 0.9rem; color: var(--text-color); flex: 1; }
+        .dismiss-btn { background: none; border: none; color: var(--text-color); cursor: pointer; padding: 0.25rem; margin-left: 0.5rem; transition: color 0.2s ease; }
+        .dismiss-btn:hover { color: var(--accent-color); }
         .btn {
             background: var(--button-bg-color);
             color: var(--button-text-color);
@@ -196,6 +313,48 @@
         .btn:hover { background: var(--button-hover-bg-color); color: var(--button-hover-text-color); transform: scale(1.05); }
         .btn.accent { background: var(--accent-color); color: var(--primary-color); }
         .btn.accent:hover { background: #FFA500; }
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1.25rem;
+            gap: 0.5rem;
+            color: var(--nav-text-light);
+        }
+        body.dark .dark-mode-toggle { color: var(--nav-text-dark); }
+        .dark-mode-toggle span { font-weight: 600; text-transform: uppercase; font-size: 0.95rem; }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .mobile-menu .dark-mode-toggle { padding: 0.75rem 1rem; width: 100%; }
+        .mobile-menu .dark-mode-toggle:hover { background: var(--highlight-color); }
         .news-section { padding: 4rem 1rem; background: var(--background-color); }
         .news-container { max-width: 1200px; margin: 0 auto; }
         .news-header { text-align: center; margin-bottom: 3rem; }
@@ -207,43 +366,9 @@
         .news-card-content { padding: 1.5rem; }
         .news-card h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
         .news-card-meta { font-size: 0.9rem; color: var(--highlight-color); margin-bottom: 1rem; }
-        .news-card p { font-size: 1rem; color: var(--primary-color); margin-bottom: 1.5rem; }
+        .news-card p { font-size: 1rem; color: var(--text-color); margin-bottom: 1.5rem; }
         .news-card a { color: var(--accent-color); text-decoration: none; font-weight: 600; }
         .news-card a:hover { text-decoration: underline; }
-        .notification-bell { position: relative; }
-        .notification-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            width: 300px;
-            background: var(--secondary-color);
-            border: 1px solid var(--highlight-color);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px var(--shadow-dark);
-            display: none;
-            z-index: 100;
-            padding: 1rem;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .notification-dropdown.active { display: block; }
-        .notification-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--highlight-color); }
-        .notification-item:last-child { border-bottom: none; }
-        .dismiss-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; }
-        .notification-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--accent-color);
-            color: var(--primary-color);
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
         footer { background: #000000; color: #E0E0E0; padding: 4rem 1rem 2rem; position: relative; }
         .footer-content {
             max-width: 1200px;
@@ -267,14 +392,7 @@
             align-items: center;
             justify-content: center;
         }
-        .footer-logo {
-            max-width: 150px;
-            height: auto;
-            margin-bottom: 1rem;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
+        .footer-logo { max-width: 150px; height: auto; margin-bottom: 1rem; }
         .footer-tagline { font-size: 1rem; color: #E0E0E0; font-style: italic; }
         .footer-bottom { text-align: center; font-size: 0.9rem; }
         .social-icons { margin-bottom: 1rem; }
@@ -283,7 +401,7 @@
         .footer-newsletter { background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; }
         .footer-newsletter p { font-size: 0.9rem; color: #E0E0E0; margin-bottom: 0.75rem; }
         .footer-newsletter form { display: flex; gap: 0.5rem; }
-        .footer-newsletter input { flex: 1; padding: 0.75rem; border: 1px solid var(--highlight-color); border-radius: 4px; background: var(--secondary-color); color: var(--primary-color); }
+        .footer-newsletter input { flex: 1; padding: 0.75rem; border: 1px solid var(--highlight-color); border-radius: 4px; background: var(--secondary-color); color: var(--text-color); }
         .footer-newsletter button { background: var(--accent-color); color: var(--primary-color); padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s ease; }
         .footer-newsletter button:hover { background: #FFA500; }
         .go-to-top {
@@ -329,27 +447,64 @@
             background: var(--nav-bg-light);
             display: none;
             justify-content: space-around;
-            padding: 0.5rem 0;
+            padding: 0.75rem 0;
+            border-top: 1px solid var(--highlight-color);
             box-shadow: 0 -2px 10px var(--shadow-light);
             z-index: 1000;
+            transition: transform 0.3s ease;
         }
-        body.dark .mobile-footer-nav { background: var(--nav-bg-dark); }
-        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--nav-text-light); font-size: 0.75rem; }
+        body.dark .mobile-footer-nav { background: var(--nav-bg-dark); border-top: 1px solid var(--dark-highlight); }
+        .mobile-nav-item {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            color: var(--nav-text-light);
+            font-size: 0.85rem;
+            text-decoration: none;
+            transition: color 0.3s ease, transform 0.2s ease;
+        }
         body.dark .mobile-nav-item { color: var(--nav-text-dark); }
-        .mobile-nav-item i { font-size: 1.25rem; margin-bottom: 0.25rem; }
-        .cart-count { background: var(--accent-color); color: var(--primary-color); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; position: absolute; top: -5px; right: -5px; }
+        .mobile-nav-item i { font-size: 1.75rem; margin-bottom: 0.35rem; }
+        .mobile-nav-item:hover, .mobile-nav-item.active { color: var(--accent-color); transform: scale(1.1); }
+        .mobile-nav-item .cart-count { top: 0; right: 5px; width: 20px; height: 20px; font-size: 0.9rem; }
+        .mobile-nav-item[data-tooltip]:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+        .mobile-nav-item:hover[data-tooltip]:after { opacity: 1; }
         @media (max-width: 768px) {
             .news-grid { grid-template-columns: 1fr; }
-            .news-card img { height: 150px; }
+            .news-card img { height: 180px; }
             .news-header h1 { font-size: 2rem; }
-            .sticky-header { padding: 0 0.5rem; }
-            .search-container { max-width: 200px; }
+            .sticky-header { padding: 0 1rem; height: 60px; }
+            .search-section { padding: 1rem; top: 108px; }
             .desktop-nav { display: none; }
             .mobile-footer-nav { display: flex; }
             .footer-newsletter form { flex-direction: column; }
+            .go-to-top { bottom: 70px; right: 15px; }
+            .live-chat-btn { bottom: 130px; right: 15px; }
         }
         @media (min-width: 769px) {
             .mobile-footer-nav { display: none; }
+        }
+        @media (max-width: 1024px) {
+            .desktop-nav .nav-item a { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -362,53 +517,67 @@
         <div class="flex items-center">
             <a href="index.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
         </div>
-        <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search news..." aria-label="Search News" oninput="searchNews(this.value)">
-            <i class="fas fa-search search-icon"></i>
-            <div class="search-results" id="search-results"></div>
-        </div>
         <div class="flex items-center">
             <nav class="desktop-nav hidden md:flex items-center">
-                <ul class="flex space-x-4">
-                    <li class="nav-item"><a href="index.html">Home</a></li>
-                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
-                    <li class="nav-item"><a href="profile.html">Profile</a></li>
-                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
-                    <li class="nav-item"><a href="cart.html">Cart</a></li>
-                    <li class="nav-item"><a href="vendor.html">Sell</a></li>
-                    <li class="nav-item"><a href="about.html">About</a></li>
-                    <li class="nav-item"><a href="support.html">Support</a></li>
+                <ul class="flex space-x-2">
+                    <li class="nav-item"><a href="index.html" data-tooltip="Home">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html" data-tooltip="Marketplace">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html" data-tooltip="Profile">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html" data-tooltip="Wallet">Wallet</a></li>
+                    <li class="nav-item"><a href="vendor.html" data-tooltip="Sell">Sell</a></li>
+                    <li class="nav-item"><a href="about.html" data-tooltip="About">About</a></li>
+                    <li class="nav-item"><a href="support.html" data-tooltip="Support">Support</a></li>
+                    <li class="nav-item">
+                        <label class="dark-mode-toggle" for="darkModeSwitchDesktop">
+                            <span>Dark Mode</span>
+                            <div class="switch">
+                                <input type="checkbox" id="darkModeSwitchDesktop" aria-label="Toggle Dark Mode">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                    </li>
                 </ul>
             </nav>
-            <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
-                <i class="fas fa-shopping-cart text-lg"></i>
-                <span class="cart-count" id="cart-count">0</span>
-            </a>
             <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
                 <i class="fas fa-bell text-lg"></i>
                 <span class="notification-count" id="notification-count">0</span>
                 <div class="notification-dropdown" id="notification-dropdown"></div>
             </div>
-            <button class="icon floating-effect" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"><i class="fas fa-moon text-lg"></i></button>
             <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
                 <span></span><span></span><span></span>
             </button>
         </div>
     </header>
+    <section class="search-section">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search news..." aria-label="Search News" oninput="searchNews(this.value)">
+            <i class="fas fa-search search-icon"></i>
+            <button class="search-clear" onclick="clearSearch()">✕</button>
+            <div class="search-results" id="search-results"></div>
+        </div>
+    </section>
     <nav class="mobile-menu">
         <div class="mobile-menu-header">
             <span class="logo-text">TruthWeb</span>
-            <button class="mobile-menu-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="Close Menu"><i class="fas fa-times"></i></button>
         </div>
         <ul>
             <li class="nav-item"><a href="index.html">Home</a></li>
             <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
             <li class="nav-item"><a href="profile.html">Profile</a></li>
             <li class="nav-item"><a href="wallet.html">Wallet</a></li>
-            <li class="nav-item"><a href="cart.html">Cart</a></li>
             <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
             <li class="nav-item"><a href="about.html">About</a></li>
             <li class="nav-item"><a href="support.html">Support</a></li>
+            <li class="nav-item">
+                <label class="dark-mode-toggle" for="darkModeSwitchMobile">
+                    <span>Dark Mode</span>
+                    <div class="switch">
+                        <input type="checkbox" id="darkModeSwitchMobile" aria-label="Toggle Dark Mode">
+                        <span class="slider"></span>
+                    </div>
+                </label>
+            </li>
         </ul>
     </nav>
     <main>
@@ -419,7 +588,7 @@
                 </div>
                 <div class="news-grid">
                     <div class="news-card">
-                        <img src="https://images.unsplash.com/photo-1641936666143-4d5e50556e31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Network Mainnet">
+                        <img src="https://images.unsplash.com/photo-1641936666143-4d5e50556e31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Network Mainnet" loading="lazy">
                         <div class="news-card-content">
                             <h2>Pi Network Mainnet Progress: What’s Next?</h2>
                             <p class="news-card-meta">April 09, 2025 | TruthWeb Team</p>
@@ -428,7 +597,7 @@
                         </div>
                     </div>
                     <div class="news-card">
-                        <img src="https://images.unsplash.com/photo-1639762681485-8c0b4c6e5736?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Coin Surge">
+                        <img src="https://images.unsplash.com/photo-1639762681485-8c0b4c6e5736?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Coin Surge" loading="lazy">
                         <div class="news-card-content">
                             <h2>Pi Coin Surges 35% Post-Mainnet</h2>
                             <p class="news-card-meta">April 08, 2025 | Crypto Desk</p>
@@ -437,7 +606,7 @@
                         </div>
                     </div>
                     <div class="news-card">
-                        <img src="https://images.unsplash.com/photo-1633113211821-4dbff3a1d6d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Bitcoin Rally">
+                        <img src="https://images.unsplash.com/photo-1633113211821-4dbff3a1d6d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Bitcoin Rally" loading="lazy">
                         <div class="news-card-content">
                             <h2>Bitcoin Hits $86K Amid Fed Signals</h2>
                             <p class="news-card-meta">April 07, 2025 | Market Watch</p>
@@ -446,7 +615,7 @@
                         </div>
                     </div>
                     <div class="news-card">
-                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e5250?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Ethereum Stablecoins">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e5250?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Ethereum Stablecoins" loading="lazy">
                         <div class="news-card-content">
                             <h2>Ethereum Stablecoin Dominance Grows</h2>
                             <p class="news-card-meta">April 06, 2025 | Blockchain Beat</p>
@@ -534,19 +703,19 @@
     <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
     <button class="live-chat-btn" onclick="openChat()" aria-label="Live Chat"><i class="fas fa-comment"></i></button>
     <nav class="mobile-footer-nav">
-        <a href="index.html" class="mobile-nav-item" aria-label="Home">
+        <a href="index.html" class="mobile-nav-item" aria-label="Home" data-tooltip="Home">
             <i class="fas fa-home"></i><span>Home</span>
         </a>
-        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace">
+        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace" data-tooltip="Marketplace">
             <i class="fas fa-store"></i><span>Marketplace</span>
         </a>
-        <a href="profile.html" class="mobile-nav-item" aria-label="Profile">
+        <a href="profile.html" class="mobile-nav-item" aria-label="Profile" data-tooltip="Profile">
             <i class="fas fa-user"></i><span>Profile</span>
         </a>
-        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
+        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet" data-tooltip="Wallet">
             <i class="fas fa-wallet"></i><span>Wallet</span>
         </a>
-        <a href="cart.html" class="mobile-nav-item" aria-label="Cart">
+        <a href="cart.html" class="mobile-nav-item" aria-label="Cart" data-tooltip="Cart">
             <i class="fas fa-shopping-cart"></i><span>Cart</span>
             <span class="cart-count" id="mobile-cart-count">0</span>
         </a>
@@ -630,31 +799,51 @@
 
             const item = document.createElement('div');
             item.className = 'notification-item';
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             item.innerHTML = `
-                <span>${new Date().toLocaleTimeString()} - ${message}</span>
+                <span><strong>${timestamp}</strong> - ${message}</span>
                 <button class="dismiss-btn" onclick="dismissNotification(this)">✕</button>
             `;
             dropdown.insertBefore(item, dropdown.firstChild);
+
+            setTimeout(() => {
+                if (item.parentElement) {
+                    dismissNotification(item.querySelector('.dismiss-btn'));
+                }
+            }, 10000);
         }
 
         function dismissNotification(button) {
             const item = button.parentElement;
-            item.remove();
-            const countSpan = document.getElementById('notification-count');
-            let count = parseInt(countSpan.textContent);
-            count = Math.max(0, count - 1);
-            countSpan.textContent = count;
+            item.style.opacity = '0';
+            setTimeout(() => {
+                if (item.parentElement) {
+                    item.remove();
+                    const countSpan = document.getElementById('notification-count');
+                    let count = parseInt(countSpan.textContent);
+                    count = Math.max(0, count - 1);
+                    countSpan.textContent = count;
+                }
+            }, 300);
         }
 
         function toggleNotifications() {
             const dropdown = document.getElementById('notification-dropdown');
             dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                addNotification("Notifications opened.");
+            }
         }
 
         function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-            addNotification("Dark mode " + (document.body.classList.contains('dark') ? "enabled" : "disabled"));
+            const body = document.body;
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            // Sync both switches
+            document.getElementById('darkModeSwitchDesktop').checked = isDark;
+            document.getElementById('darkModeSwitchMobile').checked = isDark;
+            addNotification(`Dark mode ${isDark ? 'enabled' : 'disabled'}`);
         }
 
         function toggleMobileMenu() {
@@ -673,11 +862,14 @@
 
         function searchNews(query) {
             const results = document.getElementById('search-results');
+            const clearBtn = document.querySelector('.search-clear');
             results.innerHTML = '';
             if (query.length < 2) {
                 results.classList.remove('active');
+                clearBtn.classList.remove('active');
                 return;
             }
+            clearBtn.classList.add('active');
             const filtered = newsArticles.filter(n => n.title.toLowerCase().includes(query.toLowerCase()));
             filtered.forEach(article => {
                 const item = document.createElement('div');
@@ -686,6 +878,12 @@
                 results.appendChild(item);
             });
             results.classList.add('active');
+        }
+
+        function clearSearch() {
+            const input = document.querySelector('.search-input');
+            input.value = '';
+            searchNews('');
         }
 
         function updateProgressBar() {
@@ -719,15 +917,36 @@
             document.getElementById('newsletter-email').value = '';
         }
 
+        function debounce(func, wait) {
+            let timeout;
+            return function (...args) {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             initializePiSDK();
-            if (localStorage.getItem('darkMode') === 'true') {
-                document.body.classList.add('dark');
+            const isDark = localStorage.getItem('darkMode') === 'true';
+            const body = document.body;
+            const desktopSwitch = document.getElementById('darkModeSwitchDesktop');
+            const mobileSwitch = document.getElementById('darkModeSwitchMobile');
+
+            // Set initial state
+            if (isDark) {
+                body.classList.add('dark');
             }
-            window.addEventListener('scroll', () => {
+            desktopSwitch.checked = isDark;
+            mobileSwitch.checked = isDark;
+
+            // Add event listeners to both switches
+            desktopSwitch.addEventListener('change', toggleDarkMode);
+            mobileSwitch.addEventListener('change', toggleDarkMode);
+
+            window.addEventListener('scroll', debounce(() => {
                 updateProgressBar();
                 toggleGoToTop();
-            });
+            }, 100));
             document.addEventListener('click', (e) => {
                 const results = document.getElementById('search-results');
                 if (!e.target.closest('.search-container')) {
@@ -738,6 +957,39 @@
                     dropdown.classList.remove('active');
                 }
             });
+
+            const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+            document.querySelectorAll('.desktop-nav .nav-item a').forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                    item.style.color = 'var(--accent-color)';
+                }
+            });
+            document.querySelectorAll('.mobile-nav-item').forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.classList.add('active');
+                }
+                let pressTimer;
+                item.addEventListener('touchstart', () => {
+                    pressTimer = setTimeout(() => item.classList.add('hover'), 500);
+                });
+                item.addEventListener('touchend', () => clearTimeout(pressTimer));
+                item.addEventListener('touchcancel', () => clearTimeout(pressTimer));
+            });
+
+            let lastScroll = 0;
+            window.addEventListener('scroll', () => {
+                const currentScroll = window.scrollY;
+                const mobileNav = document.querySelector('.mobile-footer-nav');
+                if (currentScroll > lastScroll && currentScroll > 100) {
+                    mobileNav.style.transform = 'translateY(100%)';
+                } else {
+                    mobileNav.style.transform = 'translateY(0)';
+                }
+                lastScroll = currentScroll;
+            });
+
+            addNotification("Welcome to TruthWeb News!");
         });
     </script>
 </body>
