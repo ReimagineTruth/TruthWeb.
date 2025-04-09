@@ -1,305 +1,744 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="google-adsense-account" content="ca-pub-2560904735244526">
     <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>TruthWeb v1.0 Launched! - TruthWeb</title>
-    <!-- TailwindCSS CDN -->
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
+    <title>TruthWeb News - Latest Updates</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome CDN -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
-    <!-- Google Fonts: Poppins -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2560904735244526" crossorigin="anonymous"></script>
     <style>
-      :root {
-        --primary-color: #000000;
-        --secondary-color: #FFFFFF;
-        --highlight-color: #CCCCCC;
-        --text-color: #FFFFFF;
-        --button-bg-color: #000000;
-        --button-text-color: #FFFFFF;
-        --button-hover-bg-color: #FFFFFF;
-        --button-hover-text-color: #000000;
-        --background-color: #FFFFFF;
-      }
-      body {
-        background: var(--background-color);
-        color: var(--primary-color);
-        font-family: 'Poppins', sans-serif;
-        overflow-x: hidden;
-      }
-      .hero {
-        height: 100vh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-        border: 2px solid var(--highlight-color);
-        padding: 1rem;
-        background: var(--primary-color);
-        animation: fadeIn 1.5s ease-in-out;
-      }
-      .hero::after {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
-        opacity: 0.5;
-        animation: float 6s infinite ease-in-out, pulseGlow 3s infinite alternate;
-      }
-      @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-20px); }
-      }
-      @keyframes pulseGlow {
-        0% { opacity: 0.5; }
-        100% { opacity: 0.8; }
-      }
-      @keyframes fadeIn {
-        0% { opacity: 0; }
-        100% { opacity: 1; }
-      }
-      .glow-text {
-        font-size: 2rem;
-        font-weight: bold;
-        color: var(--text-color);
-        text-shadow: 0 0 10px var(--highlight-color), 0 0 20px var(--highlight-color);
-        animation: glow 2s infinite alternate, bounce 3s infinite ease-in-out;
-      }
-      @keyframes glow {
-        0% { text-shadow: 0 0 10px var(--highlight-color), 0 0 20px var(--highlight-color); }
-        100% { text-shadow: 0 0 20px var(--highlight-color), 0 0 30px var(--highlight-color); }
-      }
-      @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-      }
-      .card {
-        background: var(--secondary-color);
-        border: 2px solid var(--highlight-color);
-        border-radius: 10px;
-        padding: 1rem;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        animation: slideIn 1s ease-in-out;
-      }
-      .card:hover {
-        transform: translateY(-10px) rotate(2deg);
-        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-      }
-      @keyframes slideIn {
-        0% { opacity: 0; transform: translateX(-50px); }
-        100% { opacity: 1; transform: translateX(0); }
-      }
-      .btn {
-        background: var(--button-bg-color);
-        color: var(--button-text-color);
-        padding: 0.75rem 1.5rem;
-        border: 2px solid var(--highlight-color);
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        animation: pulse 2s infinite;
-        display: inline-block;
-        text-align: center;
-      }
-      .btn:hover {
-        background: var(--button-hover-bg-color);
-        color: var(--button-hover-text-color);
-        transform: scale(1.1) rotate(3deg);
-      }
-      @keyframes pulse {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
-      footer {
-        background: var(--primary-color);
-        color: var(--text-color);
-        text-align: center;
-        padding: 2rem;
-        animation: fadeIn 1.5s ease-in-out;
-      }
-      html {
-        scroll-behavior: smooth;
-      }
-      .sticky-header {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        background: var(--primary-color);
-        color: var(--text-color);
-        transition: background 0.3s ease, color 0.3s ease;
-        animation: slideDown 1s ease-in-out;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        height: 64px;
-        padding: 0 1rem;
-      }
-      .sticky-header.scrolled {
-        background: var(--secondary-color);
-        color: var(--primary-color);
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-      }
-      .sticky-header .logo-text {
-        font-size: 1.5rem;
-        font-weight: 700;
-        transition: font-size 0.3s ease;
-      }
-      .sticky-header.scrolled .logo-text {
-        font-size: 1.25rem;
-      }
-      .sticky-header .icon {
-        color: inherit;
-      }
-      @keyframes slideDown {
-        0% { transform: translateY(-100%); }
-        100% { transform: translateY(0); }
-      }
-      .nav-item {
-        transition: transform 0.3s ease;
-        animation: fadeInUp 0.5s ease-in-out forwards;
-      }
-      .nav-item:hover {
-        transform: scale(1.1) translateY(-5px);
-      }
-      @keyframes fadeInUp {
-        0% { opacity: 0; transform: translateY(20px); }
-        100% { opacity: 1; transform: translateY(0); }
-      }
-      .nav-item:nth-child(1) { animation-delay: 0.1s; }
-      .nav-item:nth-child(2) { animation-delay: 0.2s; }
-      .nav-item:nth-child(3) { animation-delay: 0.3s; }
-      .nav-item:nth-child(4) { animation-delay: 0.4s; }
-      .nav-item:nth-child(5) { animation-delay: 0.5s; }
-      .nav-item:nth-child(6) { animation-delay: 0.6s; }
-      .nav-item:nth-child(7) { animation-delay: 0.7s; }
-      .floating-effect {
-        transition: transform 0.3s ease;
-      }
-      .floating-effect:hover {
-        transform: translateY(-5px) rotate(5deg);
-      }
-      .active {
-        color: var(--highlight-color);
-        text-decoration: underline;
-      }
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #FFFFFF;
+            --highlight-color: #CCCCCC;
+            --text-color: #FFFFFF;
+            --button-bg-color: #000000;
+            --button-text-color: #FFFFFF;
+            --button-hover-bg-color: #FFFFFF;
+            --button-hover-text-color: #000000;
+            --background-color: #F5F5F5;
+            --accent-color: #FFD700;
+            --progress-bar-color: var(--accent-color);
+            --dark-primary: #FFFFFF;
+            --dark-secondary: #1A1A1A;
+            --dark-text: #E0E0E0;
+            --dark-highlight: #555555;
+            --banner-bg-light: #ECEFF1;
+            --banner-bg-dark: #2A2A2A;
+            --banner-border-light: #CFD8DC;
+            --banner-border-dark: #444444;
+            --nav-bg-light: #FFFFFF;
+            --nav-bg-dark: #1A1A1A;
+            --nav-text-light: #000000;
+            --nav-text-dark: #E0E0E0;
+            --nav-hover-light: #FFD700;
+            --nav-hover-dark: #FFD700;
+            --eco-color: #28A745;
+            --testnet-badge: #FF0000;
+            --news-bg: #FFFFFF;
+            --shadow-light: rgba(0, 0, 0, 0.05);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--background-color);
+            color: var(--primary-color);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            padding-top: 112px;
+        }
+        body.dark {
+            --primary-color: var(--dark-primary);
+            --secondary-color: var(--dark-secondary);
+            --text-color: var(--dark-text);
+            --background-color: #121212;
+            --highlight-color: var(--dark-highlight);
+            --button-bg-color: #333333;
+            --button-hover-bg-color: #FFD700;
+            --button-hover-text-color: #000000;
+            --news-bg: #1E1E1E;
+        }
+        .progress-bar {
+            position: fixed;
+            top: 48px;
+            left: 0;
+            width: 0;
+            height: 4px;
+            background: var(--progress-bar-color);
+            z-index: 1001;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+        .announcement-banner {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.75rem 1rem;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1002;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+        body.dark .announcement-banner { background: #FFA500; color: #000000; }
+        .banner-link { color: var(--primary-color); text-decoration: underline; }
+        .banner-link:hover { color: #000000; }
+        .sticky-header {
+            position: fixed;
+            top: 48px;
+            width: 100%;
+            z-index: 1000;
+            background: var(--nav-bg-light);
+            color: var(--nav-text-light);
+            padding: 0 1.5rem;
+            height: 64px;
+            box-shadow: 0 2px 10px var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        body.dark .sticky-header { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
+        .sticky-header .logo-text { font-size: 1.5rem; font-weight: 700; }
+        .testnet-badge { background: var(--testnet-badge); color: #FFFFFF; padding: 0.25rem 0.75rem; font-size: 0.75rem; border-radius: 9999px; margin-left: 0.5rem; }
+        .desktop-nav .nav-item a { color: var(--nav-text-light); padding: 0.5rem 1rem; font-weight: 600; transition: color 0.3s ease; }
+        body.dark .desktop-nav .nav-item a { color: var(--nav-text-dark); }
+        .desktop-nav .nav-item a:hover { color: var(--nav-hover-light); }
+        body.dark .desktop-nav .nav-item a:hover { color: var(--nav-hover-dark); }
+        .icon { padding: 0.5rem; margin-left: 0.5rem; cursor: pointer; }
+        .floating-effect:hover { transform: translateY(-2px); transition: transform 0.3s ease; }
+        .burger-btn { flex-direction: column; justify-content: space-between; width: 30px; height: 20px; cursor: pointer; }
+        .burger-btn span { width: 100%; height: 3px; background: var(--nav-text-light); transition: all 0.3s ease; }
+        body.dark .burger-btn span { background: var(--nav-text-dark); }
+        .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
+        .burger-btn.open span:nth-child(2) { opacity: 0; }
+        .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(7px, -7px); }
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100%;
+            background: var(--nav-bg-light);
+            color: var(--nav-text-light);
+            padding: 1rem;
+            z-index: 1001;
+            transition: right 0.3s ease;
+            box-shadow: -2px 0 10px var(--shadow-dark);
+        }
+        body.dark .mobile-menu { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
+        .mobile-menu.open { right: 0; }
+        .mobile-menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .mobile-menu-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--nav-text-light); }
+        body.dark .mobile-menu-close { color: var(--nav-text-dark); }
+        .mobile-menu ul { list-style: none; padding: 0; }
+        .mobile-menu .nav-item a { display: block; padding: 0.75rem 1rem; color: var(--nav-text-light); }
+        body.dark .mobile-menu .nav-item a { color: var(--nav-text-dark); }
+        .mobile-menu .nav-item a:hover { background: var(--highlight-color); }
+        .search-container { flex-grow: 1; max-width: 500px; margin: 0 1rem; position: relative; }
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border: 1px solid var(--highlight-color);
+            border-radius: 9999px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(255, 215, 0, 0.3); }
+        .search-icon { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--nav-text-light); }
+        body.dark .search-icon { color: var(--nav-text-dark); }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            display: none;
+            z-index: 60;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .search-results.active { display: block; }
+        .search-result-item { padding: 0.75rem; cursor: pointer; }
+        .search-result-item:hover { background: var(--highlight-color); }
+        .btn {
+            background: var(--button-bg-color);
+            color: var(--button-text-color);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 9999px;
+            font-size: 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .btn:hover { background: var(--button-hover-bg-color); color: var(--button-hover-text-color); transform: scale(1.05); }
+        .btn.accent { background: var(--accent-color); color: var(--primary-color); }
+        .btn.accent:hover { background: #FFA500; }
+        .news-section { padding: 4rem 1rem; background: var(--background-color); }
+        .news-container { max-width: 1200px; margin: 0 auto; }
+        .news-header { text-align: center; margin-bottom: 3rem; }
+        .news-header h1 { font-size: 2.5rem; font-weight: 700; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; }
+        .news-card { background: var(--news-bg); border-radius: 12px; box-shadow: 0 4px 12px var(--shadow-light); overflow: hidden; transition: transform 0.3s ease; }
+        .news-card:hover { transform: translateY(-5px); }
+        .news-card img { width: 100%; height: 200px; object-fit: cover; }
+        .news-card-content { padding: 1.5rem; }
+        .news-card h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.75rem; }
+        .news-card-meta { font-size: 0.9rem; color: var(--highlight-color); margin-bottom: 1rem; }
+        .news-card p { font-size: 1rem; color: var(--primary-color); margin-bottom: 1.5rem; }
+        .news-card a { color: var(--accent-color); text-decoration: none; font-weight: 600; }
+        .news-card a:hover { text-decoration: underline; }
+        .notification-bell { position: relative; }
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 300px;
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            display: none;
+            z-index: 100;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notification-dropdown.active { display: block; }
+        .notification-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--highlight-color); }
+        .notification-item:last-child { border-bottom: none; }
+        .dismiss-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; }
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        footer { background: #000000; color: #E0E0E0; padding: 4rem 1rem 2rem; position: relative; }
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+        .footer-section h3 { font-size: 1.5rem; font-weight: 700; color: var(--accent-color); margin-bottom: 1rem; }
+        .footer-section ul { list-style: none; padding: 0; }
+        .footer-section li { margin-bottom: 0.75rem; transition: transform 0.3s ease; }
+        .footer-section a { color: #E0E0E0; text-decoration: none; transition: color 0.3s ease; }
+        .footer-section li:hover { transform: translateX(5px); }
+        .footer-section a:hover { color: var(--accent-color); }
+        .footer-divider { max-width: 1200px; margin: 2rem auto; height: 1px; background: var(--highlight-color); opacity: 0.3; }
+        .footer-center {
+            text-align: center;
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .footer-logo {
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 1rem;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .footer-tagline { font-size: 1rem; color: #E0E0E0; font-style: italic; }
+        .footer-bottom { text-align: center; font-size: 0.9rem; }
+        .social-icons { margin-bottom: 1rem; }
+        .social-icons a { color: #E0E0E0; margin: 0 0.75rem; font-size: 1.75rem; transition: color 0.3s ease, transform 0.3s ease; }
+        .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
+        .footer-newsletter { background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 8px; }
+        .footer-newsletter p { font-size: 0.9rem; color: #E0E0E0; margin-bottom: 0.75rem; }
+        .footer-newsletter form { display: flex; gap: 0.5rem; }
+        .footer-newsletter input { flex: 1; padding: 0.75rem; border: 1px solid var(--highlight-color); border-radius: 4px; background: var(--secondary-color); color: var(--primary-color); }
+        .footer-newsletter button { background: var(--accent-color); color: var(--primary-color); padding: 0.75rem 1.5rem; border: none; border-radius: 4px; cursor: pointer; transition: background 0.3s ease; }
+        .footer-newsletter button:hover { background: #FFA500; }
+        .go-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .go-to-top.visible { opacity: 1; }
+        .live-chat-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            transition: transform 0.3s ease;
+        }
+        .live-chat-btn:hover { transform: scale(1.1); }
+        .mobile-footer-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--nav-bg-light);
+            display: none;
+            justify-content: space-around;
+            padding: 0.5rem 0;
+            box-shadow: 0 -2px 10px var(--shadow-light);
+            z-index: 1000;
+        }
+        body.dark .mobile-footer-nav { background: var(--nav-bg-dark); }
+        .mobile-nav-item { display: flex; flex-direction: column; align-items: center; color: var(--nav-text-light); font-size: 0.75rem; }
+        body.dark .mobile-nav-item { color: var(--nav-text-dark); }
+        .mobile-nav-item i { font-size: 1.25rem; margin-bottom: 0.25rem; }
+        .cart-count { background: var(--accent-color); color: var(--primary-color); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; position: absolute; top: -5px; right: -5px; }
+        @media (max-width: 768px) {
+            .news-grid { grid-template-columns: 1fr; }
+            .news-card img { height: 150px; }
+            .news-header h1 { font-size: 2rem; }
+            .sticky-header { padding: 0 0.5rem; }
+            .search-container { max-width: 200px; }
+            .desktop-nav { display: none; }
+            .mobile-footer-nav { display: flex; }
+            .footer-newsletter form { flex-direction: column; }
+        }
+        @media (min-width: 769px) {
+            .mobile-footer-nav { display: none; }
+        }
     </style>
 </head>
-<body>
-    <!-- Sticky Header -->
+<body onload="checkAuthStatus()">
+    <div class="progress-bar"></div>
+    <div class="announcement-banner">
+        <p>Welcome to TruthWeb News! Stay Updated with Pi Network and More</p>
+    </div>
     <header class="sticky-header">
-      <div class="flex items-center">
-        <a class="text-inherit mr-4 flex items-center" href="index.html">
-          <span class="logo-text ml-2">TruthWeb</span>
-        </a>
-      </div>
-      <div class="flex items-center">
-        <a class="mr-4 icon floating-effect" href="marketplace.html">
-          <i class="fas fa-shopping-cart text-xl sm:text-2xl"></i>
-        </a>
-        <a class="mr-4 icon floating-effect" href="profile.html">
-          <i class="fas fa-user text-xl sm:text-2xl"></i>
-        </a>
-        <a class="icon floating-effect" href="wallet.html">
-          <i class="fas fa-wallet text-xl sm:text-2xl"></i>
-        </a>
-      </div>
+        <div class="flex items-center">
+            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
+        </div>
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search news..." aria-label="Search News" oninput="searchNews(this.value)">
+            <i class="fas fa-search search-icon"></i>
+            <div class="search-results" id="search-results"></div>
+        </div>
+        <div class="flex items-center">
+            <nav class="desktop-nav hidden md:flex items-center">
+                <ul class="flex space-x-4">
+                    <li class="nav-item"><a href="index.html">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+                    <li class="nav-item"><a href="cart.html">Cart</a></li>
+                    <li class="nav-item"><a href="vendor.html">Sell</a></li>
+                    <li class="nav-item"><a href="about.html">About</a></li>
+                    <li class="nav-item"><a href="support.html">Support</a></li>
+                </ul>
+            </nav>
+            <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
+                <i class="fas fa-shopping-cart text-lg"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </a>
+            <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
+                <i class="fas fa-bell text-lg"></i>
+                <span class="notification-count" id="notification-count">0</span>
+                <div class="notification-dropdown" id="notification-dropdown"></div>
+            </div>
+            <button class="icon floating-effect" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"><i class="fas fa-moon text-lg"></i></button>
+            <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
     </header>
-
-    <!-- Navigation Bar -->
-    <nav class="bg-[var(--primary-color)] py-4">
-      <ul class="flex flex-wrap justify-center space-x-4">
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect active" href="index.html">Home</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="marketplace.html">Marketplace</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="profile.html">Profile</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="wallet.html">Wallet</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="community.html">Community</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="developers.html">Developers</a></li>
-        <li class="nav-item"><a class="text-[var(--text-color)] hover:text-[var(--highlight-color)] floating-effect" href="about.html">About</a></li>
-      </ul>
+    <nav class="mobile-menu">
+        <div class="mobile-menu-header">
+            <span class="logo-text">TruthWeb</span>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
+        </div>
+        <ul>
+            <li class="nav-item"><a href="index.html">Home</a></li>
+            <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+            <li class="nav-item"><a href="profile.html">Profile</a></li>
+            <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+            <li class="nav-item"><a href="cart.html">Cart</a></li>
+            <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
+            <li class="nav-item"><a href="about.html">About</a></li>
+            <li class="nav-item"><a href="support.html">Support</a></li>
+        </ul>
+    </nav>
+    <main>
+        <section class="news-section">
+            <div class="news-container">
+                <div class="news-header">
+                    <h1>Latest News</h1>
+                </div>
+                <div class="news-grid">
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1641936666143-4d5e50556e31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Network Mainnet">
+                        <div class="news-card-content">
+                            <h2>Pi Network Mainnet Progress: What’s Next?</h2>
+                            <p class="news-card-meta">April 09, 2025 | TruthWeb Team</p>
+                            <p>Pi Network continues to make strides in its Testnet phase with over 60 million Pioneers worldwide...</p>
+                            <a href="news-article.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1639762681485-8c0b4c6e5736?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Coin Surge">
+                        <div class="news-card-content">
+                            <h2>Pi Coin Surges 35% Post-Mainnet</h2>
+                            <p class="news-card-meta">April 08, 2025 | Crypto Desk</p>
+                            <p>Pi Coin experiences volatility as the mainnet launch fuels speculation and trading activity...</p>
+                            <a href="news-article2.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1633113211821-4dbff3a1d6d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Bitcoin Rally">
+                        <div class="news-card-content">
+                            <h2>Bitcoin Hits $86K Amid Fed Signals</h2>
+                            <p class="news-card-meta">April 07, 2025 | Market Watch</p>
+                            <p>Bitcoin rallies 4% as the Federal Reserve hints at relaxed monetary policies...</p>
+                            <a href="news-article3.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e5250?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Ethereum Stablecoins">
+                        <div class="news-card-content">
+                            <h2>Ethereum Stablecoin Dominance Grows</h2>
+                            <p class="news-card-meta">April 06, 2025 | Blockchain Beat</p>
+                            <p>Ethereum and TRON lead the stablecoin market as adoption accelerates...</p>
+                            <a href="news-article4.html">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>TruthWeb</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="developers.html">Developers</a></li>
+                    <li><a href="future.html">Coming Soon</a></li>
+                    <li><a href="swap.html">Swap</a></li>
+                    <li><a href="truwebbot.html">TruthWeb AI Bot</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Shop</h3>
+                <ul>
+                    <li><a href="marketplace.html">Marketplace</a></li>
+                    <li><a href="pi-powered-marketplace.html">Pi Payments</a></li>
+                    <li><a href="global-expansion.html">Global Marketplace</a></li>
+                    <li><a href="escrow-system.html">Escrow System</a></li>
+                    <li><a href="multi-category-listings.html">Multi-Category Listings</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Account</h3>
+                <ul>
+                    <li><a href="profile.html">Profile</a></li>
+                    <li><a href="wallet.html">Wallet</a></li>
+                    <li><a href="pitrade.html">Pi Trade</a></li>
+                    <li><a href="pitrack.html">Pi Track</a></li>
+                    <li><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="security.html">Security Policy</a></li>
+                    <li><a href="license.html">PiOS License</a></li>
+                    <li><a href="code-of-conduct.html">Code of Conduct</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Stay Connected</h3>
+                <div class="footer-newsletter">
+                    <p>Get the latest Pi Network updates and TruthWeb news.</p>
+                    <form onsubmit="subscribeNewsletter(event)">
+                        <input type="email" id="newsletter-email" placeholder="Enter your email" aria-label="Newsletter Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="footer-divider"></div>
+        <div class="footer-center">
+            <img src="https://i.ibb.co/ccB4s7ys/Untitled-design-removebg-preview.png" alt="TruthWeb Logo" class="footer-logo">
+            <p class="footer-tagline">"Empowering the Pi Network Community with Truth and Innovation"</p>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community | <a href="https://minepi.com" target="_blank">Pi Network</a> | <a href="https://pinetwork-official.github.io" target="_blank">Pi Docs</a></p>
+        </div>
+    </footer>
+    <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
+    <button class="live-chat-btn" onclick="openChat()" aria-label="Live Chat"><i class="fas fa-comment"></i></button>
+    <nav class="mobile-footer-nav">
+        <a href="index.html" class="mobile-nav-item" aria-label="Home">
+            <i class="fas fa-home"></i><span>Home</span>
+        </a>
+        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace">
+            <i class="fas fa-store"></i><span>Marketplace</span>
+        </a>
+        <a href="profile.html" class="mobile-nav-item" aria-label="Profile">
+            <i class="fas fa-user"></i><span>Profile</span>
+        </a>
+        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
+            <i class="fas fa-wallet"></i><span>Wallet</span>
+        </a>
+        <a href="cart.html" class="mobile-nav-item" aria-label="Cart">
+            <i class="fas fa-shopping-cart"></i><span>Cart</span>
+            <span class="cart-count" id="mobile-cart-count">0</span>
+        </a>
     </nav>
 
-    <!-- Hero Section -->
-    <div class="hero flex flex-col items-center justify-center min-h-screen">
-      <h1 class="glow-text fade-in text-5xl md:text-7xl font-bold">TruthWeb v1.0 Launched!</h1>
-      <p class="text-xl mt-4 text-center fade-in" style="animation-delay: 0.5s; color: var(--text-color); max-width: 800px;">
-        Our platform is live on GitHub Pages, offering Pi-powered transactions and a decentralized hub for Pioneers. Join us as we kick off this exciting journey!
-      </p>
-      <a href="https://github.com/username/TruthWeb" target="_blank" class="btn mt-8">Visit on GitHub Pages</a>
-    </div>
-
-    <!-- Launch Features Section -->
-    <section id="launch" class="py-16 px-4">
-      <h2 class="text-3xl font-bold text-center mb-8">What’s New in v1.0</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        <!-- Pi-Powered Transactions -->
-        <div class="card">
-          <img src="https://placehold.co/200x200" alt="Pi Transactions" class="w-full h-48 object-cover mb-4">
-          <h3 class="text-xl font-semibold mb-2">Pi-Powered Transactions</h3>
-          <p class="text-gray-600 mb-4">Buy, sell, and trade using Pi cryptocurrency seamlessly.</p>
-          <a href="marketplace.html" class="btn w-full">Explore Marketplace</a>
-        </div>
-        <!-- Decentralized Hub -->
-        <div class="card">
-          <img src="https://placehold.co/200x200" alt="Decentralized Hub" class="w-full h-48 object-cover mb-4">
-          <h3 class="text-xl font-semibold mb-2">Decentralized Hub</h3>
-          <p class="text-gray-600 mb-4">A community-driven platform for Pioneers worldwide.</p>
-          <a href="community.html" class="btn w-full">Join Community</a>
-        </div>
-        <!-- Open Source -->
-        <div class="card">
-          <img src="https://placehold.co/200x200" alt="Open Source" class="w-full h-48 object-cover mb-4">
-          <h3 class="text-xl font-semibold mb-2">Open Source</h3>
-          <p class="text-gray-600 mb-4">Hosted on GitHub Pages, built by and for the community.</p>
-          <a href="https://github.com/username/TruthWeb" target="_blank" class="btn w-full">View on GitHub</a>
-        </div>
-      </div>
-
-      <!-- Call to Action -->
-      <div class="text-center mt-12">
-        <h3 class="text-2xl font-semibold mb-4">Be Part of the Journey</h3>
-        <p class="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">TruthWeb v1.0 is just the beginning. Join us today and help shape the future of this decentralized ecosystem!</p>
-        <a href="index.html" class="btn">Get Started Now</a>
-      </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="bg-[var(--primary-color)] py-8">
-      <div class="container mx-auto text-center">
-        <div class="mb-4">
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://www.facebook.com/reimaginetruthofficial/" target="_blank"><i class="fab fa-facebook-f"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://x.com/reimagine_truth" target="_blank"><i class="fab fa-twitter"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://t.me/TruthWebOfficial" target="_blank"><i class="fab fa-telegram"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://www.youtube.com/@ReimagineTruth" target="_blank"><i class="fab fa-youtube"></i></a>
-          <a class="text-[var(--text-color)] mx-2 floating-effect" href="https://github.com/username/TruthWeb" target="_blank"><i class="fab fa-github"></i></a>
-        </div>
-        <p class="text-[var(--text-color)] mb-4">© 2025 TruthWeb. All rights reserved.</p>
-        <div class="text-[var(--text-color)] text-sm">
-          <a href="about.html" class="mx-2 hover:text-[var(--highlight-color)]">About Us</a> |
-          <a href="terms.html" class="mx-2 hover:text-[var(--highlight-color)]">Terms & Conditions</a> |
-          <a href="privacy.html" class="mx-2 hover:text-[var(--highlight-color)]">Privacy Policy</a> |
-          <a href="contact.html" class="mx-2 hover:text-[var(--highlight-color)]">Contact</a>
-        </div>
-      </div>
-    </footer>
-
-    <!-- Sticky Header Script -->
     <script>
-      window.addEventListener('scroll', function() {
-        const header = document.querySelector('.sticky-header');
-        if (window.scrollY > 50) {
-          header.classList.add('scrolled');
-        } else {
-          header.classList.remove('scrolled');
+        let adNetworkSupported = false;
+        let piInitialized = false;
+        const BACKEND_URL = 'http://172.21.128.1:8080';
+        const scopes = ['username', 'payments', 'wallet_address'];
+
+        const newsArticles = [
+            { id: 1, title: "Pi Network Mainnet Progress: What’s Next?", date: "April 09, 2025", author: "TruthWeb Team", excerpt: "Pi Network advances in its Testnet phase...", url: "news-article.html" },
+            { id: 2, title: "Pi Coin Surges 35% Post-Mainnet", date: "April 08, 2025", author: "Crypto Desk", excerpt: "Pi Coin experiences volatility...", url: "news-article2.html" },
+            { id: 3, title: "Bitcoin Hits $86K Amid Fed Signals", date: "April 07, 2025", author: "Market Watch", excerpt: "Bitcoin rallies 4%...", url: "news-article3.html" },
+            { id: 4, title: "Ethereum Stablecoin Dominance Grows", date: "April 06, 2025", author: "Blockchain Beat", excerpt: "Ethereum and TRON lead...", url: "news-article4.html" }
+        ];
+
+        function waitForPiSDK() {
+            return new Promise((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof Pi !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    reject(new Error('Pi SDK failed to load'));
+                }, 5000);
+            });
         }
-      });
+
+        async function initializePiSDK() {
+            try {
+                await waitForPiSDK();
+                await Pi.init({ version: "2.0", sandbox: true });
+                piInitialized = true;
+                const nativeFeaturesList = await Pi.nativeFeaturesList();
+                adNetworkSupported = nativeFeaturesList.includes("ad_network");
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Pi SDK Initialization failed:", error);
+                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
+            }
+        }
+
+        function checkAuthStatus() {
+            if (piInitialized && Pi.user()) {
+                const user = Pi.user();
+                addNotification(`Welcome back, ${user.username}!`);
+            }
+        }
+
+        async function authenticateUser() {
+            if (!piInitialized) return addNotification("Pi SDK not initialized.");
+            try {
+                const response = await Pi.authenticate(scopes);
+                addNotification(`Welcome, ${response.user.username}!`);
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                addNotification("Authentication failed.");
+            }
+        }
+
+        function logoutUser() {
+            if (piInitialized) {
+                Pi.logout();
+                addNotification("Logged out successfully.");
+                checkAuthStatus();
+            }
+        }
+
+        function addNotification(message) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count++;
+            countSpan.textContent = count;
+
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.innerHTML = `
+                <span>${new Date().toLocaleTimeString()} - ${message}</span>
+                <button class="dismiss-btn" onclick="dismissNotification(this)">✕</button>
+            `;
+            dropdown.insertBefore(item, dropdown.firstChild);
+        }
+
+        function dismissNotification(button) {
+            const item = button.parentElement;
+            item.remove();
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count = Math.max(0, count - 1);
+            countSpan.textContent = count;
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            addNotification("Dark mode " + (document.body.classList.contains('dark') ? "enabled" : "disabled"));
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const burger = document.querySelector('.burger-btn');
+            menu.classList.toggle('open');
+            burger.classList.toggle('open');
+        }
+
+        function closeMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            const burger = document.querySelector('.burger-btn');
+            menu.classList.remove('open');
+            burger.classList.remove('open');
+        }
+
+        function searchNews(query) {
+            const results = document.getElementById('search-results');
+            results.innerHTML = '';
+            if (query.length < 2) {
+                results.classList.remove('active');
+                return;
+            }
+            const filtered = newsArticles.filter(n => n.title.toLowerCase().includes(query.toLowerCase()));
+            filtered.forEach(article => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `<a href="${article.url}">${article.title}</a>`;
+                results.appendChild(item);
+            });
+            results.classList.add('active');
+        }
+
+        function updateProgressBar() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.querySelector('.progress-bar').style.width = scrollPercent + '%';
+        }
+
+        function toggleGoToTop() {
+            const goToTop = document.querySelector('.go-to-top');
+            goToTop.classList.toggle('visible', window.scrollY > 300);
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openChat() {
+            alert('Live chat feature coming soon! (Testnet Mode)');
+        }
+
+        function subscribeNewsletter(event) {
+            event.preventDefault();
+            const email = document.getElementById('newsletter-email').value;
+            if (!email || !/\S+@\S+\.\S+/.test(email)) {
+                addNotification("Please enter a valid email address.");
+                return;
+            }
+            addNotification("Thank you for subscribing! (Testnet Mode)");
+            document.getElementById('newsletter-email').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePiSDK();
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+            }
+            window.addEventListener('scroll', () => {
+                updateProgressBar();
+                toggleGoToTop();
+            });
+            document.addEventListener('click', (e) => {
+                const results = document.getElementById('search-results');
+                if (!e.target.closest('.search-container')) {
+                    results.classList.remove('active');
+                }
+                const dropdown = document.getElementById('notification-dropdown');
+                if (!e.target.closest('.notification-bell') && !e.target.closest('.dismiss-btn')) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>
