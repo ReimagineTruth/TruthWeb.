@@ -31,15 +31,12 @@
             --dark-highlight: #555555;
             --banner-bg-light: #ECEFF1;
             --banner-bg-dark: #2A2A2A;
-            --banner-border-light: #CFD8DC;
-            --banner-border-dark: #444444;
             --nav-bg-light: #FFFFFF;
             --nav-bg-dark: #1A1A1A;
             --nav-text-light: #000000;
             --nav-text-dark: #E0E0E0;
             --nav-hover-light: #FFD700;
             --nav-hover-dark: #FFD700;
-            --eco-color: #28A745;
             --testnet-badge: #FF0000;
             --news-bg: #FFFFFF;
             --shadow-light: rgba(0, 0, 0, 0.05);
@@ -49,15 +46,15 @@
         }
         html { scroll-behavior: smooth; }
         body {
-           -background: var(--background-color);
+            background: var(--background-color);
             color: var(--text-color);
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
             line-height: 1.6;
-            transition: all 0.3s ease;
-            padding-top: 100px; /* Adjusted for banner and header */
+            transition: background 0.3s ease, color 0.3s ease;
+            padding-top: 110px; /* Adjusted for banner and header */
         }
         body.dark {
             --primary-color: var(--dark-primary);
@@ -69,10 +66,14 @@
             --button-hover-bg-color: #FFD700;
             --button-hover-text-color: #000000;
             --news-bg: #1E1E1E;
+            --banner-bg-light: var(--banner-bg-dark);
+            --nav-bg-light: var(--nav-bg-dark);
+            --nav-text-light: var(--nav-text-dark);
+            --search-bg-light: var(--search-bg-dark);
         }
         .progress-bar {
             position: fixed;
-            top: 36px;
+            top: 40px; /* Below banner */
             left: 0;
             width: 0;
             height: 4px;
@@ -82,40 +83,40 @@
             box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
         }
         .announcement-banner {
-            background: var(--accent-color);
-            color: var(--primary-color);
-            padding: 0.5rem 1rem;
+            background: var(--banner-bg-light);
+            color: var(--text-color);
+            padding: 0.75rem 1rem;
             text-align: center;
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 500;
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             z-index: 1002;
-            box-shadow: 0 2px 8px var(--shadow-light);
+            border-bottom: 1px solid var(--highlight-color);
+            transition: transform 0.3s ease;
         }
-        body.dark .announcement-banner { background: #FFA500; color: #000000; }
+        .announcement-banner.hidden { transform: translateY(-100%); }
         .sticky-header {
             position: fixed;
-            top: 40px; /* Adjusted for banner height */
+            top: 40px; /* Below banner */
             width: 100%;
             z-index: 1000;
-            padding: 0 1rem;
-            height: 60px;
+            padding: 0 2rem;
+            height: 70px;
             background: var(--nav-bg-light);
             box-shadow: 0 3px 15px var(--shadow-light);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.3s ease;
+            transition: transform 0.3s ease, background 0.3s ease;
         }
-        body.dark .sticky-header {
-            background: var(--nav-bg-dark);
-            box-shadow: 0 3px 15px var(--shadow-dark);
-        }
+        .sticky-header.hidden { transform: translateY(-100%); }
+        body.dark .sticky-header { background: var(--nav-bg-dark); box-shadow: 0 3px 15px var(--shadow-dark); }
         .sticky-header .logo-text { font-size: 1.5rem; font-weight: 700; }
         .testnet-badge { background: var(--testnet-badge); color: #FFFFFF; padding: 0.25rem 0.75rem; font-size: 0.75rem; border-radius: 9999px; margin-left: 0.5rem; }
+        .desktop-nav { display: none; }
         .desktop-nav .nav-item a {
             position: relative;
             padding: 0.75rem 1.25rem;
@@ -174,7 +175,6 @@
             transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: 2px 0 15px var(--shadow-dark);
             overflow-y: auto;
-            transform: translateX(0);
         }
         body.dark .mobile-menu { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
         .mobile-menu.open { left: 0; }
@@ -237,7 +237,7 @@
             background: var(--search-bg-light);
             padding: 1rem 2rem;
             position: sticky;
-            top: 102px; /* Adjusted for banner + header */
+            top: 110px; /* Below banner + header */
             z-index: 999;
             transition: background 0.3s ease;
         }
@@ -320,7 +320,6 @@
             padding: 0;
             max-height: 400px;
             overflow-y: auto;
-            overflow: hidden;
         }
         .notification-dropdown.active { display: block; }
         .notification-item {
@@ -356,6 +355,7 @@
             padding: 0.75rem 1.25rem;
             gap: 0.5rem;
             color: var(--nav-text-light);
+            cursor: pointer;
         }
         body.dark .dark-mode-toggle { color: var(--nav-text-dark); }
         .dark-mode-toggle span { font-weight: 600; text-transform: uppercase; font-size: 0.95rem; }
@@ -490,8 +490,8 @@
             z-index: 1000;
             transition: transform 0.3s ease;
         }
-        body.dark .mobile-footer-nav { background: var(--nav-bg-dark); border-top: 1px solid var(--dark-highlight); }
         .mobile-footer-nav.hidden { transform: translateY(100%); }
+        body.dark .mobile-footer-nav { background: var(--nav-bg-dark); border-top: 1px solid var(--dark-highlight); }
         .mobile-nav-item {
             position: relative;
             display: flex;
@@ -508,7 +508,6 @@
         body.dark .mobile-nav-item { color: var(--nav-text-dark); }
         .mobile-nav-item i { font-size: 1.5rem; margin-bottom: 0.35rem; }
         .mobile-nav-item:hover, .mobile-nav-item.active { color: var(--accent-color); transform: scale(1.1); }
-        .mobile-nav-item .cart-count { top: 0; right: 5px; width: 20px; height: 20px; font-size: 0.9rem; }
         .mobile-nav-item[data-tooltip]:after {
             content: attr(data-tooltip);
             position: absolute;
@@ -528,10 +527,10 @@
         .mobile-nav-item:hover[data-tooltip]:after { opacity: 1; }
         @media (max-width: 768px) {
             body { padding-top: 100px; }
-            .announcement-banner { padding: 0.5rem 1rem; font-size: 0.9rem; }
+            .announcement-banner { padding: 0.5rem 1rem; font-size: 0.85rem; }
             .progress-bar { top: 36px; }
-            .sticky-header { padding: 0 1rem; height: 60px; }
-            .search-section { top: 102px; padding: 1rem; }
+            .sticky-header { top: 36px; padding: 0 1rem; height: 60px; }
+            .search-section { top: 96px; padding: 1rem; }
             .news-grid { grid-template-columns: 1fr; }
             .news-card img { height: 180px; }
             .news-header h1 { font-size: 2rem; }
@@ -542,6 +541,7 @@
             .live-chat-btn { bottom: 130px; right: 15px; }
         }
         @media (min-width: 769px) {
+            .desktop-nav { display: flex; }
             .mobile-footer-nav { display: none; }
         }
         @media (max-width: 1024px) {
@@ -552,13 +552,33 @@
 <body onload="checkAuthStatus()">
     <div class="progress-bar"></div>
     <div class="announcement-banner">
-        <p>Welcome to TruthWeb News! Stay Updated with Pi Network and More</p>
+        <p>Stay Updated with TruthWeb News!</p>
     </div>
     <header class="sticky-header">
         <div class="flex items-center">
             <a href="index.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
         </div>
         <div class="flex items-center">
+            <nav class="desktop-nav items-center">
+                <ul class="flex space-x-2">
+                    <li class="nav-item"><a href="index.html" data-tooltip="Home">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html" data-tooltip="Marketplace">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html" data-tooltip="Profile">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html" data-tooltip="Wallet">Wallet</a></li>
+                    <li class="nav-item"><a href="vendor.html" data-tooltip="Sell">Sell</a></li>
+                    <li class="nav-item"><a href="about.html" data-tooltip="About">About</a></li>
+                    <li class="nav-item"><a href="support.html" data-tooltip="Support">Support</a></li>
+                    <li class="nav-item">
+                        <label class="dark-mode-toggle" for="darkModeSwitchDesktop">
+                            <span>Dark Mode</span>
+                            <div class="switch">
+                                <input type="checkbox" id="darkModeSwitchDesktop" aria-label="Toggle Dark Mode">
+                                <span class="slider"></span>
+                            </div>
+                        </label>
+                    </li>
+                </ul>
+            </nav>
             <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
                 <i class="fas fa-bell text-lg"></i>
                 <span class="notification-count" id="notification-count">0</span>
@@ -979,6 +999,35 @@
             };
         }
 
+        function handleScroll() {
+            const header = document.querySelector('.sticky-header');
+            const banner = document.querySelector('.announcement-banner');
+            const footerNav = document.querySelector('.mobile-footer-nav');
+            const currentScroll = window.scrollY;
+            const isMobile = window.innerWidth <= 768;
+
+            if (isMobile) {
+                if (currentScroll > lastScroll && currentScroll > 100) {
+                    header.classList.add('hidden');
+                    banner.classList.add('hidden');
+                    footerNav.classList.add('hidden');
+                } else if (currentScroll < lastScroll) {
+                    header.classList.remove('hidden');
+                    banner.classList.remove('hidden');
+                    footerNav.classList.remove('hidden');
+                }
+            } else {
+                header.classList.remove('hidden');
+                banner.classList.remove('hidden');
+            }
+
+            lastScroll = currentScroll;
+            updateProgressBar();
+            toggleGoToTop();
+        }
+
+        let lastScroll = 0;
+
         document.addEventListener('DOMContentLoaded', () => {
             initializePiSDK();
             const isDark = localStorage.getItem('darkMode') === 'true';
@@ -995,19 +1044,7 @@
             desktopSwitch.addEventListener('change', toggleDarkMode);
             mobileSwitch.addEventListener('change', toggleDarkMode);
 
-            let lastScroll = 0;
-            window.addEventListener('scroll', debounce(() => {
-                const currentScroll = window.scrollY;
-                const mobileNav = document.querySelector('.mobile-footer-nav');
-                if (currentScroll > lastScroll && currentScroll > 100) {
-                    mobileNav.classList.add('hidden');
-                } else {
-                    mobileNav.classList.remove('hidden');
-                }
-                lastScroll = currentScroll;
-                updateProgressBar();
-                toggleGoToTop();
-            }, 100));
+            window.addEventListener('scroll', debounce(handleScroll, 100));
 
             document.addEventListener('click', (e) => {
                 const results = document.getElementById('search-results');
