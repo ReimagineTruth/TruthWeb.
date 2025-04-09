@@ -175,27 +175,76 @@
         .mobile-menu {
             position: fixed;
             top: 0;
-            right: -100%;
-            width: 80%;
-            max-width: 300px;
+            left: -100%; /* Slide from left like X */
+            width: 85%;
+            max-width: 320px;
             height: 100%;
             background: var(--nav-bg-light);
             color: var(--nav-text-light);
-            padding: 1rem;
+            padding: 2rem 1rem;
             z-index: 1001;
-            transition: right 0.3s ease;
-            box-shadow: -2px 0 10px var(--shadow-dark);
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth slide */
+            box-shadow: 2px 0 15px var(--shadow-dark);
             overflow-y: auto;
+            transform: translateX(0);
         }
         body.dark .mobile-menu { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
-        .mobile-menu.open { right: 0; }
-        .mobile-menu-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .mobile-menu-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--nav-text-light); }
+        .mobile-menu.open { left: 0; }
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--highlight-color);
+        }
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 1.75rem;
+            cursor: pointer;
+            color: var(--nav-text-light);
+            position: relative;
+            width: 30px;
+            height: 30px;
+            transition: transform 0.3s ease;
+        }
+        .mobile-menu-close:hover { transform: rotate(90deg); }
         body.dark .mobile-menu-close { color: var(--nav-text-dark); }
-        .mobile-menu ul { list-style: none; padding: 0; }
-        .mobile-menu .nav-item a { display: block; padding: 0.75rem 1rem; color: var(--nav-text-light); text-decoration: none; }
+        .mobile-menu-close::before, .mobile-menu-close::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 2px;
+            background: currentColor;
+            transform-origin: center;
+        }
+        .mobile-menu-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+        .mobile-menu-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+        .mobile-menu ul { list-style: none; padding: 0; margin: 0; }
+        .mobile-menu .nav-item a {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            color: var(--nav-text-light);
+            text-decoration: none;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease;
+        }
         body.dark .mobile-menu .nav-item a { color: var(--nav-text-dark); }
-        .mobile-menu .nav-item a:hover { background: var(--highlight-color); }
+        .mobile-menu .nav-item a:hover { background: var(--highlight-color); padding-left: 1.5rem; }
+        .mobile-menu .nav-item a i { margin-right: 1rem; font-size: 1.2rem; }
+        .mobile-menu .nav-section { margin-bottom: 2rem; }
+        .mobile-menu .nav-section h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--highlight-color);
+        }
         .search-section {
             background: var(--search-bg-light);
             padding: 1rem 2rem;
@@ -353,7 +402,7 @@
         }
         input:checked + .slider { background-color: var(--accent-color); }
         input:checked + .slider:before { transform: translateX(20px); }
-        .mobile-menu .dark-mode-toggle { padding: 0.75rem 1rem; width: 100%; }
+        .mobile-menu .dark-mode-toggle { padding: 1rem; width: 100%; }
         .mobile-menu .dark-mode-toggle:hover { background: var(--highlight-color); }
         .news-section { padding: 4rem 1rem; background: var(--background-color); }
         .news-container { max-width: 1200px; margin: 0 auto; }
@@ -454,6 +503,7 @@
             transition: transform 0.3s ease;
         }
         body.dark .mobile-footer-nav { background: var(--nav-bg-dark); border-top: 1px solid var(--dark-highlight); }
+        .mobile-footer-nav.hidden { transform: translateY(100%); }
         .mobile-nav-item {
             position: relative;
             display: flex;
@@ -559,26 +609,66 @@
     <nav class="mobile-menu">
         <div class="mobile-menu-header">
             <span class="logo-text">TruthWeb</span>
-            <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="Close Menu"><i class="fas fa-times"></i></button>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="Close Menu"></button>
         </div>
-        <ul>
-            <li class="nav-item"><a href="index.html">Home</a></li>
-            <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
-            <li class="nav-item"><a href="profile.html">Profile</a></li>
-            <li class="nav-item"><a href="wallet.html">Wallet</a></li>
-            <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
-            <li class="nav-item"><a href="about.html">About</a></li>
-            <li class="nav-item"><a href="support.html">Support</a></li>
-            <li class="nav-item">
-                <label class="dark-mode-toggle" for="darkModeSwitchMobile">
-                    <span>Dark Mode</span>
-                    <div class="switch">
-                        <input type="checkbox" id="darkModeSwitchMobile" aria-label="Toggle Dark Mode">
-                        <span class="slider"></span>
-                    </div>
-                </label>
-            </li>
-        </ul>
+        <div class="nav-section">
+            <h3>TruthWeb</h3>
+            <ul>
+                <li class="nav-item"><a href="index.html"><i class="fas fa-home"></i>Home</a></li>
+                <li class="nav-item"><a href="news.html"><i class="fas fa-newspaper"></i>News</a></li>
+                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i>About Us</a></li>
+                <li class="nav-item"><a href="developers.html"><i class="fas fa-code"></i>Developers</a></li>
+                <li class="nav-item"><a href="future.html"><i class="fas fa-clock"></i>Coming Soon</a></li>
+                <li class="nav-item"><a href="swap.html"><i class="fas fa-exchange-alt"></i>Swap</a></li>
+                <li class="nav-item"><a href="truwebbot.html"><i class="fas fa-robot"></i>TruthWeb AI Bot</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Shop</h3>
+            <ul>
+                <li class="nav-item"><a href="marketplace.html"><i class="fas fa-store"></i>Marketplace</a></li>
+                <li class="nav-item"><a href="pi-powered-marketplace.html"><i class="fas fa-coins"></i>Pi Payments</a></li>
+                <li class="nav-item"><a href="global-expansion.html"><i class="fas fa-globe"></i>Global Marketplace</a></li>
+                <li class="nav-item"><a href="escrow-system.html"><i class="fas fa-lock"></i>Escrow System</a></li>
+                <li class="nav-item"><a href="multi-category-listings.html"><i class="fas fa-list"></i>Multi-Category Listings</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Account</h3>
+            <ul>
+                <li class="nav-item"><a href="profile.html"><i class="fas fa-user"></i>Profile</a></li>
+                <li class="nav-item"><a href="wallet.html"><i class="fas fa-wallet"></i>Wallet</a></li>
+                <li class="nav-item"><a href="pitrade.html"><i class="fas fa-chart-line"></i>Pi Trade</a></li>
+                <li class="nav-item"><a href="pitrack.html"><i class="fas fa-eye"></i>Pi Track</a></li>
+                <li class="nav-item"><a href="user-profiles-wallet.html"><i class="fas fa-cog"></i>Manage Profile & Wallet</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Support</h3>
+            <ul>
+                <li class="nav-item"><a href="contact.html"><i class="fas fa-envelope"></i>Contact Us</a></li>
+                <li class="nav-item"><a href="faq.html"><i class="fas fa-question-circle"></i>FAQ</a></li>
+                <li class="nav-item"><a href="terms.html"><i class="fas fa-file-contract"></i>Terms of Service</a></li>
+                <li class="nav-item"><a href="privacy.html"><i class="fas fa-shield-alt"></i>Privacy Policy</a></li>
+                <li class="nav-item"><a href="security.html"><i class="fas fa-lock"></i>Security Policy</a></li>
+                <li class="nav-item"><a href="license.html"><i class="fas fa-file-alt"></i>PiOS License</a></li>
+                <li class="nav-item"><a href="code-of-conduct.html"><i class="fas fa-users"></i>Code of Conduct</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Settings</h3>
+            <ul>
+                <li class="nav-item">
+                    <label class="dark-mode-toggle" for="darkModeSwitchMobile">
+                        <i class="fas fa-moon"></i><span>Dark Mode</span>
+                        <div class="switch">
+                            <input type="checkbox" id="darkModeSwitchMobile" aria-label="Toggle Dark Mode">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </li>
+            </ul>
+        </div>
     </nav>
     <main>
         <section class="news-section">
@@ -840,7 +930,6 @@
             body.classList.toggle('dark');
             const isDark = body.classList.contains('dark');
             localStorage.setItem('darkMode', isDark);
-            // Sync both switches
             document.getElementById('darkModeSwitchDesktop').checked = isDark;
             document.getElementById('darkModeSwitchMobile').checked = isDark;
             addNotification(`Dark mode ${isDark ? 'enabled' : 'disabled'}`);
@@ -851,6 +940,7 @@
             const burger = document.querySelector('.burger-btn');
             menu.classList.toggle('open');
             burger.classList.toggle('open');
+            document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
         }
 
         function closeMobileMenu() {
@@ -858,6 +948,7 @@
             const burger = document.querySelector('.burger-btn');
             menu.classList.remove('open');
             burger.classList.remove('open');
+            document.body.style.overflow = '';
         }
 
         function searchNews(query) {
@@ -932,21 +1023,29 @@
             const desktopSwitch = document.getElementById('darkModeSwitchDesktop');
             const mobileSwitch = document.getElementById('darkModeSwitchMobile');
 
-            // Set initial state
             if (isDark) {
                 body.classList.add('dark');
             }
             desktopSwitch.checked = isDark;
             mobileSwitch.checked = isDark;
 
-            // Add event listeners to both switches
             desktopSwitch.addEventListener('change', toggleDarkMode);
             mobileSwitch.addEventListener('change', toggleDarkMode);
 
+            let lastScroll = 0;
             window.addEventListener('scroll', debounce(() => {
+                const currentScroll = window.scrollY;
+                const mobileNav = document.querySelector('.mobile-footer-nav');
+                if (currentScroll > lastScroll && currentScroll > 100) {
+                    mobileNav.classList.add('hidden');
+                } else {
+                    mobileNav.classList.remove('hidden');
+                }
+                lastScroll = currentScroll;
                 updateProgressBar();
                 toggleGoToTop();
             }, 100));
+
             document.addEventListener('click', (e) => {
                 const results = document.getElementById('search-results');
                 if (!e.target.closest('.search-container')) {
@@ -955,6 +1054,10 @@
                 const dropdown = document.getElementById('notification-dropdown');
                 if (!e.target.closest('.notification-bell') && !e.target.closest('.dismiss-btn')) {
                     dropdown.classList.remove('active');
+                }
+                const menu = document.querySelector('.mobile-menu');
+                if (!e.target.closest('.mobile-menu') && !e.target.closest('.burger-btn') && menu.classList.contains('open')) {
+                    closeMobileMenu();
                 }
             });
 
@@ -977,16 +1080,10 @@
                 item.addEventListener('touchcancel', () => clearTimeout(pressTimer));
             });
 
-            let lastScroll = 0;
-            window.addEventListener('scroll', () => {
-                const currentScroll = window.scrollY;
-                const mobileNav = document.querySelector('.mobile-footer-nav');
-                if (currentScroll > lastScroll && currentScroll > 100) {
-                    mobileNav.style.transform = 'translateY(100%)';
-                } else {
-                    mobileNav.style.transform = 'translateY(0)';
+            document.querySelectorAll('.mobile-menu .nav-item a').forEach(item => {
+                if (item.getAttribute('href') === currentPath) {
+                    item.style.background = 'var(--highlight-color)';
                 }
-                lastScroll = currentScroll;
             });
 
             addNotification("Welcome to TruthWeb News!");
