@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="google-adsense-account" content="ca-pub-2560904735244526">
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
+    <title>TruthWeb News - Latest Updates</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2560904735244526" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --primary-color: #000000;
+            --secondary-color: #FFFFFF;
+            --highlight-color: #CCCCCC;
+            --text-color: #FFFFFF;
+            --button-bg-color: #000000;
+            --button-text-color: #FFFFFF;
+            --button-hover-bg-color: #FFFFFF;
+            --button-hover-text-color: #000000;
+            --background-color: #F5F5F5;
+            --accent-color: #FFD700;
+            --progress-bar-color: var(--accent-color);
+            --dark-primary: #FFFFFF;
+            --dark-secondary: #1A1A1A;
+            --dark-text: #E0E0E0;
+            --dark-highlight: #555555;
+            --banner-bg-light: #ECEFF1;
+            --banner-bg-dark: #2A2A2A;
+            --banner-border-light: #CFD8DC;
+            --banner-border-dark: #444444;
+            --nav-bg-light: #FFFFFF;
+            --nav-bg-dark: #1A1A1A;
+            --nav-text-light: #000000;
+            --nav-text-dark: #E0E0E0;
+            --nav-hover-light: #007AFF;
+            --nav-hover-dark: #0A84FF;
+            --eco-color: #28A745;
+            --testnet-badge: #FF0000;
+            --news-bg: #FFFFFF;
+            --shadow-light: rgba(0, 0, 0, 0.05);
+            --shadow-dark: rgba(0, 0, 0, 0.3);
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            background: var(--background-color);
+            color: var(--primary-color);
+            font-family: 'SF Pro Display', -apple-system, sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+            padding-top: 112px;
+            -webkit-font-smoothing: antialiased;
+        }
+        body.dark {
+            --primary-color: var(--dark-primary);
+            --secondary-color: var(--dark-secondary);
+            --text-color: var(--dark-text);
+            --background-color: #121212;
+            --highlight-color: var(--dark-highlight);
+            --button-bg-color: #333333;
+            --button-hover-bg-color: #0A84FF;
+            --button-hover-text-color: #FFFFFF;
+            --news-bg: #1E1E1E;
+        }
+        .progress-bar {
+            position: fixed;
+            top: 48px;
+            left: 0;
+            width: 0;
+            height: 4px;
+            background: var(--progress-bar-color);
+            z-index: 1001;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+        }
+        .announcement-banner {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.75rem 1rem;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1002;
+            box-shadow: 0 2px 8px var(--shadow-light);
+        }
+        body.dark .announcement-banner { background: #FFA500; color: #000000; }
+        .banner-link { color: var(--primary-color); text-decoration: underline; }
+        .banner-link:hover { color: #000000; }
+
+        /* Mobile Header (iOS Style) */
+        .mobile-header {
+            position: fixed;
+            top: 48px;
+            width: 100%;
+            background: rgba(245, 245, 245, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            padding: 0 16px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        body.dark .mobile-header { background: rgba(26, 26, 26, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .mobile-header-title { font-size: 17px; font-weight: 600; }
+        .mobile-header-icon { font-size: 22px; color: var(--nav-hover-light); padding: 8px; cursor: pointer; }
+        body.dark .mobile-header-icon { color: var(--nav-hover-dark); }
+
+        /* Desktop Header (macOS Style) */
+        .desktop-header {
+            position: fixed;
+            top: 48px;
+            width: 100%;
+            background: rgba(245, 245, 245, 0.95);
+            backdrop-filter: blur(12px);
+            z-index: 1000;
+            padding: 0 32px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px var(--shadow-light);
+        }
+        body.dark .desktop-header { background: rgba(40, 40, 40, 0.95); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+        .desktop-header .logo-text { font-size: 16px; font-weight: 600; }
+        .testnet-badge { background: var(--testnet-badge); color: #FFFFFF; padding: 0.2rem 0.6rem; font-size: 0.7rem; border-radius: 9999px; margin-left: 0.5rem; }
+        .desktop-nav { display: flex; align-items: center; }
+        .desktop-nav .nav-item a {
+            color: var(--nav-text-light);
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            border-radius: 6px;
+        }
+        body.dark .desktop-nav .nav-item a { color: var(--nav-text-dark); }
+        .desktop-nav .nav-item a:hover { background: rgba(0, 0, 0, 0.1); color: var(--nav-hover-light); }
+        body.dark .desktop-nav .nav-item a:hover { background: rgba(255, 255, 255, 0.1); color: var(--nav-hover-dark); }
+        .desktop-actions { display: flex; align-items: center; gap: 12px; }
+        .desktop-icon { font-size: 16px; color: var(--nav-text-light); padding: 6px; cursor: pointer; transition: all 0.3s ease; }
+        body.dark .desktop-icon { color: var(--nav-text-dark); }
+        .desktop-icon:hover { color: var(--nav-hover-light); }
+        body.dark .desktop-icon:hover { color: var(--nav-hover-dark); }
+
+        /* Search Container (Shared) */
+        .search-container { flex-grow: 1; max-width: 500px; margin: 0 16px; position: relative; }
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            border: 1px solid var(--highlight-color);
+            border-radius: 9999px;
+            background: var(--secondary-color);
+            color: var(--primary-color);
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .search-input:focus { border-color: var(--accent-color); box-shadow: 0 0 8px rgba(255, 215, 0, 0.3); }
+        .search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--nav-text-light); font-size: 16px; }
+        body.dark .search-icon { color: var(--nav-text-dark); }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            display: none;
+            z-index: 60;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .search-results.active { display: block; }
+        .search-result-item { padding: 0.75rem; cursor: pointer; font-size: 15px; }
+        .search-result-item:hover { background: var(--highlight-color); }
+
+        /* Mobile Footer Navigation (iOS Style) */
+        .mobile-footer-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: rgba(245, 245, 245, 0.95);
+            backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 50px;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        body.dark .mobile-footer-nav { background: rgba(26, 26, 26, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.1); }
+        .mobile-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--nav-text-light);
+            font-size: 12px;
+            font-weight: 400;
+            padding: 4px 0;
+            transition: color 0.2s ease;
+        }
+        body.dark .mobile-nav-item { color: var(--nav-text-dark); }
+        .mobile-nav-item.active { color: var(--nav-hover-light); }
+        body.dark .mobile-nav-item.active { color: var(--nav-hover-dark); }
+        .mobile-nav-item i { font-size: 24px; margin-bottom: 2px; }
+        .cart-count { background: var(--accent-color); color: var(--primary-color); border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; position: absolute; top: -5px; right: -5px; font-size: 10px; }
+
+        /* Content (iOS-Inspired) */
+        .news-section { padding: 2rem 1rem; background: var(--background-color); }
+        .news-container { max-width: 1200px; margin: 0 auto; }
+        .news-header { text-align: center; margin-bottom: 2rem; }
+        .news-header h1 { font-size: 34px; font-weight: 700; line-height: 41px; }
+        .news-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .news-card { background: var(--news-bg); border-radius: 18px; box-shadow: 0 2px 8px var(--shadow-light); overflow: hidden; transition: transform 0.3s ease; }
+        body.dark .news-card { box-shadow: 0 2px 8px var(--shadow-dark); }
+        .news-card:hover { transform: translateY(-4px); }
+        .news-card img { width: 100%; height: 180px; object-fit: cover; }
+        .news-card-content { padding: 1rem; }
+        .news-card h2 { font-size: 20px; font-weight: 600; margin-bottom: 0.5rem; }
+        .news-card-meta { font-size: 14px; color: var(--highlight-color); margin-bottom: 0.75rem; }
+        .news-card p { font-size: 16px; color: var(--primary-color); margin-bottom: 1rem; }
+        .news-card a { color: var(--nav-hover-light); text-decoration: none; font-weight: 600; font-size: 15px; }
+        body.dark .news-card a { color: var(--nav-hover-dark); }
+        .news-card a:hover { text-decoration: underline; }
+
+        /* Other Elements */
+        .btn { background: var(--button-bg-color); color: var(--button-text-color); padding: 0.75rem 2rem; border: none; border-radius: 9999px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn:hover { background: var(--button-hover-bg-color); color: var(--button-hover-text-color); transform: scale(1.05); }
+        .btn.accent { background: var(--accent-color); color: var(--primary-color); }
+        .btn.accent:hover { background: #FFA500; }
+        .notification-bell { position: relative; }
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 300px;
+            background: var(--secondary-color);
+            border: 1px solid var(--highlight-color);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            display: none;
+            z-index: 100;
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notification-dropdown.active { display: block; }
+        .notification-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--highlight-color); font-size: 15px; }
+        .notification-item:last-child { border-bottom: none; }
+        .dismiss-btn { background: none; border: none; color: var(--primary-color); cursor: pointer; font-size: 14px; }
+        .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        footer { background: var(--nav-bg-dark); color: var(--dark-text); padding: 2rem 1rem; position: relative; }
+        .footer-content { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+        .footer-section h3 { font-size: 20px; font-weight: 600; color: var(--accent-color); margin-bottom: 1rem; }
+        .footer-section ul { list-style: none; padding: 0; }
+        .footer-section li { margin-bottom: 0.75rem; }
+        .footer-section a { color: var(--dark-text); text-decoration: none; font-size: 15px; transition: color 0.3s ease; }
+        .footer-section a:hover { color: var(--accent-color); }
+        .footer-divider { max-width: 1200px; margin: 2rem auto; height: 1px; background: var(--highlight-color); opacity: 0.3; }
+        .footer-center { text-align: center; margin: 2rem 0; }
+        .footer-logo { max-width: 120px; height: auto; margin-bottom: 1rem; }
+        .footer-tagline { font-size: 15px; color: var(--dark-text); font-style: italic; }
+        .footer-bottom { text-align: center; font-size: 14px; }
+        .social-icons { margin-bottom: 1rem; }
+        .social-icons a { color: var(--dark-text); margin: 0 0.75rem; font-size: 20px; transition: color 0.3s ease; }
+        .social-icons a:hover { color: var(--accent-color); }
+        .footer-newsletter { background: rgba(255, 255, 255, 0.05); padding: 1rem; border-radius: 12px; }
+        .footer-newsletter p { font-size: 14px; color: var(--dark-text); margin-bottom: 0.75rem; }
+        .footer-newsletter form { display: flex; gap: 0.5rem; }
+        .footer-newsletter input { flex: 1; padding: 0.75rem; border: 1px solid var(--highlight-color); border-radius: 8px; background: var(--secondary-color); color: var(--primary-color); font-size: 15px; }
+        .footer-newsletter button { background: var(--accent-color); color: var(--primary-color); padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; transition: background 0.3s ease; font-size: 15px; }
+        .footer-newsletter button:hover { background: #FFA500; }
+        .go-to-top { position: fixed; bottom: 20px; right: 20px; background: var(--accent-color); color: var(--primary-color); width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; opacity: 0; transition: opacity 0.3s ease; }
+        .go-to-top.visible { opacity: 1; }
+        .live-chat-btn { position: fixed; bottom: 70px; right: 20px; background: var(--accent-color); color: var(--primary-color); width: 44px; height: 44px; border-radius: 22px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; box-shadow: 0 2px 8px var(--shadow-dark); transition: transform 0.3s ease; }
+        .live-chat-btn:hover { transform: scale(1.1); }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .desktop-header { display: none; }
+            .mobile-header { display: flex; }
+            .mobile-footer-nav { display: flex; }
+            .news-grid { grid-template-columns: 1fr; }
+            .news-card img { height: 150px; }
+            .news-header h1 { font-size: 28px; line-height: 34px; }
+            .search-container { max-width: 200px; }
+            @supports (padding-bottom: env(safe-area-inset-bottom)) {
+                .mobile-footer-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 4px); }
+                body { padding-bottom: calc(env(safe-area-inset-bottom) + 50px); }
+            }
+        }
+        @media (min-width: 769px) {
+            .mobile-header { display: none; }
+            .mobile-footer-nav { display: none; }
+            .desktop-header { display: flex; }
+        }
+    </style>
+</head>
+<body onload="checkAuthStatus()">
+    <div class="progress-bar"></div>
+    <div class="announcement-banner">
+        <p>Welcome to TruthWeb News! Stay Updated with Pi Network and More</p>
+    </div>
+    <header class="mobile-header">
+        <i class="fas fa-arrow-left mobile-header-icon" onclick="goBack()"></i>
+        <span class="mobile-header-title">TruthWeb News</span>
+        <i class="fas fa-search mobile-header-icon" onclick="toggleSearch()"></i>
+    </header>
+    <header class="desktop-header">
+        <div class="flex items-center">
+            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
+        </div>
+        <nav class="desktop-nav">
+            <ul class="flex space-x-2">
+                <li class="nav-item"><a href="index.html">Home</a></li>
+                <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
+                <li class="nav-item"><a href="profile.html">Profile</a></li>
+                <li class="nav-item"><a href="wallet.html">Wallet</a></li>
+                <li class="nav-item"><a href="cart.html">Cart</a></li>
+                <li class="nav-item"><a href="vendor.html">Sell</a></li>
+                <li class="nav-item"><a href="about.html">About</a></li>
+                <li class="nav-item"><a href="support.html">Support</a></li>
+            </ul>
+        </nav>
+        <div class="desktop-actions">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search news..." aria-label="Search News" oninput="searchNews(this.value)">
+                <i class="fas fa-search search-icon"></i>
+                <div class="search-results" id="search-results"></div>
+            </div>
+            <a href="cart.html" class="desktop-icon" aria-label="Cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cart-count">0</span>
+            </a>
+            <div class="desktop-icon notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
+                <i class="fas fa-bell"></i>
+                <span class="notification-count" id="notification-count">0</span>
+                <div class="notification-dropdown" id="notification-dropdown"></div>
+            </div>
+            <button class="desktop-icon" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode"><i class="fas fa-moon"></i></button>
+        </div>
+    </header>
+    <main>
+        <section class="news-section">
+            <div class="news-container">
+                <div class="news-header">
+                    <h1>Latest News</h1>
+                </div>
+                <div class="news-grid">
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1641936666143-4d5e50556e31?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Network Mainnet">
+                        <div class="news-card-content">
+                            <h2>Pi Network Mainnet Progress: What’s Next?</h2>
+                            <p class="news-card-meta">April 09, 2025 | TruthWeb Team</p>
+                            <p>Pi Network continues to make strides in its Testnet phase with over 60 million Pioneers worldwide...</p>
+                            <a href="news-article.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1639762681485-8c0b4c6e5736?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Pi Coin Surge">
+                        <div class="news-card-content">
+                            <h2>Pi Coin Surges 35% Post-Mainnet</h2>
+                            <p class="news-card-meta">April 08, 2025 | Crypto Desk</p>
+                            <p>Pi Coin experiences volatility as the mainnet launch fuels speculation and trading activity...</p>
+                            <a href="news-article2.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1633113211821-4dbff3a1d6d5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Bitcoin Rally">
+                        <div class="news-card-content">
+                            <h2>Bitcoin Hits $86K Amid Fed Signals</h2>
+                            <p class="news-card-meta">April 07, 2025 | Market Watch</p>
+                            <p>Bitcoin rallies 4% as the Federal Reserve hints at relaxed monetary policies...</p>
+                            <a href="news-article3.html">Read More</a>
+                        </div>
+                    </div>
+                    <div class="news-card">
+                        <img src="https://images.unsplash.com/photo-1620712943543-bcc4688e5250?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" alt="Ethereum Stablecoins">
+                        <div class="news-card-content">
+                            <h2>Ethereum Stablecoin Dominance Grows</h2>
+                            <p class="news-card-meta">April 06, 2025 | Blockchain Beat</p>
+                            <p>Ethereum and TRON lead the stablecoin market as adoption accelerates...</p>
+                            <a href="news-article4.html">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>TruthWeb</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="news.html">News</a></li>
+                    <li><a href="about.html">About Us</a></li>
+                    <li><a href="developers.html">Developers</a></li>
+                    <li><a href="future.html">Coming Soon</a></li>
+                    <li><a href="swap.html">Swap</a></li>
+                    <li><a href="truwebbot.html">TruthWeb AI Bot</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Shop</h3>
+                <ul>
+                    <li><a href="marketplace.html">Marketplace</a></li>
+                    <li><a href="pi-powered-marketplace.html">Pi Payments</a></li>
+                    <li><a href="global-expansion.html">Global Marketplace</a></li>
+                    <li><a href="escrow-system.html">Escrow System</a></li>
+                    <li><a href="multi-category-listings.html">Multi-Category Listings</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Account</h3>
+                <ul>
+                    <li><a href="profile.html">Profile</a></li>
+                    <li><a href="wallet.html">Wallet</a></li>
+                    <li><a href="pitrade.html">Pi Trade</a></li>
+                    <li><a href="pitrack.html">Pi Track</a></li>
+                    <li><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Support</h3>
+                <ul>
+                    <li><a href="contact.html">Contact Us</a></li>
+                    <li><a href="faq.html">FAQ</a></li>
+                    <li><a href="terms.html">Terms of Service</a></li>
+                    <li><a href="privacy.html">Privacy Policy</a></li>
+                    <li><a href="security.html">Security Policy</a></li>
+                    <li><a href="license.html">PiOS License</a></li>
+                    <li><a href="code-of-conduct.html">Code of Conduct</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Stay Connected</h3>
+                <div class="footer-newsletter">
+                    <p>Get the latest Pi Network updates and TruthWeb news.</p>
+                    <form onsubmit="subscribeNewsletter(event)">
+                        <input type="email" id="newsletter-email" placeholder="Enter your email" aria-label="Newsletter Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="footer-divider"></div>
+        <div class="footer-center">
+            <img src="https://i.ibb.co/ccB4s7ys/Untitled-design-removebg-preview.png" alt="TruthWeb Logo" class="footer-logo">
+            <p class="footer-tagline">"Empowering the Pi Network Community with Truth and Innovation"</p>
+        </div>
+        <div class="footer-bottom">
+            <div class="social-icons">
+                <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community | <a href="https://minepi.com" target="_blank">Pi Network</a> | <a href="https://pinetwork-official.github.io" target="_blank">Pi Docs</a></p>
+        </div>
+    </footer>
+    <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
+    <button class="live-chat-btn" onclick="openChat()" aria-label="Live Chat"><i class="fas fa-comment"></i></button>
+    <nav class="mobile-footer-nav">
+        <a href="index.html" class="mobile-nav-item active" onclick="setActiveNav(this)" aria-label="Home">
+            <i class="fas fa-home"></i><span>Home</span>
+        </a>
+        <a href="marketplace.html" class="mobile-nav-item" onclick="setActiveNav(this)" aria-label="Marketplace">
+            <i class="fas fa-store"></i><span>Marketplace</span>
+        </a>
+        <a href="profile.html" class="mobile-nav-item" onclick="setActiveNav(this)" aria-label="Profile">
+            <i class="fas fa-user"></i><span>Profile</span>
+        </a>
+        <a href="wallet.html" class="mobile-nav-item" onclick="setActiveNav(this)" aria-label="Wallet">
+            <i class="fas fa-wallet"></i><span>Wallet</span>
+        </a>
+        <a href="cart.html" class="mobile-nav-item" onclick="setActiveNav(this)" aria-label="Cart">
+            <i class="fas fa-shopping-cart"></i><span>Cart</span>
+            <span class="cart-count" id="mobile-cart-count">0</span>
+        </a>
+    </nav>
+
+    <script>
+        let adNetworkSupported = false;
+        let piInitialized = false;
+        const BACKEND_URL = 'http://172.21.128.1:8080';
+        const scopes = ['username', 'payments', 'wallet_address'];
+
+        const newsArticles = [
+            { id: 1, title: "Pi Network Mainnet Progress: What’s Next?", date: "April 09, 2025", author: "TruthWeb Team", excerpt: "Pi Network advances in its Testnet phase...", url: "news-article.html" },
+            { id: 2, title: "Pi Coin Surges 35% Post-Mainnet", date: "April 08, 2025", author: "Crypto Desk", excerpt: "Pi Coin experiences volatility...", url: "news-article2.html" },
+            { id: 3, title: "Bitcoin Hits $86K Amid Fed Signals", date: "April 07, 2025", author: "Market Watch", excerpt: "Bitcoin rallies 4%...", url: "news-article3.html" },
+            { id: 4, title: "Ethereum Stablecoin Dominance Grows", date: "April 06, 2025", author: "Blockchain Beat", excerpt: "Ethereum and TRON lead...", url: "news-article4.html" }
+        ];
+
+        function waitForPiSDK() {
+            return new Promise((resolve, reject) => {
+                const checkInterval = setInterval(() => {
+                    if (typeof Pi !== 'undefined') {
+                        clearInterval(checkInterval);
+                        resolve(true);
+                    }
+                }, 100);
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    reject(new Error('Pi SDK failed to load'));
+                }, 5000);
+            });
+        }
+
+        async function initializePiSDK() {
+            try {
+                await waitForPiSDK();
+                await Pi.init({ version: "2.0", sandbox: true });
+                piInitialized = true;
+                const nativeFeaturesList = await Pi.nativeFeaturesList();
+                adNetworkSupported = nativeFeaturesList.includes("ad_network");
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Pi SDK Initialization failed:", error);
+                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
+            }
+        }
+
+        function checkAuthStatus() {
+            if (piInitialized && Pi.user()) {
+                const user = Pi.user();
+                addNotification(`Welcome back, ${user.username}!`);
+            }
+        }
+
+        async function authenticateUser() {
+            if (!piInitialized) return addNotification("Pi SDK not initialized.");
+            try {
+                const response = await Pi.authenticate(scopes);
+                addNotification(`Welcome, ${response.user.username}!`);
+                checkAuthStatus();
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                addNotification("Authentication failed.");
+            }
+        }
+
+        function logoutUser() {
+            if (piInitialized) {
+                Pi.logout();
+                addNotification("Logged out successfully.");
+                checkAuthStatus();
+            }
+        }
+
+        function addNotification(message) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count++;
+            countSpan.textContent = count;
+
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            item.innerHTML = `
+                <span>${new Date().toLocaleTimeString()} - ${message}</span>
+                <button class="dismiss-btn" onclick="dismissNotification(this)">✕</button>
+            `;
+            dropdown.insertBefore(item, dropdown.firstChild);
+        }
+
+        function dismissNotification(button) {
+            const item = button.parentElement;
+            item.remove();
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count = Math.max(0, count - 1);
+            countSpan.textContent = count;
+        }
+
+        function toggleNotifications() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('active');
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark');
+            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+            addNotification("Dark mode " + (document.body.classList.contains('dark') ? "enabled" : "disabled"));
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function toggleSearch() {
+            const search = document.querySelector('.mobile-header .search-container');
+            if (search) search.classList.toggle('active');
+        }
+
+        function setActiveNav(element) {
+            const navItems = document.querySelectorAll('.mobile-nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function searchNews(query) {
+            const results = document.getElementById('search-results');
+            results.innerHTML = '';
+            if (query.length < 2) {
+                results.classList.remove('active');
+                return;
+            }
+            const filtered = newsArticles.filter(n => n.title.toLowerCase().includes(query.toLowerCase()));
+            filtered.forEach(article => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `<a href="${article.url}">${article.title}</a>`;
+                results.appendChild(item);
+            });
+            results.classList.add('active');
+        }
+
+        function updateProgressBar() {
+            const scrollTop = window.scrollY;
+            const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+            const scrollPercent = (scrollTop / docHeight) * 100;
+            document.querySelector('.progress-bar').style.width = scrollPercent + '%';
+        }
+
+        function toggleGoToTop() {
+            const goToTop = document.querySelector('.go-to-top');
+            goToTop.classList.toggle('visible', window.scrollY > 300);
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openChat() {
+            alert('Live chat feature coming soon! (Testnet Mode)');
+        }
+
+        function subscribeNewsletter(event) {
+            event.preventDefault();
+            const email = document.getElementById('newsletter-email').value;
+            if (!email || !/\S+@\S+\.\S+/.test(email)) {
+                addNotification("Please enter a valid email address.");
+                return;
+            }
+            addNotification("Thank you for subscribing! (Testnet Mode)");
+            document.getElementById('newsletter-email').value = '';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePiSDK();
+            if (localStorage.getItem('darkMode') === 'true') {
+                document.body.classList.add('dark');
+            }
+            window.addEventListener('scroll', () => {
+                updateProgressBar();
+                toggleGoToTop();
+            });
+            document.addEventListener('click', (e) => {
+                const results = document.getElementById('search-results');
+                if (!e.target.closest('.search-container')) {
+                    results.classList.remove('active');
+                }
+                const dropdown = document.getElementById('notification-dropdown');
+                if (!e.target.closest('.notification-bell') && !e.target.closest('.dismiss-btn')) {
+                    dropdown.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
