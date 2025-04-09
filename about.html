@@ -843,16 +843,6 @@
 
         .about-card p { margin-bottom: 1rem; }
 
-        .mission-vision { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
-
-        .mission-vision div { background: var(--news-bg); border-radius: 10px; padding: 1.5rem; box-shadow: 0 2px 6px var(--shadow-light); transition: transform 0.3s ease; }
-
-        body.dark .mission-vision div { background: var(--news-bg); box-shadow: 0 2px 6px var(--shadow-dark); }
-
-        .mission-vision div:hover { transform: translateY(-5px); }
-
-        .mission-vision h3 { font-size: 20px; font-weight: 600; color: var(--accent-color); margin-bottom: 0.75rem; }
-
         @media (max-width: 768px) {
             body { padding-top: 140px; }
             body.no-banner { padding-top: 90px; }
@@ -869,7 +859,6 @@
             .banner-reopen { bottom: 190px; right: 15px; width: 35px; height: 35px; font-size: 16px; }
             .about-section h2 { font-size: 24px; }
             .about-card { padding: 1.5rem; }
-            .mission-vision { grid-template-columns: 1fr; }
         }
 
         @media (min-width: 769px) {
@@ -1013,38 +1002,24 @@
             <h1 class="text-4xl font-bold text-center mb-8">About TruthWeb</h1>
 
             <div class="about-section">
-                <h2>Who We Are</h2>
+                <h2>Our Mission</h2>
                 <div class="about-card">
-                    <p>TruthWeb is a decentralized platform built for the <span class="shadow-text">Pi Network</span> community, currently operating in <span class="shadow-text">Testnet Mode</span>. We aim to empower users with innovative tools and a marketplace that leverages Pi’s blockchain technology to create a secure, transparent, and community-driven ecosystem.</p>
-                    <p>Founded by a team passionate about blockchain and decentralization, TruthWeb bridges the gap between technology and real-world utility, tailored specifically for Pi Pioneers.</p>
+                    <p>TruthWeb is a decentralized platform built to empower the <span class="shadow-text">Pi Network</span> community. Our mission is to provide a secure, transparent, and innovative ecosystem where users can explore, transact, and connect using Pi in <span class="shadow-text">Testnet Mode</span>. We aim to bridge the gap between blockchain technology and real-world utility, fostering a community-driven marketplace and beyond.</p>
                 </div>
             </div>
 
             <div class="about-section">
-                <h2>Our Mission & Vision</h2>
-                <div class="mission-vision">
-                    <div>
-                        <h3>Mission</h3>
-                        <p>To provide a reliable, user-friendly platform that enhances the Pi Network experience, fostering economic opportunities and community collaboration through blockchain innovation.</p>
-                    </div>
-                    <div>
-                        <h3>Vision</h3>
-                        <p>To become the leading decentralized ecosystem within the Pi Network, driving adoption and real-world use cases while maintaining transparency, security, and inclusivity.</p>
-                    </div>
+                <h2>Who We Are</h2>
+                <div class="about-card">
+                    <p>We are a team of passionate developers, blockchain enthusiasts, and Pi Network pioneers dedicated to creating tools and services that enhance the Pi ecosystem. Operating in Testnet Mode, TruthWeb is a sandbox for testing features like the <a href="marketplace.html">Marketplace</a>, <a href="wallet.html">Wallet integration</a>, and more, all while preparing for the future of Pi’s mainnet.</p>
                 </div>
             </div>
 
             <div class="about-section">
                 <h2>Why TruthWeb?</h2>
                 <div class="about-card">
-                    <p>We’re committed to:</p>
-                    <ul class="text-left list-disc list-inside">
-                        <li>Supporting the <span class="shadow-text">Pi Network</span> community with practical tools.</li>
-                        <li>Ensuring privacy and security (see our <a href="privacy.html">Privacy Policy</a>).</li>
-                        <li>Building a marketplace that’s accessible to all Pioneers.</li>
-                        <li>Collaborating with developers to expand the ecosystem (visit <a href="developers.html">Developers</a>).</li>
-                    </ul>
-                    <p class="mt-4">Join us in shaping the future of Pi! Learn more on our <a href="future.html">Coming Soon</a> page or get in touch via <a href="support.html">Support</a>.</p>
+                    <p>TruthWeb stands for transparency, community, and innovation. By integrating with the Pi Network, we offer a unique platform that prioritizes user privacy (see our <a href="privacy.html">Privacy Policy</a>), security, and accessibility. Whether you’re a buyer, seller, or developer, TruthWeb provides a space to engage with the Pi community and shape the future of decentralized technology.</p>
+                    <a href="support.html" class="btn mt-4">Contact Us</a>
                 </div>
             </div>
         </section>
