@@ -1,741 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="google-adsense-account" content="ca-pub-2560904735244526">
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" name="viewport"/>
-    <title>TruthWeb - Checkout with Pi (Testnet Mode)</title>
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script>
-        let adNetworkSupported = false;
-        let piInitialized = false;
-        const BACKEND_URL = 'http://172.21.128.1:8080';
-        const scopes = ['username', 'payments', 'wallet_address'];
-
-        function waitForPiSDK() {
-            return new Promise((resolve, reject) => {
-                const checkInterval = setInterval(() => {
-                    if (typeof Pi !== 'undefined') {
-                        clearInterval(checkInterval);
-                        resolve(true);
-                    }
-                }, 100);
-                setTimeout(() => {
-                    clearInterval(checkInterval);
-                    reject(new Error('Pi SDK failed to load'));
-                }, 5000);
-            });
-        }
-
-        async function initializePiSDK() {
-            try {
-                await waitForPiSDK();
-                await Pi.init({ 
-                    version: "2.0", 
-                    sandbox: true,
-                    appId: "fukqtl4kyz2ijkjilcx1bfhfnx4f8qcvmllaqajrncetgyvo4z8qotuqcnyorx9x"
-                });
-                piInitialized = true;
-                const nativeFeaturesList = await Pi.nativeFeaturesList();
-                adNetworkSupported = nativeFeaturesList.includes("ad_network");
-                console.log("Pi SDK Initialized - Ad Network Supported:", adNetworkSupported);
-                checkAuthStatus();
-            } catch (error) {
-                console.error("Pi SDK Initialization failed:", error);
-                addNotification("Failed to initialize Pi Network connection (Testnet Mode)");
-                piInitialized = false;
-            }
-        }
-
-        function onIncompletePaymentFound(payment) {
-            console.log('Incomplete payment found:', payment);
-            if (!piInitialized) {
-                console.error('Pi SDK not initialized');
-                return Promise.reject('Pi SDK not initialized');
-            }
-            const paymentId = payment.identifier;
-            const txid = payment.transaction?.txid || null;
-            return $.ajax({
-                url: `${BACKEND_URL}/payment/complete`,
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({ paymentId, txid, debug: 'cancel' }),
-                success: () => addNotification('Processed incomplete payment (Testnet Mode)'),
-                error: (xhr, status, error) => {
-                    console.error('Payment completion error:', error);
-                    addNotification('Failed to process incomplete payment (Testnet Mode)');
-                }
-            });
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            initializePiSDK();
-            loadCheckout();
-        });
-    </script>
+    <title>Payment - TruthWeb</title>
+    <link rel="icon" type="image/png" href="https://i.ibb.co/ccB4s7ys/Untitled-design-removebg-preview.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2560904735244526" crossorigin="anonymous"></script>
     <style>
+        /* Full styles copied from previous pages */
         :root {
             --primary-color: #000000;
             --secondary-color: #FFFFFF;
-            --highlight-color: #CCCCCC;
-            --text-color: #FFFFFF;
-            --button-bg-color: #000000;
+            --highlight-color: #D1D1D6;
+            --text-color: #1C2526;
+            --button-bg-color: #007AFF;
             --button-text-color: #FFFFFF;
-            --button-hover-bg-color: #FFFFFF;
-            --button-hover-text-color: #000000;
-            --background-color: #FFFFFF;
-            --accent-color: #FFD700;
+            --button-hover-bg-color: #005BB5;
+            --button-hover-text-color: #FFFFFF;
+            --background-color: #F2F2F7;
+            --accent-color: #FF9500;
             --progress-bar-color: var(--accent-color);
             --dark-primary: #FFFFFF;
-            --dark-secondary: #000000;
-            --dark-text: #E0E0E0;
-            --dark-highlight: #555555;
-            --banner-bg-light: #ECEFF1;
-            --banner-bg-dark: #2A2A2A;
-            --banner-border-light: #CFD8DC;
-            --banner-border-dark: #444444;
+            --dark-secondary: #1C2526;
+            --dark-text: #E5E5EA;
+            --dark-highlight: #3A3A3C;
+            --banner-bg-light: #F7F7F7;
+            --banner-bg-dark: #2C2C2E;
             --nav-bg-light: #FFFFFF;
-            --nav-bg-dark: #1A1A1A;
-            --nav-text-light: #000000;
-            --nav-text-dark: #E0E0E0;
-            --nav-hover-light: #FFD700;
-            --nav-hover-dark: #FFD700;
-            --eco-color: #28A745;
-            --testnet-badge: #FF0000;
+            --nav-bg-dark: #1C2526;
+            --nav-text-light: #1C2526;
+            --nav-text-dark: #E5E5EA;
+            --nav-hover-light: #FF9500;
+            --nav-hover-dark: #FF9500;
+            --testnet-badge: #FF3B30;
+            --news-bg: #FFFFFF;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-dark: rgba(0, 0, 0, 0.25);
+            --search-bg-light: #E8ECEF;
+            --search-bg-dark: #2C2C2E;
+            --text-shadow-light: 0 0.5px 1px rgba(0, 0, 0, 0.2);
+            --text-shadow-dark: 0 0.5px 1px rgba(255, 255, 255, 0.1);
         }
+
         html { scroll-behavior: smooth; }
+
         body {
             background: var(--background-color);
-            color: var(--primary-color);
-            font-family: 'Poppins', sans-serif;
+            color: var(--text-color);
+            font-family: -apple-system, 'SF Pro Text', 'Poppins', sans-serif;
+            font-size: 17px;
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            line-height: 1.6;
-            padding-bottom: 60px;
-            transition: all 0.3s ease;
+            line-height: 1.5;
+            transition: background 0.3s ease, color 0.3s ease;
+            padding-top: 150px;
+            -webkit-font-smoothing: antialiased;
         }
+
         body.dark {
             --primary-color: var(--dark-primary);
             --secondary-color: var(--dark-secondary);
             --text-color: var(--dark-text);
             --background-color: #000000;
             --highlight-color: var(--dark-highlight);
-            --button-bg-color: #333333;
-            --button-hover-bg-color: #FFD700;
-            --button-hover-text-color: #000000;
+            --button-bg-color: #0A84FF;
+            --button-hover-bg-color: #0066CC;
+            --news-bg: #1C2526;
+            --banner-bg-light: var(--banner-bg-dark);
+            --nav-bg-light: var(--nav-bg-dark);
+            --nav-text-light: var(--nav-text-dark);
+            --search-bg-light: var(--search-bg-dark);
         }
+
+        body.no-banner { padding-top: 100px; }
+
+        .shadow-text {
+            text-shadow: var(--text-shadow-light);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
+        body.dark .shadow-text { text-shadow: var(--text-shadow-dark); }
+
         .progress-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 0;
-            height: 4px;
-            background: var(--progress-bar-color);
-            z-index: 1001;
-            transition: width 0.3s ease;
-            box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
-        }
-        .go-to-top {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            background: var(--accent-color);
-            color: var(--primary-color);
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            border: none;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: opacity 0.3s ease, transform 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .go-to-top.visible { opacity: 1; visibility: visible; }
-        .go-to-top:hover { background: #FFA500; transform: scale(1.1); }
-        .go-to-top:active { transform: scale(0.95); }
-        .sticky-header {
-            position: fixed;
-            top: 0;
-            width: 100%;
-            z-index: 1000;
-            background: var(--nav-bg-light);
-            color: var(--nav-text-light);
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 1rem;
-            height: 64px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        body.dark .sticky-header {
-            background: var(--nav-bg-dark);
-            color: var(--nav-text-dark);
-        }
-        .sticky-header.scrolled {
-            background: var(--secondary-color);
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
-        }
-        .sticky-header.hidden { transform: translateY(-100%); }
-        .sticky-header .logo-text {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--nav-text-light);
-            transition: color 0.3s ease;
-        }
-        body.dark .sticky-header .logo-text {
-            color: var(--nav-text-dark);
-        }
-        .sticky-header.scrolled .logo-text {
-            color: var(--nav-text-light);
-        }
-        body.dark .sticky-header.scrolled .logo-text {
-            color: var(--nav-text-dark);
-        }
-        .testnet-badge {
-            background: var(--testnet-badge);
-            color: #fff;
-            padding: 0.35rem 1rem;
-            border-radius: 9999px;
-            font-size: 0.85rem;
-            font-weight: 700;
-            margin-left: 0.75rem;
-            text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        .desktop-nav .nav-item a {
-            color: var(--nav-text-light);
-            padding: 0.5rem 1rem;
-            transition: all 0.3s ease;
-        }
-        body.dark .desktop-nav .nav-item a {
-            color: var(--nav-text-dark);
-        }
-        .sticky-header.scrolled .desktop-nav .nav-item a {
-            color: var(--nav-text-light);
-        }
-        body.dark .sticky-header.scrolled .desktop-nav .nav-item a {
-            color: var(--nav-text-dark);
-        }
-        .desktop-nav .nav-item a:hover {
-            color: var(--nav-hover-light);
-        }
-        body.dark .desktop-nav .nav-item a:hover {
-            color: var(--nav-hover-dark);
-        }
-        .desktop-nav .nav-item { position: relative; transition: transform 0.3s ease; animation: fadeInUp 0.5s ease-in-out forwards; }
-        .desktop-nav .nav-item:nth-child(1) { animation-delay: 0.1s; }
-        .desktop-nav .nav-item:nth-child(2) { animation-delay: 0.2s; }
-        .desktop-nav .nav-item:nth-child(3) { animation-delay: 0.3s; }
-        .desktop-nav .nav-item:nth-child(4) { animation-delay: 0.4s; }
-        .desktop-nav .nav-item:nth-child(5) { animation-delay: 0.5s; }
-        .desktop-nav .nav-item:nth-child(6) { animation-delay: 0.6s; }
-        .desktop-nav .nav-item:hover { transform: scale(1.1) translateY(-5px); }
-        .mega-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 500px;
-            background: var(--secondary-color);
-            border: 1px solid var(--highlight-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            display: none;
-            padding: 1rem;
-            z-index: 50;
-        }
-        .nav-item:hover .mega-menu { display: block; }
-        .mega-menu-column { flex: 1; min-width: 150px; }
-        .mega-menu-column h4 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .mega-menu-column a { color: var(--primary-color); display: block; padding: 0.25rem 0; }
-        .mega-menu-column a:hover { color: var(--accent-color); }
-        .burger-btn {
-            display: flex;
-            cursor: pointer;
-            flex-direction: column;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            margin-left: 0.5rem;
-            transition: transform 0.3s ease;
-        }
-        .burger-btn:hover { transform: scale(1.1); }
-        .burger-btn span {
-            width: 100%;
             height: 3px;
-            background: var(--nav-text-light);
-            margin: 2px 0;
-            transition: all 0.3s ease;
-        }
-        body.dark .burger-btn span {
-            background: var(--nav-text-dark);
-        }
-        .sticky-header.scrolled .burger-btn span {
-            background: var(--nav-text-light);
-        }
-        body.dark .sticky-header.scrolled .burger-btn span {
-            background: var(--nav-text-dark);
-        }
-        .burger-btn.open span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-        .burger-btn.open span:nth-child(2) { opacity: 0; transform: scale(0); }
-        .burger-btn.open span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
-        .mobile-menu {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: 85%;
-            max-width: 350px;
-            height: 100vh;
-            background: var(--nav-bg-light);
-            color: var(--nav-text-light);
-            transition: left 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
-            z-index: 999;
-            padding: 1rem;
-            overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-        }
-        body.dark .mobile-menu {
-            background: var(--nav-bg-dark);
-            color: var(--nav-text-dark);
-        }
-        .mobile-menu.open { left: 0; }
-        .mobile-menu-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--highlight-color);
-        }
-        .mobile-menu-close {
-            background: none;
-            border: none;
-            color: var(--nav-text-light);
-            font-size: 1.5rem;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-        body.dark .mobile-menu-close { color: var(--nav-text-dark); }
-        .mobile-menu-close:hover { transform: scale(1.2); }
-        .mobile-menu ul { list-style: none; padding: 0; }
-        .mobile-menu .menu-section { margin-bottom: 1rem; }
-        .mobile-menu .menu-section h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .mobile-menu .menu-section h3::after {
-            content: '\f078';
-            font-family: 'Font Awesome 6 Free';
-            font-weight: 900;
-            font-size: 0.9rem;
-            transition: transform 0.3s ease;
-        }
-        .mobile-menu .menu-section.collapsed h3::after {
-            transform: rotate(180deg);
-        }
-        .mobile-menu .menu-section ul {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-        }
-        .mobile-menu .menu-section:not(.collapsed) ul {
-            max-height: 500px;
-        }
-        .mobile-menu .nav-item a {
-            display: block;
-            padding: 0.75rem;
-            color: var(--nav-text-light);
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-        body.dark .mobile-menu .nav-item a {
-            color: var(--nav-text-dark);
-        }
-        .mobile-menu .nav-item a:hover {
-            color: var(--nav-hover-light);
-            transform: translateX(10px);
-        }
-        body.dark .mobile-menu .nav-item a:hover {
-            color: var(--nav-hover-dark);
-        }
-        .search-container {
-            position: relative;
-            flex-grow: 1;
-            max-width: 600px;
-            margin: 0 1rem;
-            transition: all 0.3s ease;
-        }
-        .search-input {
-            width: 100%;
-            padding: 0.5rem 2.5rem 0.5rem 1rem;
-            border: 1px solid var(--highlight-color);
-            border-radius: 9999px;
-            background: var(--secondary-color);
-            color: var(--primary-color);
-            font-size: 1rem;
-            outline: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        .search-input:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transform: scale(1.02) translateY(-2px);
-        }
-        .search-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--nav-text-light);
-            font-size: 1.2rem;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-        body.dark .search-icon {
-            color: var(--nav-text-dark);
-        }
-        .sticky-header.scrolled .search-icon {
-            color: var(--nav-text-light);
-        }
-        body.dark .sticky-header.scrolled .search-icon {
-            color: var(--nav-text-dark);
-        }
-        .search-input:focus + .search-icon { transform: translateY(-50%) scale(1.1); }
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            width: 100%;
-            max-height: 300px;
-            overflow-y: auto;
-            background: var(--secondary-color);
-            border: 1px solid var(--highlight-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 60;
-            display: none;
-            animation: dropIn 0.3s ease-out forwards;
-        }
-        .search-results.active { display: block; }
-        @keyframes dropIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .search-result-item {
-            padding: 0.75rem;
-            color: var(--primary-color);
-            border-bottom: 1px solid var(--highlight-color);
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-        .search-result-item:hover { background: var(--highlight-color); transform: scale(1.02); }
-        .icon {
-            color: var(--nav-text-light);
-            font-size: 1.25rem;
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.3s ease;
-            margin-left: 0.75rem;
-        }
-        body.dark .icon {
-            color: var(--nav-text-dark);
-        }
-        .sticky-header.scrolled .icon {
-            color: var(--nav-text-light);
-        }
-        body.dark .sticky-header.scrolled .icon {
-            color: var(--nav-text-dark);
-        }
-        .icon:hover { transform: scale(1.15) rotate(5deg); }
-        .icon.authenticated { color: var(--accent-color); }
-        .floating-effect { transition: transform 0.3s ease; }
-        .floating-effect:hover { transform: translateY(-5px) rotate(5deg); }
-        main { margin-top: 64px; }
-        .hero {
-            min-height: 70vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            padding: 2rem;
-            color: var(--text-color);
-            text-align: center;
-            animation: fadeInHero 1s ease-out forwards;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.7), rgba(255, 215, 0, 0.2)), 
-                        url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') 
-                        no-repeat center center/cover;
-        }
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 1200px;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-        }
-        .hero-text {
-            padding: 2rem;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            animation: slideUp 1.2s ease-out forwards;
-        }
-        .hero-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 1rem;
-            justify-content: center;
-        }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        body.dark .hero {
-            background: linear-gradient(135deg, rgba(18, 18, 18, 0.8), rgba(255, 215, 0, 0.3)), 
-                        url('https://images.unsplash.com/photo-1639326065035-a6e0aa0ea295?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80') 
-                        no-repeat center center/cover;
-        }
-        body.dark .hero-text {
-            background: rgba(18, 18, 18, 0.7);
-        }
-        @keyframes fadeInHero { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .glow-text {
-            font-size: 3.5rem;
-            font-weight: 700;
-            text-shadow: 0 0 15px var(--accent-color);
-            animation: glow 2s infinite alternate;
-        }
-        @keyframes glow { 0% { text-shadow: 0 0 10px var(--accent-color); } 100% { text-shadow: 0 0 20px var(--accent-color); } }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--button-bg-color);
-            color: var(--button-text-color);
-            padding: 0.75rem 2rem;
-            border: 1px solid var(--highlight-color);
-            border-radius: 9999px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            z-index: 1;
-            min-width: 120px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .btn i { margin-right: 0.5rem; }
-        .btn:hover {
-            background: var(--button-hover-bg-color);
-            color: var(--button-hover-text-color);
-            transform: scale(1.05) translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-        .btn:active { transform: scale(0.98); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1); }
-        .btn.accent { background: var(--accent-color); color: var(--primary-color); border: none; }
-        .btn.accent:hover { background: #FFA500; color: var(--primary-color); }
-        .btn.authenticating { opacity: 0.7; cursor: not-allowed; pointer-events: none; }
-        section { padding: 2rem 1rem; }
-        .checkout-section {
-            background: var(--secondary-color);
-            border: 1px solid var(--highlight-color);
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: slideInCard 0.5s ease-out forwards;
-        }
-        .checkout-section:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
-        }
-        .checkout-section h3 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-        .cart-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1rem;
-        }
-        .cart-table th, .cart-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--highlight-color);
-        }
-        .cart-table th {
-            font-weight: 600;
-            background: var(--highlight-color);
-        }
-        .cart-table img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 5px;
-        }
-        .checkout-form {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .checkout-form input, .checkout-form select {
-            padding: 0.75rem;
-            border: 1px solid var(--highlight-color);
-            border-radius: 10px;
-            background: var(--secondary-color);
-            color: var(--primary-color);
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.3s ease;
-        }
-        .checkout-form input:focus, .checkout-form select:focus {
-            border-color: var(--accent-color);
-        }
-        @keyframes slideInCard { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        footer {
-            background: #000000;
-            color: #E0E0E0;
-            padding: 4rem 1rem;
-            border-top: 1px solid var(--highlight-color);
-        }
-        .footer-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2.5rem;
-        }
-        .footer-section h3 {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 1.25rem;
-            color: var(--accent-color);
-        }
-        .footer-section ul { list-style: none; padding: 0; }
-        .footer-section li { margin-bottom: 0.85rem; }
-        .footer-section a {
-            color: #E0E0E0;
-            text-decoration: none;
-            transition: color 0.3s ease;
-        }
-        .footer-section a:hover { color: var(--accent-color); }
-        .footer-newsletter {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .footer-newsletter input {
-            padding: 0.75rem;
-            border: 1px solid var(--highlight-color);
-            border-radius: 9999px;
-            background: #333;
-            color: #E0E0E0;
-            outline: none;
-        }
-        .footer-newsletter button {
-            padding: 0.75rem;
-            background: var(--accent-color);
-            color: var(--primary-color);
-            border: none;
-            border-radius: 9999px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.3s ease;
-        }
-        .footer-newsletter button:hover { background: #FFA500; }
-        .footer-center {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 0;
-        }
-        .footer-logo {
-            max-width: 150px;
-            height: auto;
-            transition: transform 0.3s ease;
-        }
-        .footer-logo:hover {
-            transform: scale(1.1);
-        }
-        .footer-bottom {
-            text-align: center;
-            margin-top: 3rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--highlight-color);
-        }
-        .social-icons { display: flex; justify-content: center; gap: 2rem; margin-bottom: 1.5rem; }
-        .social-icons a {
-            color: #E0E0E0;
-            font-size: 1.75rem;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-        .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
-        .notification-bell { position: relative; }
-        .notification-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: var(--accent-color);
-            color: var(--primary-color);
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .notification-dropdown {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            width: 300px;
-            max-height: 400px;
-            overflow-y: auto;
-            background: var(--secondary-color);
-            border: 1px solid var(--highlight-color);
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            z-index: 60;
-            display: none;
-        }
-        .notification-dropdown.active { display: block; }
-        .notification-item {
-            padding: 0.75rem;
-            border-bottom: 1px solid var(--highlight-color);
-            color: var(--primary-color);
-        }
-        .notification-item:last-child { border-bottom: none; }
+            background: var(--progress-bar-color);
+            z-index: 1003;
+            transition: width 0.3s ease;
+            box-shadow: 0 0 6px rgba(255, 149, 0, 0.5);
+        }
+
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: none;
-            align-items: center;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
             justify-content: center;
-            z-index: 2000;
+            align-items: center;
+            z-index: 1005;
+            transition: opacity 0.3s ease;
         }
-        .loading-overlay.active { display: flex; }
+
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
         .loader {
             border: 4px solid var(--highlight-color);
             border-top: 4px solid var(--accent-color);
@@ -744,377 +124,1001 @@
             height: 40px;
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .live-chat-btn {
+
+        .announcement-banner {
+            background: var(--banner-bg-light);
+            color: var(--text-color);
+            padding: 0.75rem 2rem;
+            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1002;
+            border-bottom: 1px solid var(--highlight-color);
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .announcement-banner.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .banner-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--text-color);
+            cursor: pointer;
+            padding: 0 0.5rem;
+            transition: transform 0.2s ease;
+        }
+
+        .banner-close:hover { transform: scale(1.1); }
+
+        .banner-reopen {
+            position: fixed;
+            bottom: 140px;
+            right: 20px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 1004;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 6px var(--shadow-light);
+        }
+
+        body.dark .banner-reopen { box-shadow: 0 2px 6px var(--shadow-dark); }
+
+        .banner-reopen:hover { transform: scale(1.1); }
+
+        .banner-reopen.visible { display: flex; }
+
+        .sticky-header {
+            position: fixed;
+            top: 40px;
+            left: 0;
+            width: 100%;
+            z-index: 1001;
+            padding: 0 1rem;
+            height: 60px;
+            background: var(--nav-bg-light);
+            box-shadow: 0 2px 10px var(--shadow-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        body.no-banner .sticky-header { top: 0; }
+
+        .sticky-header.hidden { transform: translateY(-100%); }
+
+        body.dark .sticky-header { background: var(--nav-bg-dark); box-shadow: 0 2px 10px var(--shadow-dark); }
+
+        .sticky-header .logo-text { font-size: 20px; font-weight: 600; letter-spacing: -0.5px; }
+
+        .testnet-badge {
+            background: var(--testnet-badge);
+            color: #FFFFFF;
+            padding: 0.25rem 0.75rem;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+
+        .mobile-menu-toggle { margin-right: 0.5rem; }
+
+        .search-section {
+            background: var(--search-bg-light);
+            padding: 1rem 2rem;
+            position: fixed;
+            top: 100px;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+            transition: transform 0.3s ease, top 0.3s ease, background 0.3s ease;
+        }
+
+        body.no-banner .search-section { top: 60px; }
+
+        body.dark .search-section { background: var(--search-bg-dark); }
+
+        .search-section.hidden { transform: translateY(-100%); }
+
+        .search-container { max-width: 800px; margin: 0 auto; position: relative; }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border: none;
+            border-radius: 10px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            font-size: 17px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 1px 2px var(--shadow-light);
+        }
+
+        .search-input:focus { box-shadow: 0 0 8px rgba(255, 149, 0, 0.4); }
+
+        .search-icon { position: absolute; right: 35px; top: 50%; transform: translateY(-50%); color: var(--nav-text-light); }
+
+        body.dark .search-icon { color: var(--nav-text-dark); }
+
+        .search-clear {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: var(--text-color);
+            cursor: pointer;
+            display: none;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .search-clear:hover { color: var(--accent-color); transform: scale(1.1); }
+
+        body.dark .search-clear { color: var(--nav-text-dark); }
+
+        .search-clear.active { display: block; }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            display: none;
+            z-index: 60;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 0.5rem;
+            padding: 0.5rem 0;
+        }
+
+        .search-results.active { display: block; }
+
+        .search-result-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: background 0.2s ease;
+            font-size: 17px;
+        }
+
+        .search-result-item a { text-decoration: none; color: var(--text-color); }
+
+        .search-result-item:hover { background: var(--highlight-color); }
+
+        .desktop-nav { display: none; }
+
+        .desktop-nav .nav-item a {
+            position: relative;
+            padding: 0.75rem 1.25rem;
+            color: var(--nav-text-light);
+            font-weight: 500;
+            text-transform: uppercase;
+            font-size: 15px;
+            transition: color 0.3s ease, transform 0.2s ease;
+            text-decoration: none;
+            letter-spacing: 0.2px;
+        }
+
+        body.dark .desktop-nav .nav-item a { color: var(--nav-text-dark); }
+
+        .desktop-nav .nav-item a:hover { color: var(--nav-hover-light); transform: translateY(-2px); }
+
+        body.dark .desktop-nav .nav-item a:hover { color: var(--nav-hover-dark); }
+
+        .desktop-nav .nav-item a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0.5rem;
+            left: 50%;
+            background: var(--accent-color);
+            transition: width 0.3s ease, left 0.3s ease;
+        }
+
+        .desktop-nav .nav-item a:hover:after { width: 80%; left: 10%; }
+
+        .desktop-nav .nav-item a[data-tooltip]:after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -2.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .desktop-nav .nav-item a:hover[data-tooltip]:after { opacity: 1; }
+
+        .icon { 
+            padding: 0.75rem; 
+            margin-left: 0.75rem;
+            cursor: pointer; 
+            position: relative; 
+            color: var(--nav-text-light);
+        }
+
+        .floating-effect:hover { transform: translateY(-2px); transition: transform 0.3s ease; }
+
+        .mobile-menu {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 85%;
+            max-width: 320px;
+            height: 100%;
+            background: var(--nav-bg-light);
+            color: var(--nav-text-light);
+            padding: 2rem 1rem;
+            z-index: 1001;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 2px 0 15px var(--shadow-dark);
+            overflow-y: auto;
+        }
+
+        body.dark .mobile-menu { background: var(--nav-bg-dark); color: var(--nav-text-dark); }
+
+        .mobile-menu.open { left: 0; }
+
+        .mobile-menu-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--highlight-color);
+        }
+
+        .mobile-menu-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--nav-text-light);
+            position: relative;
+            width: 30px;
+            height: 30px;
+            transition: transform 0.3s ease;
+        }
+
+        .mobile-menu-close:hover { transform: rotate(90deg); }
+
+        body.dark .mobile-menu-close { color: var(--nav-text-dark); }
+
+        .mobile-menu-close::before, .mobile-menu-close::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 2px;
+            background: currentColor;
+            transform-origin: center;
+        }
+
+        .mobile-menu-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+
+        .mobile-menu-close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+        .mobile-menu ul { list-style: none; padding: 0; margin: 0; }
+
+        .mobile-menu .nav-item a {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            color: var(--nav-text-light);
+            text-decoration: none;
+            font-size: 17px;
+            font-weight: 500;
+            transition: background 0.3s ease, padding-left 0.3s ease;
+        }
+
+        body.dark .mobile-menu .nav-item a { color: var(--nav-text-dark); }
+
+        .mobile-menu .nav-item a:hover { background: var(--highlight-color); padding-left: 1.5rem; }
+
+        .mobile-menu .nav-item a i { margin-right: 1rem; font-size: 20px; }
+
+        .mobile-menu .nav-section { margin-bottom: 2rem; }
+
+        .mobile-menu .nav-section h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-color);
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--highlight-color);
+        }
+
+        .notification-bell, .cart-icon { 
+            padding: 0.75rem; 
+            cursor: pointer; 
+            position: relative; 
+            transition: transform 0.2s ease; 
+            color: var(--nav-text-light);
+        }
+
+        body.dark .notification-bell, body.dark .cart-icon { color: var(--nav-text-dark); }
+
+        .notification-bell:hover, .cart-icon:hover { transform: scale(1.1); }
+
+        .notification-count, .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--background-color);
+            z-index: 1;
+        }
+
+        .notification-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 320px;
+            background: var(--secondary-color);
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 6px 16px var(--shadow-dark);
+            display: none;
+            z-index: 100;
+            padding: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .notification-dropdown.active { display: block; }
+
+        .notification-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--highlight-color);
+            transition: background 0.2s ease, opacity 0.3s ease;
+        }
+
+        .notification-item:hover { background: var(--highlight-color); }
+
+        .notification-item span { font-size: 15px; color: var(--text-color); flex: 1; }
+
+        .dismiss-btn { background: none; border: none; color: var(--text-color); cursor: pointer; padding: 0.25rem; margin-left: 0.5rem; transition: color 0.2s ease; }
+
+        .dismiss-btn:hover { color: var(--accent-color); }
+
+        .btn {
+            background: var(--button-bg-color);
+            color: var(--button-text-color);
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 17px;
+            font-weight: 600;
+            text-transform: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover { background: var(--button-hover-bg-color); color: var(--button-hover-text-color); transform: scale(1.05); }
+
+        .btn.accent { background: var(--accent-color); color: var(--primary-color); }
+
+        .btn.accent:hover { background: #FF7F00; }
+
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            gap: 0.5rem;
+            color: var(--nav-text-light);
+            cursor: pointer;
+        }
+
+        body.dark .dark-mode-toggle { color: var(--nav-text-dark); }
+
+        .dark-mode-toggle i { font-size: 20px; transition: transform 0.3s ease; }
+
+        .dark-mode-toggle:hover i { transform: scale(1.1); }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 51px;
+            height: 31px;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #C7C7CC;
+            transition: 0.4s;
+            border-radius: 31px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 27px;
+            width: 27px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--accent-color); }
+
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        .mobile-menu .dark-mode-toggle { padding: 1rem; width: 100%; }
+
+        .mobile-menu .dark-mode-toggle:hover { background: var(--highlight-color); }
+
+        .payment-container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; display: flex; gap: 2rem; flex-wrap: wrap; }
+
+        .payment-form, .order-summary {
+            background: var(--news-bg);
+            border-radius: 18px;
+            box-shadow: 0 2px 8px var(--shadow-light);
+            padding: 2rem;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        body.dark .payment-form, body.dark .order-summary {
+            background: var(--news-bg);
+            box-shadow: 0 2px 8px var(--shadow-dark);
+        }
+
+        .payment-form h2, .order-summary h2 { font-size: 24px; font-weight: 600; margin-bottom: 1.5rem; }
+
+        .form-group { margin-bottom: 1.5rem; }
+
+        .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            font-size: 17px;
+            box-shadow: inset 0 1px 2px var(--shadow-light);
+        }
+
+        .payment-method { margin-top: 2rem; }
+
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--highlight-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .payment-option:hover { background: var(--highlight-color); }
+
+        .payment-option input[type="radio"] { margin: 0; }
+
+        .order-items { margin-bottom: 1.5rem; }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 16px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 18px;
+        }
+
+        .summary-total { font-weight: 600; font-size: 20px; margin-top: 1rem; }
+
+        footer {
+            background: #000000;
+            color: var(--dark-text);
+            padding: 4rem 1rem 2rem;
+            position: relative;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .footer-section ul { list-style: none; padding: 0; }
+
+        .footer-section li { margin-bottom: 0.75rem; transition: transform 0.3s ease; }
+
+        .footer-section a {
+            color: var(--dark-text);
+            text-decoration: none;
+            font-size: 17px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section li:hover { transform: translateX(5px); }
+
+        .footer-section a:hover { color: var(--accent-color); }
+
+        .footer-divider {
+            max-width: 1200px;
+            margin: 2rem auto;
+            height: 1px;
+            background: var(--highlight-color);
+            opacity: 0.3;
+        }
+
+        .footer-center {
+            text-align: center;
+            margin: 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-logo { max-width: 150px; height: auto; margin-bottom: 1rem; }
+
+        .footer-tagline {
+            font-size: 15px;
+            color: var(--dark-text);
+            font-style: italic;
+        }
+
+        .footer-bottom { text-align: center; font-size: 13px; }
+
+        .social-icons { margin-bottom: 1rem; }
+
+        .social-icons a {
+            color: var(--dark-text);
+            margin: 0 0.75rem;
+            font-size: 24px;
+            transition: color 0.3s ease, transform 0.3s ease;
+        }
+
+        .social-icons a:hover { color: var(--accent-color); transform: scale(1.2); }
+
+        .footer-newsletter {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+
+        .footer-newsletter p {
+            font-size: 15px;
+            color: var(--dark-text);
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-newsletter form { display: flex; gap: 0.5rem; }
+
+        .footer-newsletter input {
+            flex: 1;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 8px;
+            background: var(--secondary-color);
+            color: var(--text-color);
+            font-size: 17px;
+            box-shadow: inset 0 1px 2px var(--shadow-light);
+        }
+
+        .footer-newsletter button {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .footer-newsletter button:hover { background: #FF7F00; }
+
+        .go-to-top {
             position: fixed;
             bottom: 20px;
             right: 20px;
             background: var(--accent-color);
             color: var(--primary-color);
-            padding: 1rem;
-            border-radius: 9999px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease;
-            z-index: 1000;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 2px 6px var(--shadow-light);
         }
+
+        body.dark .go-to-top { box-shadow: 0 2px 6px var(--shadow-dark); }
+
+        .go-to-top.visible { opacity: 1; }
+
+        .live-chat-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            background: var(--accent-color);
+            color: var(--primary-color);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px var(--shadow-dark);
+            transition: transform 0.3s ease;
+        }
+
         .live-chat-btn:hover { transform: scale(1.1); }
+
         .mobile-footer-nav {
-            display: none;
             position: fixed;
             bottom: 0;
-            left: 0;
             width: 100%;
-            background: #000000;
-            border-top: 1px solid var(--highlight-color);
-            padding: 0.5rem 0;
-            z-index: 1000;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
-            flex-direction: row;
+            background: var(--nav-bg-light);
+            display: none;
             justify-content: space-around;
-            align-items: center;
+            padding: 0.75rem 0;
+            border-top: 1px solid var(--highlight-color);
+            box-shadow: 0 -2px 10px var(--shadow-light);
+            z-index: 1000;
             transition: transform 0.3s ease;
-            transform: translateY(0);
         }
-        .mobile-footer-nav.hidden {
-            transform: translateY(100%);
+
+        .mobile-footer-nav.hidden { transform: translateY(100%); }
+
+        body.dark .mobile-footer-nav {
+            background: var(--nav-bg-dark);
+            border-top: 1px solid var(--dark-highlight);
         }
+
         .mobile-nav-item {
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--text-color);
+            width: 60px;
+            height: 60px;
+            color: var(--nav-text-light);
+            font-size: 12px;
             text-decoration: none;
-            font-size: 0.75rem;
-            padding: 0.5rem;
-            width: 20%;
-            transition: transform 0.3s ease, color 0.3s ease;
+            transition: color 0.3s ease, transform 0.2s ease;
         }
-        .mobile-nav-item i {
-            font-size: 1.25rem;
-            margin-bottom: 0.25rem;
-        }
-        .mobile-nav-item span {
-            display: block;
-            text-align: center;
-        }
-        .mobile-nav-item:hover,
-        .mobile-nav-item:focus {
-            color: var(--accent-color);
-            transform: scale(1.1);
-        }
-        .mobile-nav-item .cart-count {
+
+        body.dark .mobile-nav-item { color: var(--nav-text-dark); }
+
+        .mobile-nav-item i { font-size: 24px; margin-bottom: 0.35rem; }
+
+        .mobile-nav-item:hover, .mobile-nav-item.active { color: var(--accent-color); transform: scale(1.1); }
+
+        .mobile-nav-item[data-tooltip]:after {
+            content: attr(data-tooltip);
             position: absolute;
-            top: 0;
-            right: 25%;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
             background: var(--accent-color);
             color: var(--primary-color);
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            font-size: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 13px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
         }
-        @media (min-width: 641px) { 
-            .burger-btn { display: none; }
-            .desktop-nav { display: flex; }
-        }
-        @media (max-width: 640px) {
-            .burger-btn { display: flex; }
+
+        .mobile-nav-item:hover[data-tooltip]:after { opacity: 1; }
+
+        @media (max-width: 768px) {
+            body { padding-top: 140px; }
+            body.no-banner { padding-top: 90px; }
+            .announcement-banner { padding: 0.5rem 1rem; font-size: 13px; }
+            .sticky-header { top: 36px; padding: 0 1rem; height: 60px; }
+            body.no-banner .sticky-header { top: 0; }
+            .search-section { top: 96px; padding: 1rem; }
+            body.no-banner .search-section { top: 60px; }
+            .payment-container { flex-direction: column; }
             .desktop-nav { display: none; }
-            .search-container { max-width: 150px; margin: 0 0.5rem; }
-            .sticky-header { padding: 0 0.5rem; }
-            .logo-text { font-size: 1.25rem; }
-            .icon { font-size: 1.1rem; margin-left: 0.5rem; }
-            .glow-text { font-size: 2rem; }
-            .hero { padding: 1rem; }
-            .hero-content { gap: 1rem; }
-            .hero-text { padding: 1rem; }
             .mobile-footer-nav { display: flex; }
-            body { padding-bottom: 80px; }
-            .footer-logo { max-width: 100px; }
-            .cart-table th, .cart-table td { padding: 0.5rem; font-size: 0.9rem; }
-            .cart-table img { width: 40px; height: 40px; }
+            .footer-newsletter form { flex-direction: column; }
+            .go-to-top { bottom: 70px; right: 15px; }
+            .live-chat-btn { bottom: 130px; right: 15px; }
+            .banner-reopen { bottom: 190px; right: 15px; width: 35px; height: 35px; font-size: 16px; }
+        }
+
+        @media (min-width: 769px) {
+            .desktop-nav { display: flex; }
+            .mobile-footer-nav { display: none; }
+            .mobile-menu-toggle { display: none; }
+        }
+
+        @media (max-width: 1024px) {
+            .desktop-nav .nav-item a { padding: 0.5rem 0.75rem; font-size: 14px; }
         }
     </style>
 </head>
-<body onload="checkAuthStatus()">
+<body onload="initializePage()">
     <div class="progress-bar"></div>
     <div class="loading-overlay"><div class="loader"></div></div>
+    <div class="announcement-banner" id="announcement-banner">
+        <p>Stay Updated with <span class="shadow-text">TruthWeb News</span>!</p>
+        <button class="banner-close" onclick="closeBanner()" aria-label="Close Banner">✕</button>
+    </div>
+    <button class="banner-reopen" onclick="reopenBanner()" aria-label="Reopen Banner"><i class="fas fa-bell"></i></button>
     <header class="sticky-header">
         <div class="flex items-center">
-            <a href="index.html" class="text-inherit flex items-center"><span class="logo-text ml-2">TruthWeb</span><span class="testnet-badge">Testnet</span></a>
-        </div>
-        <div class="search-container">
-            <input type="text" class="search-input" placeholder="Search millions of products with Pi..." aria-label="Search Products" oninput="searchProducts(this.value)">
-            <i class="fas fa-search search-icon"></i>
-            <div class="search-results" id="search-results"></div>
+            <a href="index.html" class="text-inherit flex items-center">
+                <img src="https://i.ibb.co/ccB4s7ys/Untitled-design-removebg-preview.png" alt="TruthWeb Logo" style="width: 30px; height: 30px; margin-right: 8px;">
+                <span class="logo-text">TruthWeb</span><span class="testnet-badge">Testnet</span>
+            </a>
         </div>
         <div class="flex items-center">
-            <nav class="desktop-nav hidden md:flex items-center">
-                <ul class="flex space-x-4">
+            <button class="icon floating-effect mobile-menu-toggle md:hidden" onclick="toggleMobileMenu()" aria-label="Toggle Menu">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+            <nav class="desktop-nav items-center hidden md:flex">
+                <ul class="flex space-x-2">
+                    <li class="nav-item"><a href="index.html" data-tooltip="Home">Home</a></li>
+                    <li class="nav-item"><a href="marketplace.html" data-tooltip="Marketplace">Marketplace</a></li>
+                    <li class="nav-item"><a href="profile.html" data-tooltip="Profile">Profile</a></li>
+                    <li class="nav-item"><a href="wallet.html" data-tooltip="Wallet">Wallet</a></li>
+                    <li class="nav-item"><a href="vendor.html" data-tooltip="Sell">Sell</a></li>
+                    <li class="nav-item"><a href="about.html" data-tooltip="About">About</a></li>
+                    <li class="nav-item"><a href="support.html" data-tooltip="Support">Support</a></li>
                     <li class="nav-item">
-                        <a href="index.html">Home</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Social</h4>
-                                <a href="truthwebfeed.html">TruthWeb Feed</a>
-                                <a href="stream.html">Stream</a>
-                                <a href="messagingchat.html">Messaging & Chat</a>
+                        <label class="dark-mode-toggle" for="darkModeSwitchDesktop">
+                            <i class="fas fa-sun"></i>
+                            <div class="switch">
+                                <input type="checkbox" id="darkModeSwitchDesktop" aria-label="Toggle Dark Mode">
+                                <span class="slider"></span>
                             </div>
-                            <div class="mega-menu-column">
-                                <h4>Engage</h4>
-                                <a href="community.html">Community</a>
-                                <a href="pioneerverification.html">Pioneer Verification</a>
-                                <a href="notice.html">Notices</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="marketplace.html">Marketplace</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Categories</h4>
-                                <a href="#" onclick="filterCategory('electronics')">Electronics</a>
-                                <a href="#" onclick="filterCategory('fashion')">Fashion</a>
-                                <a href="#" onclick="filterCategory('home')">Home</a>
-                            </div>
-                            <div class="mega-menu-column">
-                                <h4>Shop Features</h4>
-                                <a href="pi-powered-marketplace.html">Pi Payments</a>
-                                <a href="multi-category-listings.html">Multi-Category Listings</a>
-                                <a href="global-expansion.html">Global Marketplace</a>
-                                <a href="escrow-system.html">Escrow System</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="profile.html">Profile</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Account</h4>
-                                <a href="user-profiles-wallet.html">Manage Profile & Wallet</a>
-                                <a href="pitrack.html">Pi Track</a>
-                                <a href="pitrade.html">Pi Trade</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
-                    <li class="nav-item"><a href="cart.html">Cart</a></li>
-                    <li class="nav-item">
-                        <a href="vendor.html">Sell on TruthWeb</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Business</h4>
-                                <a href="api-docs.html">Open-Source API</a>
-                                <a href="referral-program.html">Referral Program</a>
-                            </div>
-                            <div class="mega-menu-column">
-                                <h4>Security</h4>
-                                <a href="kycverification.html">KYC Verification</a>
-                                <a href="fraud-detection.html">Fraud Detection</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="about.html">About</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>About TruthWeb</h4>
-                                <a href="developers.html">Developers</a>
-                                <a href="truwebbot.html">TruthWeb AI Bot</a>
-                                <a href="future.html">Coming Soon</a>
-                            </div>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a href="support.html">Support</a>
-                        <div class="mega-menu">
-                            <div class="mega-menu-column">
-                                <h4>Help</h4>
-                                <a href="contact.html">Contact Us</a>
-                                <a href="faq.html">FAQ</a>
-                                <a href="safety-guidelines.html">Safety Guidelines</a>
-                            </div>
-                            <div class="mega-menu-column">
-                                <h4>Policies</h4>
-                                <a href="terms.html">Terms</a>
-                                <a href="privacy.html">Privacy</a>
-                            </div>
-                        </div>
+                        </label>
                     </li>
                 </ul>
             </nav>
-            <a href="cart.html" class="icon cart-icon floating-effect relative" aria-label="Cart">
-                <i class="fas fa-shopping-cart text-lg"></i>
+            <div class="icon floating-effect cart-icon relative" onclick="openCart()" aria-label="Cart">
+                <i class="fas fa-cart-shopping text-lg"></i>
                 <span class="cart-count" id="cart-count">0</span>
-            </a>
+            </div>
             <div class="icon floating-effect notification-bell relative" onclick="toggleNotifications()" aria-label="Notifications">
                 <i class="fas fa-bell text-lg"></i>
                 <span class="notification-count" id="notification-count">0</span>
                 <div class="notification-dropdown" id="notification-dropdown"></div>
             </div>
-            <button class="icon floating-effect relative" onclick="toggleDarkMode()" aria-label="Toggle Dark Mode">
-                <i class="fas fa-moon text-lg"></i>
-            </button>
-            <button class="burger-btn flex md:hidden" onclick="toggleMobileMenu()" aria-label="Menu">
-                <span.jpeg</span>
-                <span></span>
-                <span></span>
-            </button>
         </div>
     </header>
+    <section class="search-section">
+        <div class="search-container">
+            <input type="text" class="search-input" placeholder="Search Marketplace..." aria-label="Search Marketplace" oninput="searchMarketplace(this.value)">
+            <i class="fas fa-search search-icon"></i>
+            <button class="search-clear" onclick="clearSearch()" aria-label="Clear Search">✕</button>
+            <div class="search-results" id="search-results"></div>
+        </div>
+    </section>
     <nav class="mobile-menu">
         <div class="mobile-menu-header">
             <span class="logo-text">TruthWeb</span>
-            <button class="mobile-menu-close" onclick="closeMobileMenu()"><i class="fas fa-times"></i></button>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()" aria-label="Close Menu"></button>
         </div>
-        <ul>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Main Navigation</h3>
-                <ul>
-                    <li class="nav-item"><a href="index.html">Home</a></li>
-                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
-                    <li class="nav-item"><a href="profile.html">Profile</a></li>
-                    <li class="nav-item"><a href="wallet.html">Wallet</a></li>
-                    <li class="nav-item"><a href="cart.html">Cart</a></li>
-                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">About TruthWeb</h3>
-                <ul>
-                    <li class="nav-item"><a href="about.html">About Us</a></li>
-                    <li class="nav-item"><a href="developers.html">Developers</a></li>
-                    <li class="nav-item"><a href="truwebbot.html">TruthWeb AI Bot</a></li>
-                    <li class="nav-item"><a href="future.html">Coming Soon</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Shop</h3>
-                <ul>
-                    <li class="nav-item"><a href="marketplace.html">Marketplace</a></li>
-                    <li class="nav-item"><a href="pi-powered-marketplace.html">Pi-Powered Marketplace</a></li>
-                    <li class="nav-item"><a href="multi-category-listings.html">Multi-Category Listings</a></li>
-                    <li class="nav-item"><a href="global-expansion.html">Global Marketplace</a></li>
-                    <li class="nav-item"><a href="escrow-system.html">Escrow System</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Account & Wallet</h3>
-                <ul>
-                    <li class="nav-item"><a href="profile.html">Your Profile</a></li>
-                    <li class="nav-item"><a href="wallet.html">Your Wallet</a></li>
-                    <li class="nav-item"><a href="user-profiles-wallet.html">Manage Profile & Wallet</a></li>
-                    <li class="nav-item"><a href="pitrack.html">Pi Track</a></li>
-                    <li class="nav-item"><a href="pitrade.html">Pi Trade</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Community & Social</h3>
-                <ul>
-                    <li class="nav-item"><a href="community.html">Community</a></li>
-                    <li class="nav-item"><a href="truthwebfeed.html">TruthWeb Feed</a></li>
-                    <li class="nav-item"><a href="stream.html">TruthWeb Stream</a></li>
-                    <li class="nav-item"><a href="pioneerverification.html">Pioneer Verification</a></li>
-                    <li class="nav-item"><a href="messagingchat.html">Messaging & Chat</a></li>
-                    <li class="nav-item"><a href="notice.html">Notices</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Business & Security</h3>
-                <ul>
-                    <li class="nav-item"><a href="vendor.html">Sell on TruthWeb</a></li>
-                    <li class="nav-item"><a href="api-docs.html">Open-Source API</a></li>
-                    <li class="nav-item"><a href="kycverification.html">KYC Verification</a></li>
-                    <li class="nav-item"><a href="fraud-detection.html">Fraud Detection</a></li>
-                    <li class="nav-item"><a href="referral-program.html">Referral Program</a></li>
-                </ul>
-            </li>
-            <li class="menu-section">
-                <h3 onclick="toggleMenuSection(this)">Support</h3>
-                <ul>
-                    <li class="nav-item"><a href="contact.html">Contact Us</a></li>
-                    <li class="nav-item"><a href="faq.html">FAQ</a></li>
-                    <li class="nav-item"><a href="terms.html">Terms</a></li>
-                    <li class="nav-item"><a href="privacy.html">Privacy</a></li>
-                    <li class="nav-item"><a href="safety-guidelines.html">Safety Guidelines</a></li>
-                </ul>
-            </li>
-        </ul>
+        <div class="nav-section">
+            <h3>TruthWeb</h3>
+            <ul>
+                <li class="nav-item"><a href="index.html"><i class="fas fa-home"></i>Home</a></li>
+                <li class="nav-item"><a href="news.html"><i class="fas fa-newspaper"></i>News</a></li>
+                <li class="nav-item"><a href="about.html"><i class="fas fa-info-circle"></i>About Us</a></li>
+                <li class="nav-item"><a href="developers.html"><i class="fas fa-code"></i>Developers</a></li>
+                <li class="nav-item"><a href="future.html"><i class="fas fa-clock"></i>Coming Soon</a></li>
+                <li class="nav-item"><a href="swap.html"><i class="fas fa-exchange-alt"></i>Swap</a></li>
+                <li class="nav-item"><a href="truwebbot.html"><i class="fas fa-robot"></i>TruthWeb AI Bot</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Shop</h3>
+            <ul>
+                <li class="nav-item"><a href="marketplace.html"><i class="fas fa-store"></i>Marketplace</a></li>
+                <li class="nav-item"><a href="pi-powered-marketplace.html"><i class="fas fa-coins"></i>Pi Payments</a></li>
+                <li class="nav-item"><a href="global-expansion.html"><i class="fas fa-globe"></i>Global Marketplace</a></li>
+                <li class="nav-item"><a href="escrow-system.html"><i class="fas fa-lock"></i>Escrow System</a></li>
+                <li class="nav-item"><a href="multi-category-listings.html"><i class="fas fa-list"></i>Multi-Category Listings</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Account</h3>
+            <ul>
+                <li class="nav-item"><a href="profile.html"><i class="fas fa-user"></i>Profile</a></li>
+                <li class="nav-item"><a href="wallet.html"><i class="fas fa-wallet"></i>Wallet</a></li>
+                <li class="nav-item"><a href="pitrade.html"><i class="fas fa-chart-line"></i>Pi Trade</a></li>
+                <li class="nav-item"><a href="pitrack.html"><i class="fas fa-eye"></i>Pi Track</a></li>
+                <li class="nav-item"><a href="user-profiles-wallet.html"><i class="fas fa-cog"></i>Manage Profile & Wallet</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Support</h3>
+            <ul>
+                <li class="nav-item"><a href="contact.html"><i class="fas fa-envelope"></i>Contact Us</a></li>
+                <li class="nav-item"><a href="faq.html"><i class="fas fa-question-circle"></i>FAQ</a></li>
+                <li class="nav-item"><a href="terms.html"><i class="fas fa-file-contract"></i>Terms of Service</a></li>
+                <li class="nav-item"><a href="privacy.html"><i class="fas fa-shield-alt"></i>Privacy Policy</a></li>
+                <li class="nav-item"><a href="security.html"><i class="fas fa-lock"></i>Security Policy</a></li>
+                <li class="nav-item"><a href="license.html"><i class="fas fa-file-alt"></i>PiOS License</a></li>
+                <li class="nav-item"><a href="code-of-conduct.html"><i class="fas fa-users"></i>Code of Conduct</a></li>
+            </ul>
+        </div>
+        <div class="nav-section">
+            <h3>Settings</h3>
+            <ul>
+                <li class="nav-item">
+                    <label class="dark-mode-toggle" for="darkModeSwitchMobile">
+                        <i class="fas fa-sun"></i>
+                        <div class="switch">
+                            <input type="checkbox" id="darkModeSwitchMobile" aria-label="Toggle Dark Mode">
+                            <span class="slider"></span>
+                        </div>
+                    </label>
+                </li>
+            </ul>
+        </div>
     </nav>
+
     <main>
-        <section class="hero">
-            <div class="hero-content">
-                <div class="hero-text">
-                    <h1 class="glow-text">Checkout with Pi</h1>
-                    <p class="text-xl mt-2 md:text-2xl">Complete Your Purchase</p>
-                    <p class="text-lg mt-2">Secure Payment with Pi (Testnet Mode)</p>
-                    <p class="text-lg mt-4">Welcome, <span id="username" class="font-semibold text-[var(--accent-color)]">Guest</span>!</p>
-                    <p id="auth-status" class="text-sm mt-2">Not authenticated (Testnet Mode)</p>
-                </div>
-                <div class="hero-actions">
-                    <button id="auth-btn" class="btn accent" onclick="authenticateUser()">Sign In with Pi</button>
-                    <button id="logout-btn" class="btn" onclick="logoutUser()" style="display: none;">Logout</button>
-                    <a href="index.html" class="btn">Back to Home</a>
-                    <a href="cart.html" class="btn">Back to Cart</a>
-                </div>
-            </div>
-        </section>
-        <section id="checkout" class="py-16 px-4 max-w-6xl mx-auto">
-            <h2 class="section-title text-3xl font-bold text-center mb-8">Checkout (Testnet Mode)</h2>
-            <div class="checkout-section">
-                <h3>Order Summary</h3>
-                <table class="cart-table" id="checkout-table">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th>Name</th>
-                            <th>Price (Pi)</th>
-                            <th>Seller</th>
-                        </tr>
-                    </thead>
-                    <tbody id="checkout-items"></tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="2"></td>
-                            <td><strong>Total:</strong></td>
-                            <td id="checkout-total">0 Pi</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            <div class="checkout-section">
-                <h3>Shipping Information</h3>
-                <form class="checkout-form" id="checkout-form" onsubmit="processCheckout(event)">
-                    <input type="text" id="shipping-name" placeholder="Full Name" aria-label="Full Name" required>
-                    <input type="email" id="shipping-email" placeholder="Email" aria-label="Email" required>
-                    <input type="text" id="shipping-address" placeholder="Address" aria-label="Address" required>
-                    <input type="text" id="shipping-city" placeholder="City" aria-label="City" required>
-                    <input type="text" id="shipping-zip" placeholder="ZIP Code" aria-label="ZIP Code" required>
-                    <select id="shipping-country" aria-label="Country" required>
-                        <option value="">Select Country</option>
-                        <option value="US">United States</option>
-                        <option value="UK">United Kingdom</option>
-                        <option value="CA">Canada</option>
-                        <!-- Add more countries as needed -->
-                    </select>
-                    <button type="submit" class="btn accent" id="pay-with-pi-btn"><i class="fas fa-coins"></i> Pay with Pi</button>
+        <section class="payment-container">
+            <h1 class="section-title text-4xl font-bold text-center mb-8 w-full">Payment (Testnet Mode)</h1>
+            <div class="payment-form">
+                <h2>Shipping Information</h2>
+                <form id="payment-form" onsubmit="submitPayment(event)">
+                    <div class="form-group">
+                        <label for="full-name">Full Name</label>
+                        <input type="text" id="full-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input type="text" id="address" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City</label>
+                        <input type="text" id="city" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <select id="country" required>
+                            <option value="">Select Country</option>
+                            <option value="US">United States</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="CA">Canada</option>
+                            <!-- Add more countries as needed -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="postal-code">Postal Code</label>
+                        <input type="text" id="postal-code" required>
+                    </div>
+                    <div class="payment-method">
+                        <h2>Payment Method</h2>
+                        <div class="payment-option">
+                            <input type="radio" id="pi-payment" name="payment" value="pi" checked>
+                            <label for="pi-payment">Pay with Pi (Testnet)</label>
+                        </div>
+                    </div>
+                    <div class="text-center mt-6">
+                        <button type="submit" class="btn accent">Complete Payment</button>
+                    </div>
                 </form>
+            </div>
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div class="order-items" id="order-items"></div>
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span id="subtotal">0 Pi</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span id="shipping">TBD</span>
+                </div>
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <span id="total">0 Pi</span>
+                </div>
+            </div>
+            <div class="text-center mt-6 w-full">
+                <a href="cart.html" class="btn">Back to Cart</a>
             </div>
         </section>
     </main>
+
     <footer>
         <div class="footer-content">
             <div class="footer-section">
                 <h3>TruthWeb</h3>
                 <ul>
                     <li><a href="index.html">Home</a></li>
+                    <li><a href="news.html">News</a></li>
                     <li><a href="about.html">About Us</a></li>
                     <li><a href="developers.html">Developers</a></li>
                     <li><a href="future.html">Coming Soon</a></li>
+                    <li><a href="swap.html">Swap</a></li>
                     <li><a href="truwebbot.html">TruthWeb AI Bot</a></li>
                 </ul>
             </div>
@@ -1145,347 +1149,306 @@
                     <li><a href="faq.html">FAQ</a></li>
                     <li><a href="terms.html">Terms of Service</a></li>
                     <li><a href="privacy.html">Privacy Policy</a></li>
-                    <li><a href="safety-guidelines.html">Safety Guidelines</a></li>
+                    <li><a href="security.html">Security Policy</a></li>
+                    <li><a href="license.html">PiOS License</a></li>
+                    <li><a href="code-of-conduct.html">Code of Conduct</a></li>
                 </ul>
             </div>
             <div class="footer-section">
-                <h3>Stay Connected</h3>
+                <h3>Stay <span class="shadow-text">Connected</span></h3>
                 <div class="footer-newsletter">
-                    <input type="email" placeholder="Enter your email" aria-label="Newsletter Email">
-                    <button onclick="alert('Newsletter subscription coming soon! (Testnet Mode)')">Subscribe</button>
+                    <p>Get the latest <span class="shadow-text">Pi Network</span> updates and TruthWeb news.</p>
+                    <form onsubmit="subscribeNewsletter(event)">
+                        <input type="email" id="newsletter-email" placeholder="Enter your email" aria-label="Newsletter Email" required>
+                        <button type="submit">Subscribe</button>
+                    </form>
                 </div>
             </div>
         </div>
+        <div class="footer-divider"></div>
         <div class="footer-center">
             <img src="https://i.ibb.co/ccB4s7ys/Untitled-design-removebg-preview.png" alt="TruthWeb Logo" class="footer-logo">
+            <p class="footer-tagline">"Empowering the <span class="shadow-text">Pi Network</span> Community with Truth and Innovation"</p>
         </div>
         <div class="footer-bottom">
             <div class="social-icons">
                 <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="https://twitter.com" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
                 <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://telegram.org" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
                 <a href="https://discord.com" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
             </div>
-            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the Pi Network Community</p>
+            <p>© 2025 TruthWeb - All Rights Reserved<br>Built for the <span class="shadow-text">Pi Network</span> Community | <a href="https://minepi.com" target="_blank">Pi Network</a> | <a href="https://pinetwork-official.github.io" target="_blank">Pi Docs</a></p>
         </div>
     </footer>
     <button class="go-to-top" onclick="scrollToTop()" aria-label="Back to Top"><i class="fas fa-arrow-up"></i></button>
-    <button class="live-chat-btn" onclick="openChat()"><i class="fas fa-comment"></i> Live Chat</button>
+    <button class="live-chat-btn" onclick="openChat()" aria-label="Live Chat"><i class="fas fa-comment"></i></button>
     <nav class="mobile-footer-nav">
-        <a href="index.html" class="mobile-nav-item" aria-label="Home">
-            <i class="fas fa-home"></i>
-            <span>Home</span>
+        <a href="index.html" class="mobile-nav-item" aria-label="Home" data-tooltip="Home">
+            <i class="fas fa-home"></i><span>Home</span>
         </a>
-        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace">
-            <i class="fas fa-store"></i>
-            <span>Marketplace</span>
+        <a href="marketplace.html" class="mobile-nav-item" aria-label="Marketplace" data-tooltip="Marketplace">
+            <i class="fas fa-store"></i><span>Marketplace</span>
         </a>
-        <a href="profile.html" class="mobile-nav-item" aria-label="Profile">
-            <i class="fas fa-user"></i>
-            <span>Profile</span>
+        <a href="cart.html" class="mobile-nav-item" aria-label="Cart" data-tooltip="Cart">
+            <i class="fas fa-cart-shopping"></i><span>Cart</span>
         </a>
-        <a href="wallet.html" class="mobile-nav-item" aria-label="Wallet">
-            <i class="fas fa-wallet"></i>
-            <span>Wallet</span>
+        <a href="profile.html" class="mobile-nav-item" aria-label="Profile" data-tooltip="Profile">
+            <i class="fas fa-user"></i><span>Profile</span>
         </a>
-        <a href="cart.html" class="mobile-nav-item" aria-label="Cart">
-            <i class="fas fa-shopping-cart"></i>
-            <span>Cart</span>
-            <span class="cart-count" id="mobile-cart-count">0</span>
+        <a href="#" class="mobile-nav-item" onclick="toggleMobileMenu()" aria-label="Menu" data-tooltip="Menu">
+            <i class="fas fa-bars"></i><span>Menu</span>
         </a>
     </nav>
 
     <script>
-        let cart = [];
-        let notifications = [];
-        let isAuthenticated = false;
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        let lastScrollY = 0;
 
-        function checkAuthStatus() {
-            if (!piInitialized) {
-                console.log("Pi SDK not ready yet");
+        function initializePage() {
+            const darkMode = localStorage.getItem('darkMode') === 'true';
+            if (darkMode) toggleDarkMode();
+            window.addEventListener('scroll', handleScroll);
+            document.getElementById('darkModeSwitchDesktop').addEventListener('change', toggleDarkMode);
+            document.getElementById('darkModeSwitchMobile').addEventListener('change', toggleDarkMode);
+            renderOrderSummary();
+            updateCartCount();
+            addNotification("Completing payment (Testnet Mode)");
+            document.querySelector('.loading-overlay').classList.add('hidden');
+            if (cart.length === 0) {
+                addNotification("Cart is empty. Redirecting to cart page.");
+                setTimeout(() => window.location.href = 'cart.html', 1000);
+            }
+        }
+
+        function renderOrderSummary() {
+            const orderItemsDiv = document.getElementById('order-items');
+            orderItemsDiv.innerHTML = '';
+            if (cart.length === 0) {
+                orderItemsDiv.innerHTML = '<p>No items in cart.</p>';
                 return;
             }
-            Pi.authenticate(scopes, onIncompletePaymentFound)
-                .then(auth => {
-                    isAuthenticated = true;
-                    document.getElementById('username').textContent = auth.user.username;
-                    document.getElementById('auth-status').textContent = 'Authenticated (Testnet Mode)';
-                    document.getElementById('auth-btn').style.display = 'none';
-                    document.getElementById('logout-btn').style.display = 'inline-flex';
-                    document.querySelector('.icon[onclick="authenticateUser()"]')?.classList.add('authenticated');
-                    addNotification(`Welcome back, ${auth.user.username}! (Testnet Mode)`);
-                })
-                .catch(error => {
-                    console.error('Authentication failed:', error);
-                    isAuthenticated = false;
-                    document.getElementById('auth-btn').style.display = 'inline-flex';
-                    document.getElementById('logout-btn').style.display = 'none';
-                });
-        }
 
-        function authenticateUser() {
-            if (!piInitialized) {
-                addNotification('Pi Network connection not ready. Please wait...');
-                return;
-            }
-            const authBtn = document.getElementById('auth-btn');
-            authBtn.classList.add('authenticating');
-            authBtn.textContent = 'Authenticating...';
-            checkAuthStatus();
-            setTimeout(() => {
-                authBtn.classList.remove('authenticating');
-                authBtn.textContent = 'Sign In with Pi';
-            }, 2000);
-        }
-
-        function logoutUser() {
-            isAuthenticated = false;
-            document.getElementById('username').textContent = 'Guest';
-            document.getElementById('auth-status').textContent = 'Not authenticated (Testnet Mode)';
-            document.getElementById('auth-btn').style.display = 'inline-flex';
-            document.getElementById('logout-btn').style.display = 'none';
-            document.querySelector('.icon[onclick="authenticateUser()"]')?.classList.remove('authenticated');
-            addNotification('Logged out successfully (Testnet Mode)');
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle('dark');
-            localStorage.setItem('darkMode', document.body.classList.contains('dark'));
-            const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
-            moonIcon.classList.toggle('fa-moon');
-            moonIcon.classList.toggle('fa-sun');
-        }
-
-        if (localStorage.getItem('darkMode') === 'true') {
-            document.body.classList.add('dark');
-            const moonIcon = document.querySelector('.icon[onclick="toggleDarkMode()"] i');
-            moonIcon.classList.remove('fa-moon');
-            moonIcon.classList.add('fa-sun');
-        }
-
-        function toggleMobileMenu() {
-            const mobileMenu = document.querySelector('.mobile-menu');
-            const burgerBtn = document.querySelector('.burger-btn');
-            mobileMenu.classList.toggle('open');
-            burgerBtn.classList.toggle('open');
-        }
-
-        function closeMobileMenu() {
-            const mobileMenu = document.querySelector('.mobile-menu');
-            const burgerBtn = document.querySelector('.burger-btn');
-            mobileMenu.classList.remove('open');
-            burgerBtn.classList.remove('open');
-        }
-
-        function toggleMenuSection(element) {
-            const section = element.parentElement;
-            section.classList.toggle('collapsed');
-        }
-
-        let lastScrollTop = 0;
-        window.addEventListener('scroll', () => {
-            const header = document.querySelector('.sticky-header');
-            const mobileFooter = document.querySelector('.mobile-footer-nav');
-            const currentScroll = window.pageYOffset || document.documentElement.scrollTop;
-            const progressBar = document.querySelector('.progress-bar');
-            const goToTopBtn = document.querySelector('.go-to-top');
-            const totalHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrollPercentage = (currentScroll / totalHeight) * 100;
-
-            progressBar.style.width = `${scrollPercentage}%`;
-
-            if (currentScroll > 100) {
-                header.classList.add('scrolled');
-                goToTopBtn.classList.add('visible');
-            } else {
-                header.classList.remove('scrolled');
-                goToTopBtn.classList.remove('visible');
-            }
-
-            if (currentScroll > lastScrollTop && currentScroll > 100) {
-                header.classList.add('hidden');
-                mobileFooter.classList.add('hidden');
-            } else {
-                header.classList.remove('hidden');
-                mobileFooter.classList.remove('hidden');
-            }
-            lastScrollTop = currentScroll <= 0 ? 0 : currentScroll;
-        });
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function searchProducts(query) {
-            const searchResults = document.getElementById('search-results');
-            searchResults.innerHTML = '';
-            if (query.length < 2) {
-                searchResults.classList.remove('active');
-                return;
-            }
-            const dummyResults = ['Pi Smartwatch', 'Pi T-Shirt', 'Pi Home Speaker'];
-            const filteredResults = dummyResults.filter(r => r.toLowerCase().includes(query.toLowerCase()));
-            filteredResults.forEach(result => {
-                const div = document.createElement('div');
-                div.className = 'search-result-item';
-                div.innerHTML = result;
-                div.onclick = () => window.location.href = 'marketplace.html';
-                searchResults.appendChild(div);
+            cart.forEach(item => {
+                const orderItem = document.createElement('div');
+                orderItem.className = 'order-item';
+                orderItem.innerHTML = `
+                    <span>${item.title} (x${item.quantity || 1})</span>
+                    <span>${(item.price * (item.quantity || 1)).toFixed(2)} Pi</span>
+                `;
+                orderItemsDiv.appendChild(orderItem);
             });
-            searchResults.classList.add('active');
+
+            const subtotal = cart.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0);
+            document.getElementById('subtotal').textContent = `${subtotal.toFixed(2)} Pi`;
+            document.getElementById('total').textContent = `${subtotal.toFixed(2)} Pi`; // Shipping TBD
         }
 
         function updateCartCount() {
-            const cartCountElements = document.querySelectorAll('.cart-count');
-            cart = JSON.parse(localStorage.getItem('cart')) || [];
-            cartCountElements.forEach(el => el.textContent = cart.length);
+            const countSpan = document.getElementById('cart-count');
+            countSpan.textContent = cart.length;
+        }
+
+        function submitPayment(event) {
+            event.preventDefault();
+            const fullName = document.getElementById('full-name').value;
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const country = document.getElementById('country').value;
+            const postalCode = document.getElementById('postal-code').value;
+
+            if (!fullName || !address || !city || !country || !postalCode) {
+                addNotification("Please fill in all required fields.");
+                return;
+            }
+
+            const orderDetails = {
+                shipping: { fullName, address, city, country, postalCode },
+                items: cart,
+                total: cart.reduce((sum, item) => sum + item.price * (item.quantity || 1), 0),
+                orderId: `TW${Date.now()}` // Simple unique order ID for Testnet
+            };
+
+            // Simulate Pi payment in Testnet mode
+            addNotification(`Processing payment of ${orderDetails.total.toFixed(2)} Pi with Pi Network (Testnet Mode)`);
+            setTimeout(() => {
+                addNotification(`Payment successful! Order #${orderDetails.orderId} placed (Testnet Mode)`);
+                localStorage.setItem('lastOrder', JSON.stringify(orderDetails));
+                cart = [];
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartCount();
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            }, 2000);
+        }
+
+        function searchMarketplace(query) {
+            const results = document.getElementById('search-results');
+            const clearBtn = document.querySelector('.search-clear');
+            results.innerHTML = '';
+            if (query.length < 2) {
+                results.classList.remove('active');
+                clearBtn.classList.remove('active');
+                return;
+            }
+            clearBtn.classList.add('active');
+            results.innerHTML = '<div class="search-result-item">Search redirects to Marketplace in Testnet Mode</div>';
+            results.classList.add('active');
+        }
+
+        function clearSearch() {
+            const input = document.querySelector('.search-input');
+            const results = document.getElementById('search-results');
+            const clearBtn = document.querySelector('.search-clear');
+            input.value = '';
+            results.innerHTML = '';
+            results.classList.remove('active');
+            clearBtn.classList.remove('active');
         }
 
         function addNotification(message) {
-            notifications.push({ id: Date.now(), message });
-            updateNotifications();
-        }
-
-        function updateNotifications() {
             const dropdown = document.getElementById('notification-dropdown');
-            const count = document.getElementById('notification-count');
-            dropdown.innerHTML = '';
-            count.textContent = notifications.length;
-            notifications.forEach(n => {
-                const div = document.createElement('div');
-                div.className = 'notification-item';
-                div.innerHTML = `${n.message} <button onclick="removeNotification(${n.id})" style="float:right;">✕</button>`;
-                dropdown.appendChild(div);
-            });
-            if (notifications.length > 0) {
-                dropdown.classList.add('active');
-            } else {
-                dropdown.classList.remove('active');
-            }
+            const countSpan = document.getElementById('notification-count');
+            let count = parseInt(countSpan.textContent);
+            count++;
+            countSpan.textContent = count;
+
+            const item = document.createElement('div');
+            item.className = 'notification-item';
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            item.innerHTML = `
+                <span><strong>${timestamp}</strong> - ${message}</span>
+                <button class="dismiss-btn" onclick="dismissNotification(this)">✕</button>
+            `;
+            dropdown.insertBefore(item, dropdown.firstChild);
+
+            setTimeout(() => {
+                if (item.parentElement) {
+                    dismissNotification(item.querySelector('.dismiss-btn'));
+                }
+            }, 10000);
         }
 
-        function removeNotification(id) {
-            notifications = notifications.filter(n => n.id !== id);
-            updateNotifications();
+        function dismissNotification(button) {
+            const item = button.parentElement;
+            item.style.opacity = '0';
+            setTimeout(() => {
+                if (item.parentElement) {
+                    item.remove();
+                    const countSpan = document.getElementById('notification-count');
+                    let count = parseInt(countSpan.textContent);
+                    count = Math.max(0, count - 1);
+                    countSpan.textContent = count;
+                }
+            }, 300);
         }
 
         function toggleNotifications() {
             const dropdown = document.getElementById('notification-dropdown');
             dropdown.classList.toggle('active');
+            if (dropdown.classList.contains('active')) {
+                addNotification("Notifications opened.");
+            }
         }
 
-        function showLoading() {
-            document.querySelector('.loading-overlay').classList.add('active');
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark');
+            const isDark = body.classList.contains('dark');
+            localStorage.setItem('darkMode', isDark);
+            const desktopSwitch = document.getElementById('darkModeSwitchDesktop');
+            const mobileSwitch = document.getElementById('darkModeSwitchMobile');
+            desktopSwitch.checked = isDark;
+            mobileSwitch.checked = isDark;
+            document.querySelectorAll('.dark-mode-toggle i').forEach(icon => {
+                icon.classList.toggle('fa-sun', !isDark);
+                icon.classList.toggle('fa-moon', isDark);
+            });
+            addNotification(`Dark mode ${isDark ? 'enabled' : 'disabled'}`);
         }
 
-        function hideLoading() {
-            document.querySelector('.loading-overlay').classList.remove('active');
+        function openCart() {
+            window.location.href = 'cart.html';
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            menu.classList.toggle('open');
+            document.body.style.overflow = menu.classList.contains('open') ? 'hidden' : '';
+        }
+
+        function closeMobileMenu() {
+            const menu = document.querySelector('.mobile-menu');
+            menu.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        function handleScroll() {
+            const progressBar = document.querySelector('.progress-bar');
+            const totalHeight = document.body.scrollHeight - window.innerHeight;
+            const progress = (window.scrollY / totalHeight) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            const goToTop = document.querySelector('.go-to-top');
+            if (window.scrollY > 300) {
+                goToTop.classList.add('visible');
+            } else {
+                goToTop.classList.remove('visible');
+            }
+
+            const currentScrollY = window.scrollY;
+            const header = document.querySelector('.sticky-header');
+            const searchSection = document.querySelector('.search-section');
+            const banner = document.getElementById('announcement-banner');
+            const mobileFooterNav = document.querySelector('.mobile-footer-nav');
+
+            if (currentScrollY > lastScrollY && currentScrollY > 100) {
+                header.classList.add('hidden');
+                searchSection.classList.add('hidden');
+                if (!banner.classList.contains('hidden')) {
+                    banner.classList.add('hidden');
+                    document.body.classList.add('no-banner');
+                }
+                mobileFooterNav.classList.add('hidden');
+            } else if (currentScrollY < lastScrollY) {
+                header.classList.remove('hidden');
+                searchSection.classList.remove('hidden');
+                if (!banner.classList.contains('hidden')) {
+                    document.body.classList.remove('no-banner');
+                }
+                mobileFooterNav.classList.remove('hidden');
+            }
+            lastScrollY = currentScrollY;
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function openChat() {
-            addNotification('Live Chat coming soon! (Testnet Mode)');
+            addNotification("Live chat is not yet available in Testnet Mode.");
         }
 
-        function loadCheckout() {
-            updateCartCount();
-            renderCheckoutItems();
+        function closeBanner() {
+            const banner = document.getElementById('announcement-banner');
+            const reopenBtn = document.querySelector('.banner-reopen');
+            banner.classList.add('hidden');
+            reopenBtn.classList.add('visible');
+            document.body.classList.add('no-banner');
         }
 
-        function renderCheckoutItems() {
-            const checkoutItems = document.getElementById('checkout-items');
-            const checkoutTotal = document.getElementById('checkout-total');
-            cart = JSON.parse(localStorage.getItem('cart')) || [];
-            checkoutItems.innerHTML = '';
-            let total = 0;
-
-            if (cart.length === 0) {
-                checkoutItems.innerHTML = '<tr><td colspan="4">Your cart is empty. <a href="marketplace.html" class="text-[var(--accent-color)]">Shop now</a></td></tr>';
-                checkoutTotal.textContent = '0 Pi';
-                document.getElementById('pay-with-pi-btn').disabled = true;
-                return;
-            }
-
-            cart.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td><img src="${item.image}" alt="${item.name}"></td>
-                    <td>${item.name}</td>
-                    <td>${item.price} Pi</td>
-                    <td>${item.seller}</td>
-                `;
-                checkoutItems.appendChild(row);
-                total += parseFloat(item.price);
-            });
-            checkoutTotal.textContent = `${total.toFixed(2)} Pi`;
+        function reopenBanner() {
+            const banner = document.getElementById('announcement-banner');
+            const reopenBtn = document.querySelector('.banner-reopen');
+            banner.classList.remove('hidden');
+            reopenBtn.classList.remove('visible');
+            document.body.classList.remove('no-banner');
         }
 
-        function processCheckout(event) {
+        function subscribeNewsletter(event) {
             event.preventDefault();
-            if (!isAuthenticated) {
-                addNotification('Please sign in with Pi to complete your purchase (Testnet Mode)');
-                return;
-            }
-            if (!piInitialized) {
-                addNotification('Pi Network connection not ready. Please wait...');
-                return;
-            }
-            if (cart.length === 0) {
-                addNotification('Your cart is empty. Add items to proceed (Testnet Mode)');
-                return;
-            }
-
-            showLoading();
-            const total = cart.reduce((sum, item) => sum + parseFloat(item.price), 0);
-            const paymentData = {
-                amount: total,
-                memo: `TruthWeb Purchase - ${cart.map(item => item.name).join(', ')}`,
-                metadata: { cart: cart, timestamp: new Date().toISOString() }
-            };
-
-            Pi.createPayment(paymentData, {
-                onReadyForServerApproval: (paymentId) => {
-                    console.log('Payment ready for approval:', paymentId);
-                    $.ajax({
-                        url: `${BACKEND_URL}/payment/approve`,
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ paymentId, amount: total }),
-                        success: () => console.log('Payment approved'),
-                        error: (xhr, status, error) => console.error('Approval error:', error)
-                    });
-                },
-                onReadyForServerCompletion: (paymentId, txid) => {
-                    console.log('Payment ready for completion:', paymentId, txid);
-                    $.ajax({
-                        url: `${BACKEND_URL}/payment/complete`,
-                        method: 'POST',
-                        contentType: 'application/json',
-                        data: JSON.stringify({ paymentId, txid }),
-                        success: () => {
-                            localStorage.removeItem('cart');
-                            updateCartCount();
-                            addNotification('Payment completed successfully! (Testnet Mode)');
-                            setTimeout(() => {
-                                window.location.href = 'index.html';
-                            }, 2000);
-                        },
-                        error: (xhr, status, error) => {
-                            console.error('Completion error:', error);
-                            addNotification('Payment failed. Please try again (Testnet Mode)');
-                        }
-                    });
-                },
-                onCancel: () => {
-                    addNotification('Payment cancelled (Testnet Mode)');
-                    hideLoading();
-                },
-                onError: (error) => {
-                    console.error('Payment error:', error);
-                    addNotification('Payment error occurred. Please try again (Testnet Mode)');
-                    hideLoading();
-                }
-            }).then(() => hideLoading());
+            const email = document.getElementById('newsletter-email').value;
+            addNotification(`Subscribed with ${email} (Testnet Mode)`);
+            document.getElementById('newsletter-email').value = '';
         }
     </script>
 </body>
