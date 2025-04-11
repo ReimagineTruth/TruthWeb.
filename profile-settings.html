@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudy - Profile Settings</title>
+    <!-- Google Fonts: Inter -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            font-weight: 400;
+            background: #f7f7f7;
+            color: #2d2d2d;
+            line-height: 1.5;
+            font-size: clamp(14px, 1.8vw, 15px);
+            overflow-x: hidden;
+        }
+
+        /* Desktop Header */
+        header {
+            background: #fff;
+            padding: 16px 32px;
+            border-bottom: none;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .header-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .logo {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            transition: transform 0.3s ease;
+        }
+        .logo::before {
+            content: "☁️";
+            margin-right: 8px;
+            font-size: 22px;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+        .logo:hover {
+            transform: scale(1.05);
+        }
+        .logo:hover::before {
+            transform: translateY(-2px);
+        }
+        nav {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        nav a {
+            color: #4b5563;
+            text-decoration: none;
+            margin: 8px clamp(12px, 2vw, 16px) 8px 0;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+        nav a:hover {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
+        nav a.active {
+            background: #f5f6ff;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        /* Mobile Header */
+        .mobile-header {
+            display: none;
+            background: #fff;
+            padding: clamp(10px, 3vw, 12px) clamp(12px, 4vw, 16px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .mobile-header .logo {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+        }
+        .mobile-header .logo::before {
+            content: "☁️";
+            margin-right: 6px;
+            font-size: 20px;
+        }
+        .hamburger {
+            font-size: 20px;
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hamburger:hover {
+            background: #f5f6ff;
+            color: #1f2937;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            max-height: 100vh;
+            background: #fff;
+            padding: 60px 16px;
+            z-index: 999;
+            visibility: hidden;
+            opacity: 0;
+            transition: visibility 0.3s, opacity 0.3s ease;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        .mobile-menu.open {
+            display: block;
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .mobile-menu ul {
+            list-style: none;
+        }
+        .mobile-menu li {
+            margin: 8px 0;
+        }
+        .mobile-menu a, .mobile-menu span {
+            color: #374151;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+        .mobile-menu a:hover {
+            background: #f5f6ff;
+        }
+        .mobile-menu .icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Settings Container */
+        .settings-container {
+            max-width: 1280px;
+            margin: 64px auto;
+            padding: 0 clamp(16px, 5vw, 32px);
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 32px;
+        }
+        .sidebar {
+            background: #fff;
+            padding: clamp(16px, 3vw, 24px);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .sidebar.visible {
+            opacity: 1;
+        }
+        .sidebar h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .sidebar ul {
+            list-style: none;
+        }
+        .sidebar li {
+            margin-bottom: 8px;
+        }
+        .sidebar a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 12px;
+            display: block;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: #f5f6ff;
+            color: #6366f1;
+        }
+
+        /* Main Content */
+        .main-content {
+            background: #fff;
+            padding: clamp(24px, 5vw, 32px);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .main-content.visible {
+            opacity: 1;
+        }
+        .section {
+            margin-bottom: 32px;
+        }
+        .section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .form-group {
+            margin-bottom: 24px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .form-group label .tooltip {
+            color: #6b7280;
+            font-size: 12px;
+            cursor: help;
+            position: relative;
+        }
+        .form-group label .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 400;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            border-color: #6366f1;
+            box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+        }
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .form-group .avatar-preview {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .form-group .avatar-preview img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .form-group .avatar-preview input[type="file"] {
+            padding: 8px;
+        }
+        .form-group .social-links {
+            display: grid;
+            gap: 16px;
+        }
+        .form-group .toggle {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .form-group .toggle input[type="checkbox"] {
+            width: 40px;
+            height: 20px;
+            appearance: none;
+            background: #e5e7eb;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .form-group .toggle input[type="checkbox"]::before {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+        .form-group .toggle input[type="checkbox"]:checked {
+            background: #6366f1;
+        }
+        .form-group .toggle input[type="checkbox"]:checked::before {
+            transform: translateX(20px);
+        }
+        .save-button {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 200px;
+        }
+        .save-button:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Footer */
+        footer {
+            background: #fff;
+            color: #6b7280;
+            padding: 48px clamp(16px, 5vw, 32px);
+            border-top: none;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .footer-content {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+            gap: 32px;
+        }
+        .footer-section {
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        .footer-section.visible {
+            opacity: 1;
+        }
+        .footer-section h4 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1f2937;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .footer-section ul {
+            list-style: none;
+        }
+        .footer-section ul li {
+            margin-bottom: 8px;
+        }
+        .footer-section a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            display: block;
+            padding: 6px 0;
+            border-radius: 4px;
+        }
+        .footer-section a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+
+        /* Mobile Bottom Navigation */
+        .footer-mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            padding: 12px 16px;
+            box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            text-align: center;
+        }
+        .footer-mobile-nav ul {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            list-style: none;
+        }
+        .footer-mobile-nav li {
+            flex: 1;
+        }
+        .footer-mobile-nav a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 500;
+            padding: 8px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        .footer-mobile-nav a:hover, .footer-mobile-nav a.active {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+        .footer-mobile-nav .icon {
+            font-size: 18px;
+            margin-bottom: 4px;
+        }
+
+        /* Subscription Form */
+        .footer-subscription {
+            max-width: 1280px;
+            margin: 32px auto 0;
+            padding: 24px;
+            background: #f7f7f7;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        .footer-subscription h4 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        .footer-subscription form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            flex-direction: column;
+        }
+        @media (min-width: 480px) {
+            .footer-subscription form {
+                flex-direction: row;
+            }
+        }
+        .footer-subscription input[type="email"] {
+            padding: 10px 16px;
+            font-size: 13px;
+            font-weight: 400;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            width: min(100%, 280px);
+            outline: none;
+            transition: border-color 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .footer-subscription input[type="email"]:focus {
+            border-color: #6366f1;
+            box-shadow: 0 1px 3px rgba(99, 102, 241, 0.2);
+        }
+        .footer-subscription button {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 44px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .footer-subscription button:hover {
+            background: linear-gradient(135deg, #4f46e5, #4338ca);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        /* Footer Bottom */
+        .footer-bottom {
+            max-width: 1280px;
+            margin: 32px auto 0;
+            font-size: 13px;
+            font-weight: 400;
+            color: #6b7280;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 24px;
+            text-align: center;
+        }
+        .footer-bottom-left {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+        .footer-bottom-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .footer-bottom-links a {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 400;
+            transition: color 0.2s ease;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .footer-bottom-links a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+        }
+        .footer-app-name {
+            font-weight: 600;
+            color: #6366f1;
+        }
+        .social-icons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex: 1;
+        }
+        .social-icons a {
+            color: #6b7280;
+            font-size: clamp(16px, 2.5vw, 18px);
+            transition: all 0.3s ease;
+            padding: 8px;
+            min-width: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+        }
+        .social-icons a:hover {
+            color: #6366f1;
+            background: #f5f6ff;
+            transform: scale(1.1);
+        }
+        .footer-powered {
+            flex: 1;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 400;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .header-container, .settings-container {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .settings-container {
+                grid-template-columns: 1fr;
+            }
+            .footer-content {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (max-width: 768px) {
+            header {
+                display: none;
+            }
+            .mobile-header {
+                display: flex;
+            }
+            .settings-container {
+                padding: 0 clamp(16px, 4vw, 24px);
+            }
+            .main-content {
+                padding: 24px;
+            }
+            .footer-content {
+                display: none;
+            }
+            .footer-mobile-nav {
+                display: block;
+            }
+            .footer-bottom {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .footer-bottom-left, .social-icons, .footer-powered {
+                flex: none;
+                width: 100%;
+            }
+        }
+        @media (max-width: 480px) {
+            .settings-container {
+                padding: 0 clamp(12px, 4vw, 16px);
+            }
+            .main-content {
+                padding: 16px;
+            }
+            .form-group .avatar-preview {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .save-button {
+                max-width: 100%;
+            }
+            .footer-subscription form {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+        <div class="logo">Cloudy</div>
+        <button class="hamburger" aria-label="Toggle menu" aria-expanded="false">☰</button>
+    </header>
+
+    <!-- Desktop Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">Cloudy</div>
+            <nav>
+                <a href="home.html">Home</a>
+                <a href="features.html">Features</a>
+                <a href="pricing.html">Pricing</a>
+                <a href="categories.html">Categories</a>
+                <a href="top-creators.html">Top Creators</a>
+                <a href="learnmore.html">Learn More</a>
+                <a href="signup.html">Sign Up</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Mobile Menu -->
+    <nav class="mobile-menu">
+        <ul>
+            <li><a href="home.html"><span class="icon">🏠</span>Home</a></li>
+            <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+            <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+            <li><a href="categories.html"><span class="icon">📚</span>Categories</a></li>
+            <li><a href="top-creators.html"><span class="icon">🌟</span>Top Creators</a></li>
+            <li><a href="learnmore.html"><span class="icon">ℹ️</span>Learn More</a></li>
+            <li><a href="signup.html"><span class="icon">🚀</span>Sign Up</a></li>
+            <li><a href="explore-more.html"><span class="icon">🔍</span>Explore More</a></li>
+            <li><a href="workspace-tools.html"><span class="icon">🛠️</span>Workspace Tools</a></li>
+            <li><a href="sell.html"><span class="icon">🛒</span>Sell Your Work</a></li>
+            <li><a href="our-story.html"><span class="icon">📖</span>Our Story</a></li>
+            <li><a href="pi-payments.html"><span class="icon">π</span>Pi Payments</a></li>
+            <li><a href="email-subscribers.html"><span class="icon">✉️</span>Email Subscribers</a></li>
+            <li><a href="new-releases.html"><span class="icon">🆕</span>New Releases</a></li>
+            <li><a href="team.html"><span class="icon">👥</span>Team</a></li>
+            <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+            <li><a href="dashboard.html"><span class="icon">📊</span>Dashboard</a></li>
+            <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            <li><a href="profile-settings.html"><span class="icon">⚙️</span>Profile Settings</a></li>
+            <li><a href="whitepaper.html"><span class="icon">📄</span>Whitepaper</a></li>
+            <li><a href="security.html"><span class="icon">🔒</span>Security</a></li>
+            <li><a href="notice.html"><span class="icon">📢</span>Notices</a></li>
+            <li><a href="privacy.html"><span class="icon">🛡️</span>Privacy Policy</a></li>
+            <li><a href="terms.html"><span class="icon">📝</span>Terms of Service</a></li>
+            <li><a href="cookie-settings.html"><span class="icon">🍪</span>Cookie Settings</a></li>
+            <li><span class="user-info" id="user-name"><span class="icon">🙋</span>Welcome, [User]</span></li>
+            <li><a href="sign.html"><span class="icon">🚪</span>Sign Out</a></li>
+        </ul>
+    </nav>
+
+    <!-- Settings Container -->
+    <div class="settings-container">
+        <div class="sidebar">
+            <h2>Settings</h2>
+            <ul>
+                <li><a href="#personal-info" class="active">Personal Info</a></li>
+                <li><a href="#account">Account</a></li>
+                <li><a href="#creator-settings">Creator Settings</a></li>
+                <li><a href="#notifications">Notifications</a></li>
+                <li><a href="#privacy">Privacy</a></li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <form id="profile-settings-form">
+                <!-- Personal Info -->
+                <div class="section" id="personal-info">
+                    <h3>Personal Info</h3>
+                    <div class="form-group">
+                        <label for="display-name">Display Name <span class="tooltip" data-tooltip="This is how your name appears publicly">ℹ️</span></label>
+                        <input type="text" id="display-name" name="display-name" placeholder="e.g., Sarah K." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="avatar">Profile Picture</label>
+                        <div class="avatar-preview">
+                            <img src="https://via.placeholder.com/80" alt="Current Avatar" id="avatar-preview">
+                            <input type="file" id="avatar" name="avatar" accept="image/*" onchange="previewAvatar(event)">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bio">Bio <span class="tooltip" data-tooltip="Tell the community about yourself (max 500 characters)">ℹ️</span></label>
+                        <textarea id="bio" name="bio" maxlength="500" placeholder="e.g., Hi, I’m Sarah! I’m passionate about productivity and personal growth."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Social Links</label>
+                        <div class="social-links">
+                            <input type="url" name="twitter" placeholder="Twitter URL (e.g., https://twitter.com/sarahk)">
+                            <input type="url" name="instagram" placeholder="Instagram URL (e.g., https://instagram.com/sarahk)">
+                            <input type="url" name="linkedin" placeholder="LinkedIn URL (e.g., https://linkedin.com/in/sarahk)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account -->
+                <div class="section" id="account">
+                    <h3>Account</h3>
+                    <div class="form-group">
+                        <label for="email">Email <span class="tooltip" data-tooltip="Used for login and notifications">ℹ️</span></label>
+                        <input type="email" id="email" name="email" placeholder="e.g., sarah@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Change Password</label>
+                        <input type="password" id="password" name="password" placeholder="New password (min 8 characters)">
+                    </div>
+                    <div class="form-group">
+                        <label for="pi-wallet">Pi Wallet Address <span class="tooltip" data-tooltip="Link your Pi wallet for payments">ℹ️</span></label>
+                        <input type="text" id="pi-wallet" name="pi-wallet" placeholder="e.g., Pi1234...xyz">
+                    </div>
+                </div>
+
+                <!-- Creator Settings -->
+                <div class="section" id="creator-settings">
+                    <h3>Creator Settings</h3>
+                    <div class="form-group">
+                        <label for="title">Creator Title <span class="tooltip" data-tooltip="Your expertise or role (e.g., Author & Productivity Expert)">ℹ️</span></label>
+                        <input type="text" id="title" name="title" placeholder="e.g., Author & Productivity Expert">
+                    </div>
+                    <div class="form-group">
+                        <label for="category">Primary Category</label>
+                        <select id="category" name="category">
+                            <option value="ebooks">eBooks</option>
+                            <option value="music">Music</option>
+                            <option value="templates">Templates</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Enable Creator Profile <span class="tooltip" data-tooltip="Make your profile public to sell products">ℹ️</span></label>
+                        <div class="toggle">
+                            <input type="checkbox" id="creator-profile" name="creator-profile">
+                            <span>Public</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications -->
+                <div class="section" id="notifications">
+                    <h3>Notifications</h3>
+                    <div class="form-group">
+                        <label>Email Notifications</label>
+                        <div class="toggle">
+                            <input type="checkbox" id="email-notifications" name="email-notifications" checked>
+                            <span>Enabled</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Product Updates</label>
+                        <div class="toggle">
+                            <input type="checkbox" id="product-updates" name="product-updates" checked>
+                            <span>Enabled</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Community Alerts</label>
+                        <div class="toggle">
+                            <input type="checkbox" id="community-alerts" name="community-alerts">
+                            <span>Enabled</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privacy -->
+                <div class="section" id="privacy">
+                    <h3>Privacy</h3>
+                    <div class="form-group">
+                        <label>Profile Visibility</label>
+                        <select id="visibility" name="visibility">
+                            <option value="public">Public</option>
+                            <option value="followers">Followers Only</option>
+                            <option value="private">Private</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Show Activity Status</label>
+                        <div class="toggle">
+                            <input type="checkbox" id="activity-status" name="activity-status" checked>
+                            <span>Enabled</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="save-button">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Explore more ☁️</h4>
+                <ul>
+                    <li><a href="explore-more.html">Explore More</a></li>
+                    <li><a href="categories.html">Categories</a></li>
+                    <li><a href="top-creators.html">Top Creators</a></li>
+                    <li><a href="new-releases.html">New Releases</a></li>
+                    <li><a href="discover.html">Discover</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Create</h4>
+                <ul>
+                    <li><a href="workspace-tools.html">Workspace Tools</a></li>
+                    <li><a href="sell.html">Sell Your Work</a></li>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="profile.html">Profile</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>About</h4>
+                <ul>
+                    <li><a href="our-story.html">Our Story</a></li>
+                    <li><a href="pi-payments.html">Pi Payments</a></li>
+                    <li><a href="team.html">Team</a></li>
+                    <li><a href="whitepaper.html">Whitepaper</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="help-center.html">Help Center</a></li>
+                    <li><a href="contact-us.html">Contact Us</a></li>
+                    <li><a href="email-subscribers.html">Email Subscribers</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-mobile-nav">
+            <ul>
+                <li><a href="home.html"><span class="icon">🏠</span>Home</a></li>
+                <li><a href="features.html"><span class="icon">✨</span>Features</a></li>
+                <li><a href="pricing.html"><span class="icon">💰</span>Pricing</a></li>
+                <li><a href="discover.html"><span class="icon">🔍</span>Discover</a></li>
+                <li><a href="profile.html"><span class="icon">👤</span>Profile</a></li>
+            </ul>
+        </div>
+        <div class="footer-subscription">
+            <h4>Subscribe to Our Newsletter ☁️</h4>
+            <form>
+                <input type="email" placeholder="Enter your email" required>
+                <button type="submit">Subscribe</button>
+            </form>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-left">
+                <span>© 2025 <span class="footer-app-name">Cloudy</span>. All rights reserved.</span>
+                <span>We do not sell or share your personal information.</span>
+                <div class="footer-bottom-links">
+                    <li><a href="profile-settings.html"><span class="icon">⚙️</span>Profile Settings</a></li>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
+                    <a href="cookie-settings.html">Cookie Settings</a>
+                    <a href="whitepaper.html">Whitepaper</a>
+                    <a href="docs.html">Docs</a>
+                    <a href="security.html">Security</a>
+                    <a href="notice.html">Notices</a>
+                </div>
+            </div>
+            <div class="social-icons">
+                <a href="https://facebook.com/cloudy" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://twitter.com/cloudy" target="_blank" aria-label="Twitter"><i class="fab fa-x-twitter"></i></a>
+                <a href="https://instagram.com/cloudy" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="https://telegram.org/cloudy" target="_blank" aria-label="Telegram"><i class="fab fa-telegram"></i></a>
+                <a href="https://discord.com/cloudy" target="_blank" aria-label="Discord"><i class="fab fa-discord"></i></a>
+            </div>
+            <span class="footer-powered">Powered by Pi Network</span>
+        </div>
+    </footer>
+
+    <script>
+        // Header shadow on scroll
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            header.classList.toggle('scrolled', window.scrollY > 0);
+        });
+
+        // Mobile menu toggle with debounce
+        let isToggling = false;
+        const hamburger = document.querySelector('.hamburger');
+        const mobileMenu = document.querySelector('.mobile-menu');
+
+        hamburger.addEventListener('click', () => {
+            if (isToggling) return;
+            isToggling = true;
+            mobileMenu.classList.toggle('open');
+            const isOpen = mobileMenu.classList.contains('open');
+            hamburger.textContent = isOpen ? '✕' : '☰';
+            hamburger.setAttribute('aria-expanded', isOpen);
+            setTimeout(() => { isToggling = false; }, 300);
+        });
+
+        mobileMenu.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('open');
+                hamburger.textContent = '☰';
+                hamburger.setAttribute('aria-expanded', false);
+            });
+        });
+
+        // Scroll reveal animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.05, rootMargin: '20px' });
+
+        document.querySelectorAll('.sidebar, .main-content, .footer-section').forEach(el => observer.observe(el));
+
+        // Highlight active nav link
+        const currentPage = window.location.pathname.split('/').pop() || 'home.html';
+        document.querySelectorAll('header nav a, .footer-mobile-nav a').forEach(link => {
+            if (link.getAttribute('href') === currentPage) {
+                link.classList.add('active');
+            }
+        });
+
+        // Sidebar navigation
+        const sidebarLinks = document.querySelectorAll('.sidebar a');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                const targetId = link.getAttribute('href').substring(1);
+                const targetSection = document.getElementById(targetId);
+                targetSection.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+
+        // Avatar preview
+        function previewAvatar(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('avatar-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Form submission (placeholder)
+        document.getElementById('profile-settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            alert('Settings saved successfully! (This is a placeholder action)');
+        });
+    </script>
+</body>
+</html>
